@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Виртуальное окружение
+.venv/
+venv/
+env/
+
+# PyCharm
+.idea/
+
+# Сборка
+build/
+dist/
+
+# БД
+*.db
+*.sqlite
+
+# Модели Silero
+*.pt
+
+# Озвучка
+voice/
+
+# Видео (слишком большое)
+media/
+
+# Локальные файлы
+*.log
+.DS_Store
+Thumbs.db
+
+# Установщик (только в Release)
+installer/Output/
