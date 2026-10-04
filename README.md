@@ -197,8 +197,8 @@ Aion.CfgEditor/
 | 0–9 | Переход к % видео |
 | Esc | Назад |
 
-## Лицензия 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## Лицензия [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 MIT - см. [LICENSE](LICENSE).
 
 ## Благодарности
