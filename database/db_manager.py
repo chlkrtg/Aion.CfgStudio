@@ -6,14 +6,14 @@ from contextlib import contextmanager
 
 
 def get_base_dir() -> str:
-    """Папка ресурсов: в .exe — _MEIPASS, иначе — корень проекта."""
+    """Папка ресурсов: в .exe - _MEIPASS, иначе - корень проекта."""
     if getattr(sys, "frozen", False):
         return sys._MEIPASS
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def get_app_dir() -> str:
-    """Папка для БД: в .exe — %APPDATA%, иначе — корень проекта."""
+    """Папка для БД: в .exe - %APPDATA%, иначе - корень проекта."""
     if getattr(sys, "frozen", False):
         base = os.path.join(os.environ.get("APPDATA", ""), "AionCfgStudio")
         os.makedirs(base, exist_ok=True)
@@ -97,7 +97,7 @@ class DBManager:
                 "INSERT INTO Profiles (name, description) VALUES (?, ?)",
                 (name, description),
             )
-            return cur.lastrowid
+            return cur.lastrowid # для фокуса на элементе
 
     def list_profiles(self):
         with self._conn() as conn:
@@ -155,7 +155,7 @@ class DBManager:
                 "VALUES (?, ?, ?, ?)",
                 (profile_id, name, region, note),
             )
-            return cur.lastrowid
+            return cur.lastrowid # для фокуса на элементе
 
     def list_servers(self, profile_id: int):
         with self._conn() as conn:
@@ -236,7 +236,7 @@ class DBManager:
                 "VALUES (?, ?, ?)",
                 (server_id, filename, content),
             )
-            return cur.lastrowid
+            return cur.lastrowid # для фокуса на элементе
 
     def list_configs(self, server_id: int):
         with self._conn() as conn:
@@ -295,7 +295,7 @@ class DBManager:
 
     def save_config_values_bulk(self, config_id: int, values: list[tuple]):
         """Сохраняет много значений разом.
-            values: список кортежей (command_id, use_custom, custom_value)
+                values: список кортежей (command_id, use_custom, custom_value)
         """
         with self._conn() as conn:
             conn.executemany(
@@ -360,7 +360,7 @@ class DBManager:
                 "FROM ConfigValues WHERE config_id = ?",
                 (new_id, config_id),
             )
-            return new_id
+            return new_id # для фокуса на элементе
 
     def duplicate_server(self, server_id: int, new_name: str) -> int:
         """Дублирует сервер вместе со всеми его cfg и ConfigValues."""
@@ -399,7 +399,7 @@ class DBManager:
                     "FROM ConfigValues WHERE config_id = ?",
                     (new_cfg_id, cfg["id"]),
                 )
-            return new_server_id
+            return new_server_id # для фокуса на элементе
 
     def duplicate_profile(self, profile_id: int, new_name: str) -> int:
         """Дублирует профиль со всеми серверами, cfg и значениями."""
@@ -449,4 +449,4 @@ class DBManager:
                         "FROM ConfigValues WHERE config_id = ?",
                         (new_cfg_id, cfg["id"]),
                     )
-            return new_profile_id
+            return new_profile_id # для фокуса на элементе

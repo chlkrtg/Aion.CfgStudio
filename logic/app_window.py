@@ -3,10 +3,10 @@ from PyQt6.QtWidgets import QMainWindow, QStackedWidget
 
 from database.db_manager import DBManager
 from logic.page_profile import PageProfile
-from logic.page_server  import PageServer
-from logic.page_main    import PageMain
-from logic.page_editor  import PageEditor
-from logic.page_video   import PageVideo
+from logic.page_server import PageServer
+from logic.page_main import PageMain
+from logic.page_editor import PageEditor
+from logic.page_video import PageVideo
 
 
 class AppWindow(QMainWindow):
@@ -25,10 +25,10 @@ class AppWindow(QMainWindow):
         self._previous_page = None
 
         self.page_profile = PageProfile(self)
-        self.page_server  = PageServer(self)
-        self.page_main    = PageMain(self)
-        self.page_editor  = PageEditor(self)
-        self.page_video   = PageVideo(self)
+        self.page_server = PageServer(self)
+        self.page_main = PageMain(self)
+        self.page_editor = PageEditor(self)
+        self.page_video = PageVideo(self)
 
         for page in (self.page_profile, self.page_server,
                      self.page_main, self.page_editor, self.page_video):
@@ -60,8 +60,7 @@ class AppWindow(QMainWindow):
     # ========== навигация ==========
 
     def _switch(self, page):
-        """Вызов функций при смене страниц
-                переопределяются методы в классах соответствующих страниц!"""
+        """Вызов функций при смене страниц"""
         old = self.stack.currentWidget()
         if old and hasattr(old, "on_leave"):
             old.on_leave()

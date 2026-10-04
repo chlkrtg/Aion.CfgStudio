@@ -2,7 +2,7 @@
 
 Алгоритм: каждый байт XOR-ится с 0xFF (побитовая инверсия).
 Комментарии (строки, начинающиеся с --) НЕ шифруются.
-Кодировка — latin1.
+Кодировка - latin1.
 
 Источник алгоритма:
 https://github.com/xan105/Aion-open-system-cfg-editor
@@ -26,7 +26,7 @@ def xor_bytes(data: bytes) -> bytes:
 def decrypt(raw: bytes) -> str:
     """Расшифровывает .cfg из байтов в строку.
 
-    - Разбивает по \r\n (CRLF).
+    - Разбивает по \r\n.
     - Комментарии (начинаются с --) - как есть.
     - Остальные строки - XOR с 0xFF.
     """
@@ -75,7 +75,7 @@ def encrypt(text: str) -> bytes:
 
 
 def looks_like_encrypted(raw: bytes) -> bool:
-    """Эвристика: если много байт вне ASCII — вероятно, зашифровано."""
+    """Эвристика: если много байт вне ASCII - вероятно, зашифровано."""
     if not raw:
         return False
     non_ascii = sum(1 for b in raw if b > 127 or b < 9)

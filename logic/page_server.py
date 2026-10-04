@@ -1,4 +1,4 @@
-"""Страница выбора сервера внутри профиля с автосохранением заметок."""
+"""Страница выбора сервера внутри профиля."""
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QShortcut, QKeySequence
 from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
@@ -22,11 +22,11 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
         self.listServers.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.listServers.customContextMenuRequested.connect(self._show_context_menu)
 
-        # скрыть блок Регион -- пока неактуально
+        # скрыть блок Регион: пока неактуально
         self.lblRegionCaption.hide()
         self.lblRegionValue.hide()
 
-        # поле заметки — редактируемое
+        # поле заметки редактируемое
         self.editNote.setReadOnly(False)
         # debounce: сохранять через 1 сек после последнего изменения
         self._save_timer = QTimer(self)
@@ -45,7 +45,7 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
             "Delete": self._delete,
         }, FOCUSED)
 
-        # Ctrl+Q — глобально на странице
+        # Ctrl+Q глобально на странице
         QShortcut(QKeySequence("Ctrl+Q"), self).activated.connect(
             lambda: self.window().go_profile()
         )
@@ -96,8 +96,7 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
     def _persist_note(self, item):
         """Сохраняет заметку для указанного item.
-
-        Возвращает True при успехе, и False, если item нет или БД упала.
+                Возвращает True при успехе, и False, если item нет или БД упала.
         """
         return self.persist_text(
             item,
@@ -172,7 +171,7 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
                 self._save_timer.stop()
             self._persist_note(previous)
 
-        # 2. если сервер не выбран - очистить
+        # 2. если сервер не выбран, очистить
         if current is None:
             self._clear_details()
             return
@@ -190,12 +189,12 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
         configs = self.db.count_configs_in_server(server_id)
         self.lblConfigsValue.setText(str(configs))
 
-        # заметка - блокируем сигналы, чтобы не запускать автосохранение
+        # заметка: блокируем сигналы, чтобы не запускать автосохранение
         self.editNote.blockSignals(True)
         self.editNote.setPlainText(server["note"] or "")
         self.editNote.blockSignals(False)
 
-        # иконка - первая буква имени
+        # иконка - первая буква имени, тоже золотая!
         first_letter = (server["name"] or "?")[0].upper()
         self.lblServerIcon.setText(first_letter)
         self.lblServerIcon.setStyleSheet(

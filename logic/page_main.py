@@ -20,7 +20,7 @@ class PageMain(BasePage, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
 
-        # очень важные поля!
+        # поля для контекста
         self.profile_id = None
         self.server_id = None
 
@@ -30,7 +30,7 @@ class PageMain(BasePage, Ui_MainWindow):
 
         self._connect_signals()
 
-        # знаменитые хоткеи
+        # подключение хоткеев
         bind_shortcuts(self.treeConfigs, {
             "F1": lambda: self.window().go_video(),
             "F2": self._rename_config,
@@ -41,7 +41,7 @@ class PageMain(BasePage, Ui_MainWindow):
             "Ctrl+E": self._open_selected,
         }, FOCUSED)
 
-        # Ctrl+Q — глобально на странице
+        # Ctrl+Q глобально на странице
         QShortcut(QKeySequence("Ctrl+Q"), self).activated.connect(self._on_change_server)
 
     def _connect_signals(self):
@@ -140,7 +140,7 @@ class PageMain(BasePage, Ui_MainWindow):
         current_visible = current is not None and not current.isHidden()
 
         if current_visible:
-            return  # всё ок - ничего не меняем
+            return  # всё ок, ничего не меняем
 
         # 3. ищем первый видимый
         first_visible = None
@@ -215,7 +215,7 @@ class PageMain(BasePage, Ui_MainWindow):
                     selected = True
                     break
 
-        # если не нашли - выбираем первый доступный
+        # если не нашли, выбираем первый доступный
         if not selected and self.treeConfigs.topLevelItemCount() > 0:
             self.treeConfigs.setCurrentItem(self.treeConfigs.topLevelItem(0))
             selected = True
@@ -283,7 +283,7 @@ class PageMain(BasePage, Ui_MainWindow):
             QMessageBox.critical(self, "Ошибка чтения", str(exc))
             return
 
-        # если файл зашифрован - расшифровываем
+        # если файл зашифрован, расшифровываем
         if looks_like_encrypted(raw):
             content = decrypt(raw)
         else:
@@ -465,7 +465,7 @@ class PageMain(BasePage, Ui_MainWindow):
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
         logs = self.db.list_logs(config_id)
         if not logs:
-            QMessageBox.information(self, "История", "Изменений нет.")
+            QMessageBox.information(self, "История изменений", "Изменений нет.")
             return
         text = "\n".join(
             f"{row['changed_at']}: {row['key_name']} "

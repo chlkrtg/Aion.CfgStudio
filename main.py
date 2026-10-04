@@ -24,8 +24,7 @@ def resource_path(relative: str) -> str:
 
 def _style_window(window):
     """Применяет единое оформление к окну (тёмный заголовок Windows).
-
-    Работает для главного окна и для диалогов.
+            Работает для главного окна и диалогов.
     """
     try:
         hwnd = int(window.winId())

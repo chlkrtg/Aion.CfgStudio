@@ -1,9 +1,9 @@
-"""Хелперы для работы с QShortcut. """
+"""Хелперы для работы с QShortcut."""
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QShortcut, QKeySequence
 
 
-# Контексты срабатывания (псевдонимы для читаемости)
+# Контексты срабатывания (псевдонимы)
 FOCUSED = Qt.ShortcutContext.WidgetShortcut
 WITH_CHILDREN = Qt.ShortcutContext.WidgetWithChildrenShortcut
 WINDOW = Qt.ShortcutContext.WindowShortcut

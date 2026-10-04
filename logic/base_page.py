@@ -1,4 +1,4 @@
-"""Базовый класс для всех страниц..."""
+"""Базовый класс для всех страниц."""
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QMessageBox, QInputDialog, QLineEdit
 
@@ -64,7 +64,7 @@ class BasePage(QWidget):
             QMessageBox.warning(
                 self, "Ошибка",
                 f"{field} слишком длинное: {len(value)} символов.\n"
-                f"Максимум — {max_len}."
+                f"Максимум - {max_len}."
             )
             return None
         return value

@@ -1,4 +1,4 @@
-"""Страница выбора профиля с автосохранением описания."""
+"""Страница выбора профиля."""
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QShortcut, QKeySequence
 from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
@@ -19,7 +19,7 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
         self.listProfiles.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.listProfiles.customContextMenuRequested.connect(self._show_context_menu)
 
-        # поле описания -- редактируемое
+        # поле описания редактируемое
         self.editDescription.setReadOnly(False)
         # debounce: сохранять через 1 сек после последнего изменения
         self._save_timer = QTimer(self)
@@ -39,7 +39,7 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
             "Delete": self._delete,
         }, FOCUSED)
 
-        # Ctrl+Q — глобально на странице
+        # Ctrl+Q глобально на странице
         QShortcut(QKeySequence("Ctrl+Q"), self).activated.connect(
             lambda: self.window().close()
         )
@@ -68,7 +68,7 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
     # ============== жизненный цикл ==============
 
     def on_enter(self):
-        """Подгружает список порфилей при загрузке страницы (см. refresh)."""
+        """Подгружает список порфилей при загрузке страницы ."""
         self.refresh()
 
     def on_leave(self):
@@ -85,13 +85,11 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
     def _save_description(self):
         """Сохраняет описание текущего профиля в БД."""
-
         self._persist_description(self.listProfiles.currentItem())
 
     def _persist_description(self, item):
         """Сохраняет описание для указанного item.
-
-        Возвращает True при успехе, и False, если item нет или БД упала.
+                Возвращает True при успехе, и False, если item нет или БД упала.
         """
         return self.persist_text(
             item,
@@ -110,7 +108,7 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
             self._save_timer.stop()
         self._persist_description(self.listProfiles.currentItem())
 
-        # если select_id не задан — берём текущий выбранный
+        # если select_id не задан, берём текущий выбранный
         if select_id is None:
             current = self.listProfiles.currentItem()
             if current is not None:
@@ -141,6 +139,7 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
         self.listProfiles.setCurrentRow(target_row)
 
     def _set_controls_enabled(self, enabled: bool):
+        """Включает / выключает контролы, требующие выбранного профиля."""
         self.set_controls_enabled(
             enabled,
             self.btnRename,
@@ -160,7 +159,7 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
                 self._save_timer.stop()
             self._persist_description(previous)
 
-        # 2. если новый профиль не выбран - очистить панель
+        # 2. если новый профиль не выбран, очистить панель
         if current is None:
             self._clear_details()
             return
@@ -183,7 +182,7 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
         configs = self.db.count_configs(profile_id)
         self.lblStats.setText(f"Серверов: {servers} | Конфигураций: {configs}")
 
-        # аватар — первая буква имени, золотая!
+        # аватар - первая буква имени, золотая!
         first_letter = (profile["name"] or "?")[0].upper()
         self.lblAvatar.setText(first_letter)
         self.lblAvatar.setStyleSheet(
@@ -303,7 +302,7 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
     def _duplicate(self):
         """Дублирует профиль со всем содержимым и проверкой
-                на уникальность нового имени; новое имя -- старое + (копия)"""
+                на уникальность нового имени; новое имя - старое + (копия)"""
         item = self.listProfiles.currentItem()
         if item is None:
             QMessageBox.information(self, "Дублирование",

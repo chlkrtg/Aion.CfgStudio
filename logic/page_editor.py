@@ -20,7 +20,7 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         super().__init__(parent)
         self.setupUi(self)
 
-        # очень важные поля
+        # контекст
         self.config_id: int | None = None
         self.server_id: int | None = None
         self._built = False
@@ -29,7 +29,7 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         self._commands: list | None = None
         self._prefixes: dict | None = None
 
-        # связки «строка таблицы ↔ данные»
+        # связки «строка таблицы -> данные»
         self._cmd_by_row: dict[int, dict] = {}  # row -> {command, group_code}
         self._group_rows: dict[str, list[int]] = {}  # код префикса -> список строк команд
         self._group_header_row: dict[str, int] = {}  # код префикса -> номер строки-заголовка
@@ -43,7 +43,7 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
 
         self._connect_signals()
 
-        # знаменитые хоткеи, работающие на всей странице
+        # хоткеи, работающие на всей странице
         QShortcut(QKeySequence("F1"), self.listPrefixes).activated.connect(lambda: self.window().go_video())
         QShortcut(QKeySequence("Ctrl+Q"), self.listPrefixes).activated.connect(self._on_cancel)
 
@@ -550,7 +550,7 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         if group_chk is None:
             return
 
-        # если не все отмечены — отметить, иначе снять
+        # если не все отмечены - отметить, иначе снять
         t = self.tableCommands
         rows = self._group_rows.get(prefix_code, [])
         checked = sum(
