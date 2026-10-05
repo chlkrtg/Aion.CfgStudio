@@ -213,7 +213,7 @@ Aion.CfgEditor/
 
 Чтобы использовать уже существующую базу данных, скопируйте её либо в %appdata/AionCfgStudio% (при запуске с помощью исполняемого файла), либо в корень проекта.
 
-## Лицензия [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## Лицензия
 
 MIT - см. [LICENSE](LICENSE).
 
