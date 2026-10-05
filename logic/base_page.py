@@ -84,3 +84,13 @@ class BasePage(QWidget):
 
         ok = dialog.exec() == QInputDialog.DialogCode.Accepted
         return dialog.textValue(), ok
+
+    def ask_name_hint(self, title: str, label: str, max_len: int,
+                      default: str = "") -> tuple[str, bool]:
+        """ask_name с подсказкой о максимальной длине."""
+        return self.ask_name(
+            title,
+            f"{label} (макс. {max_len}):",
+            default=default,
+            max_len=max_len,
+        )

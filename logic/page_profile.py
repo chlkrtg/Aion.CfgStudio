@@ -21,6 +21,8 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
         # поле описания редактируемое
         self.editDescription.setReadOnly(False)
+        self.editDescription.setPlaceholderText(
+            f"Сохраняется автоматически (до {MAX_DESCRIPTION_LEN} символов)...")
         # debounce: сохранять через 1 сек после последнего изменения
         self._save_timer = QTimer(self)
         self._save_timer.setSingleShot(True)
@@ -201,9 +203,9 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
     def _create(self):
         """Создаёт профиль, загружая в БД, с проверкой на уникальность имени."""
-        name, ok = self.ask_name(
-            "Новый профиль", "Имя профиля:",
-            max_len=MAX_PROFILE_NAME_LEN,
+        name, ok = self.ask_name_hint(
+            "Новый профиль", "Имя профиля",
+            MAX_PROFILE_NAME_LEN,
         )
         if not ok:
             return
@@ -239,10 +241,10 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
         pid = item.data(Qt.ItemDataRole.UserRole)
         old_name = item.text()
 
-        new_name, ok = self.ask_name(
-            "Переименовать", "Новое имя:",
-            default=old_name,
-            max_len=MAX_PROFILE_NAME_LEN,
+        new_name, ok = self.ask_name_hint(
+            "Переименовать профиль", "Новое имя",
+            MAX_PROFILE_NAME_LEN,
+            old_name
         )
         if not ok:
             return
@@ -282,9 +284,12 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
             return
 
         pid = item.data(Qt.ItemDataRole.UserRole)
+        servers = self.db.count_servers(pid)
+        configs = self.db.count_configs(pid)
         ans = QMessageBox.question(
             self, "Удалить",
-            f"Удалить профиль «{item.text()}» со всем содержимым?",
+            f"Удалить профиль «{item.text()}» со всем содержимым?\n\n"
+            f"Будет удалено: серверов - {servers}, конфигураций - {configs}.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if ans == QMessageBox.StandardButton.Yes:
@@ -314,11 +319,9 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
         if not profile:
             return
 
-        new_name, ok = self.ask_name(
-            "Дублировать профиль",
-            "Имя нового профиля:",
-            default=f"{profile['name']} (копия)",
-            max_len=MAX_PROFILE_NAME_LEN,
+        new_name, ok = self.ask_name_hint(
+            "Дублировать профиль", "Имя нового профиля",
+            MAX_PROFILE_NAME_LEN, f"{profile['name']} (копия)"
         )
         if not ok:
             return

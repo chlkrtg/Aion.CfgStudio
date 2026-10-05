@@ -8,7 +8,7 @@ from logic.app_window import AppWindow
 from PyQt6.QtCore import Qt, QTimer, QObject, QEvent
 from PyQt6.QtWidgets import (
     QApplication, QSplashScreen, QLabel, QProgressBar,
-    QMessageBox, QInputDialog, QFileDialog,
+    QMessageBox, QInputDialog, QFileDialog, QDialog,
 )
 from PyQt6.QtGui import QColor, QPixmap, QIcon
 
@@ -47,7 +47,7 @@ class _DarkDialogsFilter(QObject):
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.Type.Show:
-            if isinstance(obj, (QMessageBox, QInputDialog, QFileDialog)):
+            if isinstance(obj, (QMessageBox, QInputDialog, QFileDialog, QDialog)):
                 QTimer.singleShot(0, lambda o=obj: _style_window(o))
         return super().eventFilter(obj, event)
 

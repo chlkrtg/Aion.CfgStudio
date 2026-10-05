@@ -11,6 +11,7 @@ from logic.context_menu import build_context_menu
 from logic.base_page import BasePage
 from logic.shortcuts import bind_shortcuts, FOCUSED
 from logic.constants import MAX_CONFIG_NAME_LEN
+from logic.logs_dialog import LogsDialog
 from ui.main_window import Ui_MainWindow
 from parsers.cfg_crypto import decrypt, encrypt, looks_like_encrypted
 
@@ -457,22 +458,26 @@ class PageMain(BasePage, Ui_MainWindow):
             self.refresh()
 
     def _show_logs(self):
-        """Отображение логов изменений выранного конфига."""
+        """Отображение логов изменений выбранного конфига."""
         item = self.treeConfigs.currentItem()
         if item is None:
             QMessageBox.warning(self, "Ошибка", "Не выбран конфигурационный файл.")
             return
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
+        cfg = self.db.get_config(config_id)
+        if not cfg:
+            return
+
         logs = self.db.list_logs(config_id)
         if not logs:
-            QMessageBox.information(self, "История изменений", "Изменений нет.")
+            QMessageBox.information(
+                self, "История",
+                f"Изменений нет для файла «{cfg['filename']}»."
+            )
             return
-        text = "\n".join(
-            f"{row['changed_at']}: {row['key_name']} "
-            f"{row['old_value']} → {row['new_value']}"
-            for row in logs
-        )
-        QMessageBox.information(self, "История изменений", text)
+
+        dialog = LogsDialog(self, logs, filename=cfg["filename"])
+        dialog.exec()
 
     def build_menus(self) -> dict:
         return {

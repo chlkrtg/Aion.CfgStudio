@@ -28,6 +28,8 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
         # поле заметки редактируемое
         self.editNote.setReadOnly(False)
+        self.editNote.setPlaceholderText(
+            f"Сохраняется автоматически (до {MAX_NOTE_LEN} символов)...")
         # debounce: сохранять через 1 сек после последнего изменения
         self._save_timer = QTimer(self)
         self._save_timer.setSingleShot(True)
@@ -214,9 +216,9 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
     def _create(self):
         """Создаёт сервер, загружая в БД, с проверкой на уникальность имени."""
-        name, ok = self.ask_name(
-            "Новый сервер", "Имя сервера:",
-            max_len=MAX_SERVER_NAME_LEN,
+        name, ok = self.ask_name_hint(
+            "Новый сервер", "Имя сервера",
+            MAX_SERVER_NAME_LEN,
         )
         if not ok:
             return
@@ -252,10 +254,9 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
         sid = item.data(Qt.ItemDataRole.UserRole)
         old_name = item.text()
 
-        new_name, ok = self.ask_name(
-            "Переименовать", "Новое имя:",
-            default=old_name,
-            max_len=MAX_SERVER_NAME_LEN,
+        new_name, ok = self.ask_name_hint(
+            "Переименовать сервер", "Новое имя",
+            MAX_SERVER_NAME_LEN, old_name,
         )
         if not ok:
             return
@@ -294,9 +295,11 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
                                     "Не выбран сервер для удаления.")
             return
         sid = item.data(Qt.ItemDataRole.UserRole)
+        configs = self.db.count_configs_in_server(sid)
         ans = QMessageBox.question(
             self, "Удалить",
-            f"Удалить сервер «{item.text()}» со всеми cfg?",
+            f"Удалить сервер «{item.text()}» со всеми cfg?\n\n"
+            f"Будет удалено: конфигураций - {configs}",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if ans == QMessageBox.StandardButton.Yes:
@@ -324,11 +327,11 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
         if not server:
             return
 
-        new_name, ok = self.ask_name(
+        new_name, ok = self.ask_name_hint(
             "Дублировать сервер",
-            "Имя нового сервера:",
-            default=f"{server['name']} (копия)",
-            max_len=MAX_SERVER_NAME_LEN,
+            "Имя нового сервера",
+            MAX_SERVER_NAME_LEN,
+            f"{server['name']} (копия)",
         )
         if not ok:
             return
