@@ -2,7 +2,7 @@
 """
 Генерация озвучки для видео-руководства Aion.CfgStudio.
 Использует Silero TTS v5_ru (локальный файл v5_ru.pt).
-Результат — voice/*.wav (48 kHz).
+Результат - voice/*.wav (48 kHz).
 
 Установка:
     pip install torch soundfile numpy
@@ -39,7 +39,7 @@ except ImportError:
 
 
 def load_blocks_from_db() -> dict[str, str]:
-    """Читает главы из БД. Ключ файла — NN_название."""
+    """Читает главы из БД. Ключ файла - NN_название."""
     db = DBManager()
     chapters = db.list_video_chapters()
 
