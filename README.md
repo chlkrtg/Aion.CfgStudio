@@ -27,8 +27,8 @@
 
 ### Вариант 1 - готовая сборка
 
-1. Скачай `AionCfgStudio_Setup_v1.0.exe` из [Releases](https://github.com/chlkrtg/Aion.CfgStudio/releases).
-2. Запусти установщик.
+1. Скачайте `AionCfgStudio_Setup_v1.0.exe` из [Releases](https://github.com/chlkrtg/Aion.CfgStudio/releases).
+2. Запустите установщик.
 3. Ярлык появится в меню "Пуск".
 
 Требования: Windows 10/11.
@@ -141,6 +141,7 @@ Aion.CfgEditor/
 │   ├── app_window.py           # главное окно + QStackedWidget
 │   ├── base_page.py            # общий предок страниц
 │   ├── constants.py            # ограничения длины, версия
+│   ├── logs_dialog.py          # таблица с логами
 │   ├── shortcuts.py            # хелперы для QShortcut
 │   ├── context_menu.py         # построение контекстных меню
 │   ├── page_profile.py         # страница профилей
