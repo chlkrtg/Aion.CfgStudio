@@ -218,33 +218,33 @@ Aion.CfgEditor/
 
 ### Схема (8 таблиц)
 
-Profiles - профили пользователя.
+`Profiles` - профили пользователя.
 
-Servers - серверы внутри профиля.
+`Servers` - серверы внутри профиля.
 
-Prefixes - категории команд (g_, r_, …).
+`Prefixes` - категории команд (g_, r_, …).
 
-Commands - 1105 команд с описанием и типом.
+`Commands` - 1105 команд с описанием и типом.
 
-ConfigFiles - конфигурационные файлы.
+`ConfigFiles` - конфигурационные файлы.
 
-ConfigValues - значения команд в конкретном cfg.
+`ConfigValues` - значения команд в конкретном cfg.
 
-Logs - история изменений.
+`Logs` - история изменений.
 
-VideoChapters - главы видео-руководства.
+`VideoChapters` - главы видео-руководства.
 
 **Связи между таблицами**:
 
-Profiles → Servers → ConfigFiles → ConfigValues
+`Profiles → Servers → ConfigFiles → ConfigValues`
 
-ConfigFiles → Logs
+`ConfigFiles → Logs`
 
-Commands → ConfigValues
+`Commands → ConfigValues`
 
-Prefixes → Commands
+`Prefixes → Commands`
 
-VideoChapters - изолированная таблица.
+`VideoChapters - изолированная таблица.`
 
 ### Ключевые ограничения
 
@@ -260,11 +260,7 @@ ConfigValues (config_id, command_id): UNIQUE (одна команда в одн�
 
 Все дочерние таблицы связаны с родителями через **ON DELETE CASCADE**. Удаление профиля автоматически удаляет серверы, cfg, значения и логи.
 
-Один SQL-запрос:
-```
-DELETE FROM Profiles WHERE id = ?;
-```
-- и вся ветка данных уходит автоматически.
+Один SQL-запрос `DELETE FROM Profiles WHERE id = ?;` – и вся ветка данных уходит автоматически.
 
 Для работы каскадов в db_manager._conn обязательно включён **PRAGMA foreign_keys = ON**, без него SQLite игнорирует внешние ключи.
 
@@ -272,14 +268,14 @@ DELETE FROM Profiles WHERE id = ?;
 
 При старте приложения DBManager:
 
-1. Создаёт таблицы из database/schema.sql (если их нет).
+1. Создаёт таблицы из `database/schema.sql` (если их нет).
 2. Проверяет, пуста ли таблица Commands.
-3. Если пуста - заливает seed-файлы (seed_commands.sql, seed_updates.sql, seed_modes.sql): 1105 команд и 18 префиксов.
-4. Заливает 8 глав видео из schema.sql.
+3. Если пуста - заливает seed-файлы (`seed_commands.sql`, `seed_updates.sql`, `seed_modes.sql`): 1105 команд и 18 префиксов.
+4. Заливает 8 глав видео из `schema.sql`.
 
 ### Обновление существующей БД
 
-Чтобы использовать свою базу данных: из исходников - положите aion_cfg_studio.db в корень проекта; из .exe - положите в %APPDATA%\AionCfgStudio\.
+Чтобы использовать свою базу данных: из исходников - положите `aion_cfg_studio.db` в корень проекта; из .exe - положите в `%APPDATA%\AionCfgStudio\`.
 
 Если БД нет, она создастся заново с seed-данными.
 
