@@ -146,14 +146,6 @@ def main() -> int:
 
     window = AppWindow(db)
 
-    try:
-        presenter = window.page_editor.presenter
-        if not presenter._built:
-            presenter._build_all_rows()
-            presenter._built = True
-    except Exception as exc:
-        print(f"[preload] Ошибка: {exc}")
-
     window.show()
     _style_window(window)
     splash.finish(window)

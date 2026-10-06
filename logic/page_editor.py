@@ -5,13 +5,13 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence
 from PyQt6.QtWidgets import (
-    QCheckBox, QComboBox, QLineEdit, QSpinBox,
-    QTableWidgetItem, QHeaderView,
+    QTableWidgetItem, QHeaderView, QAbstractItemView
 )
 
 from logic.base_page import BasePage
 from logic.constants import MAX_CONFIG_NAME_LEN
 from logic.repositories import ConfigRepository, CommandRepository
+from logic.value_delegate import ValueDelegate
 from logic.services import ConfigService, EditorService
 from logic.presenters import EditorPresenter
 from ui.command_editor import Ui_CommandEditorDialog
@@ -42,7 +42,6 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
     # ============== настройка таблицы ==============
 
     def _setup_table(self):
-        """Подготовка таблицы с командами."""
         t = self.tableCommands
         t.setColumnCount(5)
         t.setHorizontalHeaderLabels(
@@ -58,10 +57,19 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.Interactive)
         header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
 
+        t.setEditTriggers(
+            QAbstractItemView.EditTrigger.CurrentChanged
+            | QAbstractItemView.EditTrigger.DoubleClicked
+            | QAbstractItemView.EditTrigger.EditKeyPressed
+        )
+
         t.setColumnWidth(0, 50)
         t.setColumnWidth(1, 220)
         t.setColumnWidth(2, 140)
         t.setColumnWidth(3, 100)
+
+        # ← делегат для колонки значений
+        t.setItemDelegateForColumn(2, ValueDelegate(t))
 
         self.listPrefixes.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAsNeeded
@@ -69,7 +77,6 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         self.listPrefixes.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
-
         t.setAlternatingRowColors(False)
 
     # ============== сигналы ==============
@@ -87,6 +94,11 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         self.btnResetAll.clicked.connect(self.presenter.reset_all)
         self.btnCancel.clicked.connect(self.presenter.cancel)
         self.btnApply.clicked.connect(self.presenter.on_apply)
+
+        # ← сигнал изменения item (включая чекбоксы)
+        self.tableCommands.itemChanged.connect(
+            self.presenter.on_item_changed
+        )
 
     def _setup_shortcuts(self):
         """Хоткеи, работающие на странице."""
@@ -110,6 +122,8 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         self.presenter.on_enter()
 
     def on_leave(self):
+        self.tableCommands.clearSelection()
+        self.tableCommands.setCurrentCell(-1, -1)
         self.presenter.on_leave()
 
     # ============== UI-хелперы (зовёт презентер) ==============
@@ -122,12 +136,15 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         font.setBold(True)
         font.setPointSize(font.pointSize() + 1)
 
-        chk = QCheckBox()
-        chk.setStyleSheet(
-            "QCheckBox { margin-left: 12px; }"
-            "QCheckBox::indicator { width: 14px; height: 14px; }"
+        # чекбокс через item (не виджет)
+        chk_item = QTableWidgetItem()
+        chk_item.setFlags(
+            Qt.ItemFlag.ItemIsEnabled
+            | Qt.ItemFlag.ItemIsUserCheckable
         )
-        t.setCellWidget(row, 0, chk)
+        chk_item.setCheckState(Qt.CheckState.Unchecked)
+        chk_item.setData(Qt.ItemDataRole.UserRole, f"GROUP:{code}")
+        t.setItem(row, 0, chk_item)
 
         header = QTableWidgetItem(f"{code} — {name}")
         header.setData(Qt.ItemDataRole.FontRole, font)
@@ -146,22 +163,40 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         t = self.tableCommands
 
         # 0. чекбокс Исп.
-        chk = QCheckBox()
-        chk.setStyleSheet(
-            "QCheckBox { margin-left: 12px; }"
-            "QCheckBox::indicator { width: 14px; height: 14px; }"
+        chk_item = QTableWidgetItem()
+        chk_item.setFlags(
+            Qt.ItemFlag.ItemIsEnabled
+            | Qt.ItemFlag.ItemIsUserCheckable
         )
-        t.setCellWidget(row, 0, chk)
+        chk_item.setCheckState(Qt.CheckState.Unchecked)
+        chk_item.setData(Qt.ItemDataRole.UserRole, f"CMD:{cmd['id']}")
+        t.setItem(row, 0, chk_item)
 
         # 1. имя команды
         item_key = QTableWidgetItem(cmd["key_name"])
         item_key.setFlags(Qt.ItemFlag.ItemIsEnabled)
         t.setItem(row, 1, item_key)
 
-        # 2. виджет значения
-        w = self._make_value_widget(cmd)
-        t.setCellWidget(row, 2, w)
-        w.setEnabled(False)
+        # 2. значение — данные для делегата
+        value_item = QTableWidgetItem(str(cmd["default_value"] or ""))
+
+        # если команда не отмечена — ячейка «выключена»
+        value_item.setFlags(
+            Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
+        )
+
+        # метаданные для делегата
+        value_item.setData(
+            ValueDelegate.CMD_TYPE_ROLE,
+            (cmd["value_type"] or "string").lower()
+        )
+        value_item.setData(
+            ValueDelegate.CMD_POSSIBLE_ROLE,
+            cmd["possible_values"]
+        )
+        value_item.setData(ValueDelegate.CMD_MIN_ROLE, cmd["min_value"])
+        value_item.setData(ValueDelegate.CMD_MAX_ROLE, cmd["max_value"])
+        t.setItem(row, 2, value_item)
 
         # 3. дефолт
         item_def = QTableWidgetItem(str(cmd["default_value"] or "—"))
@@ -174,74 +209,17 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         item_desc.setFlags(Qt.ItemFlag.ItemIsEnabled)
         t.setItem(row, 4, item_desc)
 
-        # чекбокс включает/выключает виджет значения
-        chk.toggled.connect(
-            lambda checked, ww=w: ww.setEnabled(checked)
-        )
-
-    def _make_value_widget(self, cmd):
-        """Создаёт виджет значения в зависимости от типа команды."""
-        vtype = (cmd["value_type"] or "string").lower()
-        possible = cmd["possible_values"]
-
-        if vtype == "bool" or (possible and "," in possible):
-            w = QComboBox()
-            if possible:
-                for v in possible.split(","):
-                    w.addItem(v.strip())
-            else:
-                w.addItem("0")
-                w.addItem("1")
-            if cmd["default_value"] is not None:
-                idx = w.findText(str(cmd["default_value"]))
-                if idx >= 0:
-                    w.setCurrentIndex(idx)
-            return w
-
-        if vtype == "int":
-            w = QSpinBox()
-            w.setMinimum(
-                int(cmd["min_value"]) if cmd["min_value"] else -999999
-            )
-            w.setMaximum(
-                int(cmd["max_value"]) if cmd["max_value"] else 999999
-            )
-            if cmd["default_value"]:
-                try:
-                    w.setValue(int(cmd["default_value"]))
-                except ValueError:
-                    pass
-            return w
-
-        w = QLineEdit()
-        if cmd["default_value"] is not None:
-            w.setText(str(cmd["default_value"]))
-        return w
-
-    def apply_value_to_widget(self, widget, value: str):
-        """Подставляет значение из БД в виджет ввода."""
-        if isinstance(widget, QComboBox):
-            idx = widget.findText(str(value))
-            if idx >= 0:
-                widget.setCurrentIndex(idx)
-        elif isinstance(widget, QSpinBox):
-            try:
-                widget.setValue(int(value))
-            except (ValueError, TypeError):
-                pass
-        elif isinstance(widget, QLineEdit):
-            widget.setText(str(value))
-
-    @staticmethod
-    def read_widget_value(widget) -> str:
-        """Читает значение из виджета."""
-        if isinstance(widget, QComboBox):
-            return widget.currentText()
-        if isinstance(widget, QSpinBox):
-            return str(widget.value())
-        if isinstance(widget, QLineEdit):
-            return widget.text().strip()
-        return ""
+    def set_value_enabled(self, row: int, enabled: bool):
+        """Включает/выключает ячейку значения в строке row."""
+        item = self.tableCommands.item(row, 2)
+        if item is None:
+            return
+        flags = item.flags()
+        if enabled:
+            flags |= Qt.ItemFlag.ItemIsEditable
+        else:
+            flags &= ~Qt.ItemFlag.ItemIsEditable
+        item.setFlags(flags)
 
     # ============== меню ==============
 

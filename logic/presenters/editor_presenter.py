@@ -1,11 +1,8 @@
 """Presenter для страницы редактора cfg.
 
-Вся логика редактора: построение таблицы, загрузка / сохранение
-значений, фильтрация, групповые чекбоксы, логи, автосохранение
-при уходе со страницы.
-
-Diff изменений для логов считается прямо здесь (EditorService.diff_logs
-не используется - он неполный).
+Ленивая загрузка: строки строятся только для видимых команд
+(под текущий фильтр). Состояние всех команд хранится в self._state -
+это позволяет сохранять и логировать изменения скрытых команд тоже.
 """
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QMessageBox, QCheckBox
@@ -24,27 +21,24 @@ class EditorPresenter(BasePresenter):
         super().__init__(view)
         self.service = service
 
-        # контекст
         self.config_id: int | None = None
         self.server_id: int | None = None
 
-        # построено ли дерево строк
-        self._built = False
-
-        # кэш данных
+        # кэш данных из БД
         self._commands: list | None = None
         self._prefixes: dict | None = None
 
-        # связки «строка таблицы -> данные»
+        # снимок состояния ВСЕХ команд: {cmd_id: (use, value)}
+        self._state: dict[int, tuple[int, str | None]] = {}
+
+        # что сейчас в таблице
         self._cmd_by_row: dict[int, dict] = {}
         self._group_rows: dict[str, list[int]] = {}
         self._group_header_row: dict[str, int] = {}
-        self._group_chk: dict[str, QCheckBox] = {}
 
     # ============ контекст ============
 
-    def set_context(self, config_id: int | None,
-                    server_id: int | None):
+    def set_context(self, config_id, server_id):
         self.config_id = config_id
         self.server_id = server_id
 
@@ -54,11 +48,6 @@ class EditorPresenter(BasePresenter):
         self.refresh()
 
     def on_leave(self):
-        """Автосохранение при уходе.
-
-        - существующий cfg - сохраняем ConfigValues;
-        - новый cfg с отметками - спрашиваем, сохранять ли как system.cfg.
-        """
         if self.config_id is not None:
             try:
                 self._save_values_to_db()
@@ -82,13 +71,9 @@ class EditorPresenter(BasePresenter):
     def refresh(self):
         self._update_file_label()
         self._load_prefixes()
-        if not self._built:
-            self._build_all_rows()
-            self._built = True
-        self._load_saved_values()
-        self.apply_filters()
-
-    # ============ заголовок файла ============
+        self._load_commands_cache()
+        self._load_state_snapshot()
+        self.apply_filters(sync=False)
 
     def _update_file_label(self):
         if self.config_id is None:
@@ -99,8 +84,6 @@ class EditorPresenter(BasePresenter):
             self.view.lblFileName.setText(f"Файл: {cfg['filename']}")
         else:
             self.view.lblFileName.setText("Файл: —")
-
-    # ============ префиксы ============
 
     def _load_prefixes(self):
         view = self.view
@@ -133,191 +116,30 @@ class EditorPresenter(BasePresenter):
         view.listPrefixes.setCurrentRow(target_row)
         view.listPrefixes.blockSignals(False)
 
-    # ============ построение таблицы ============
-
-    def _build_all_rows(self):
-        """Строит все строки: заголовки групп + команды."""
-        view = self.view
-        t = view.tableCommands
-
+    def _load_commands_cache(self):
+        if self._commands is None:
+            self._commands = list(self.service.all_commands())
         if self._prefixes is None:
             self._prefixes = {
                 row["id"]: dict(row)
                 for row in self.service.all_prefixes()
             }
 
-        if self._commands is None:
-            self._commands = list(self.service.all_commands())
-
-        t.setRowCount(0)
-        self._cmd_by_row.clear()
-        self._group_rows.clear()
-        self._group_header_row.clear()
-        self._group_chk.clear()
-
-        current_prefix = None
-        row = 0
-
-        for cmd in self._commands:
-            pid = cmd["prefix_id"]
-            if pid is None or pid not in self._prefixes:
-                continue
-            prefix = self._prefixes[pid]
-            pcode = prefix["code"]
-
-            if pcode != current_prefix:
-                t.insertRow(row)
-                view.make_group_header(row, pcode, prefix["name"])
-
-                chk = t.cellWidget(row, 0)
-                self._group_chk[pcode] = chk
-                self._group_header_row[pcode] = row
-                self._group_rows[pcode] = []
-
-                chk.clicked.connect(
-                    lambda _checked, c=pcode: self.toggle_group(c)
-                )
-
-                current_prefix = pcode
-                row += 1
-
-            t.insertRow(row)
-            view.fill_command_row(row, cmd)
-            self._cmd_by_row[row] = {
-                "command": cmd,
-                "group_code": pcode,
-            }
-            self._group_rows[pcode].append(row)
-            row += 1
-
-        # связываем чекбоксы строк с обновлением групповых
-        for r in self._cmd_by_row:
-            chk = t.cellWidget(r, 0)
-            if isinstance(chk, QCheckBox):
-                chk.toggled.connect(self._update_group_checks)
-
-    # ============ загрузка сохранённых значений ============
-
-    def _load_saved_values(self):
-        view = self.view
-        t = view.tableCommands
-
-        # 1. сброс всех к дефолтам
-        for table_row, info in self._cmd_by_row.items():
-            chk = t.cellWidget(table_row, 0)
-            w = t.cellWidget(table_row, 2)
-            if not isinstance(chk, QCheckBox):
-                continue
-            chk.blockSignals(True)
-            chk.setChecked(False)
-            chk.blockSignals(False)
-            w.setEnabled(False)
-
-            default_value = info["command"]["default_value"]
-            if default_value is not None:
-                view.apply_value_to_widget(w, str(default_value))
-
-        # 2. если cfg не выбран - всё
+    def _load_state_snapshot(self):
+        """Загружает ВСЕ значения cfg в self._state."""
+        self._state = {}
         if self.config_id is None:
-            self._update_group_checks()
+            for cmd in self._commands:
+                self._state[cmd["id"]] = (0, None)
             return
 
-        # 3. применяем сохранённые
         saved = self.service.saved_values(self.config_id)
-
-        for table_row, info in self._cmd_by_row.items():
-            cmd_id = info["command"]["id"]
-            chk = t.cellWidget(table_row, 0)
-            w = t.cellWidget(table_row, 2)
-            if not isinstance(chk, QCheckBox):
-                continue
+        for cmd in self._commands:
+            cmd_id = cmd["id"]
             if cmd_id in saved:
-                use_custom, custom_value = saved[cmd_id]
-                if use_custom and custom_value is not None:
-                    chk.blockSignals(True)
-                    chk.setChecked(True)
-                    chk.blockSignals(False)
-                    view.apply_value_to_widget(w, custom_value)
-                    w.setEnabled(True)
-
-        self._update_group_checks()
-
-    # ============ сохранение значений ============
-
-    def _save_values_to_db(self):
-        """Сохраняет отмеченные/снятые команды в ConfigValues."""
-        if self.config_id is None:
-            return
-
-        t = self.view.tableCommands
-        rows: list[tuple] = []
-
-        for table_row, info in self._cmd_by_row.items():
-            cmd_id = info["command"]["id"]
-            chk = t.cellWidget(table_row, 0)
-            w = t.cellWidget(table_row, 2)
-            if not isinstance(chk, QCheckBox):
-                continue
-
-            if chk.isChecked():
-                val = self.view.read_widget_value(w)
-                rows.append((cmd_id, 1, val))
+                self._state[cmd_id] = saved[cmd_id]
             else:
-                rows.append((cmd_id, 0, None))
-
-        self.service.save_values(self.config_id, rows)
-
-    # ============ групповые чекбоксы ============
-
-    def _update_group_checks(self):
-        """Синхронизирует групповые чекбоксы с состоянием строк."""
-        t = self.view.tableCommands
-        for code, group_chk in self._group_chk.items():
-            rows = self._group_rows.get(code, [])
-            checked = 0
-            total = 0
-            for r in rows:
-                if t.isRowHidden(r):
-                    continue
-                chk = t.cellWidget(r, 0)
-                if isinstance(chk, QCheckBox):
-                    total += 1
-                    if chk.isChecked():
-                        checked += 1
-
-            if total == 0 or checked == 0:
-                state = Qt.CheckState.Unchecked
-            elif checked == total:
-                state = Qt.CheckState.Checked
-            else:
-                state = Qt.CheckState.PartiallyChecked
-
-            group_chk.blockSignals(True)
-            group_chk.setCheckState(state)
-            group_chk.blockSignals(False)
-
-    def toggle_group(self, prefix_code: str):
-        """Отмечает/снимает все ВИДИМЫЕ команды группы."""
-        t = self.view.tableCommands
-        if prefix_code not in self._group_chk:
-            return
-
-        rows = self._group_rows.get(prefix_code, [])
-        checked = sum(
-            1 for r in rows
-            if not t.isRowHidden(r)
-            and isinstance(t.cellWidget(r, 0), QCheckBox)
-            and t.cellWidget(r, 0).isChecked()
-        )
-        visible = sum(1 for r in rows if not t.isRowHidden(r))
-        target = checked < visible
-
-        for r in rows:
-            if t.isRowHidden(r):
-                continue
-            chk = t.cellWidget(r, 0)
-            if isinstance(chk, QCheckBox):
-                chk.setChecked(target)
+                self._state[cmd_id] = (0, None)
 
     # ============ фильтры ============
 
@@ -325,8 +147,15 @@ class EditorPresenter(BasePresenter):
         idx = self.view.comboMode.currentIndex()
         return {0: "simple", 1: "advanced"}.get(idx, "advanced")
 
-    def apply_filters(self):
-        """Публичный метод - дёргается из View при смене фильтров."""
+    def apply_filters(self, sync=True):
+        """Определяет видимые команды и перестраивает таблицу.
+
+        sync=True — синхронизировать _state с текущей таблицей.
+        sync=False — не синхронизировать (при входе на страницу).
+        """
+        if sync:
+            self._sync_state_from_table()
+
         mode_allowed = {
             "simple": MODE_SIMPLE,
             "advanced": MODE_ADVANCED,
@@ -339,62 +168,165 @@ class EditorPresenter(BasePresenter):
             prefix_code = prefix_item.text().split(" ")[0]
 
         search = view.editSearch.text().lower().strip()
+
+        visible = []
+        for cmd in self._commands:
+            pid = cmd["prefix_id"]
+            if pid is None or pid not in self._prefixes:
+                continue
+            pcode = self._prefixes[pid]["code"]
+
+            if cmd["mode"] not in mode_allowed:
+                continue
+            if prefix_code is not None and pcode != prefix_code:
+                continue
+            if search and search not in cmd["key_name"].lower():
+                continue
+
+            visible.append((cmd, pcode))
+
+        self._rebuild_table(visible)
+
+    def _rebuild_table(self, visible_commands):
+        view = self.view
         t = view.tableCommands
 
-        # 1. строки команд
-        for row, info in self._cmd_by_row.items():
-            cmd = info["command"]
-            visible = (
-                cmd["mode"] in mode_allowed
-                and (prefix_code is None
-                     or info["group_code"] == prefix_code)
-                and (not search or search in cmd["key_name"].lower())
-            )
-            t.setRowHidden(row, not visible)
+        self._cmd_by_row.clear()
+        self._group_rows.clear()
+        self._group_header_row.clear()
+        self._group_chk.clear()
 
-        # 2. заголовки групп без видимых строк
-        for code, rows in self._group_rows.items():
-            has_visible = any(not t.isRowHidden(r) for r in rows)
-            if prefix_code is not None and code != prefix_code:
-                has_visible = False
-            t.setRowHidden(self._group_header_row[code], not has_visible)
+        t.blockSignals(True)  # ← блокируем сигналы
+        t.setUpdatesEnabled(False)
+        t.setRowCount(0)
+
+        current_prefix = None
+        row = 0
+
+        for cmd, pcode in visible_commands:
+            prefix = self._prefixes[cmd["prefix_id"]]
+
+            if pcode != current_prefix:
+                t.insertRow(row)
+                view.make_group_header(row, pcode, prefix["name"])
+
+                chk_item = t.item(row, 0)
+                self._group_header_row[pcode] = row
+                self._group_rows[pcode] = []
+
+                current_prefix = pcode
+                row += 1
+
+            t.insertRow(row)
+            view.fill_command_row(row, cmd)
+            self._cmd_by_row[row] = {
+                "command": cmd,
+                "group_code": pcode,
+            }
+            self._group_rows[pcode].append(row)
+
+            # применить сохранённое состояние
+            use, val = self._state.get(cmd["id"], (0, None))
+            chk_item = t.item(row, 0)
+            val_item = t.item(row, 2)
+            if use and val is not None:
+                chk_item.setCheckState(Qt.CheckState.Checked)
+                val_item.setText(str(val))
+                view.set_value_enabled(row, True)
+            else:
+                chk_item.setCheckState(Qt.CheckState.Unchecked)
+                view.set_value_enabled(row, False)
+
+            row += 1
+
+        t.setUpdatesEnabled(True)
+        t.blockSignals(False)  # ← разблокируем
 
         self._update_group_checks()
 
-    # ============ проверки ============
+    # ============ синхронизация состояния ============
+
+    def _sync_state_from_table(self):
+        """Обновляет self._state тем, что сейчас в таблице."""
+        t = self.view.tableCommands
+        for row, info in self._cmd_by_row.items():
+            cmd_id = info["command"]["id"]
+            chk_item = t.item(row, 0)
+            val_item = t.item(row, 2)
+            if chk_item is None or val_item is None:
+                continue
+
+            checked = (chk_item.checkState() == Qt.CheckState.Checked)
+            if checked:
+                val = val_item.text().strip()
+                self._state[cmd_id] = (1, val)
+            else:
+                self._state[cmd_id] = (0, None)
+
+    # ============ групповые чекбоксы ============
+
+    def _update_group_checks(self):
+        t = self.view.tableCommands
+        for code, chk_row in self._group_header_row.items():
+            rows = self._group_rows.get(code, [])
+            checked = 0
+            total = 0
+            for r in rows:
+                chk_item = t.item(r, 0)
+                if chk_item is not None:
+                    total += 1
+                    if chk_item.checkState() == Qt.CheckState.Checked:
+                        checked += 1
+
+            if total == 0 or checked == 0:
+                state = Qt.CheckState.Unchecked
+            elif checked == total:
+                state = Qt.CheckState.Checked
+            else:
+                state = Qt.CheckState.PartiallyChecked
+
+            group_item = t.item(chk_row, 0)
+            if group_item is not None:
+                t.blockSignals(True)
+                group_item.setCheckState(state)
+                t.blockSignals(False)
+
+    # ============ сохранение ============
+
+    def _save_values_to_db(self):
+        """Сохраняет ВСЕ значения (и видимые, и скрытые)."""
+        if self.config_id is None:
+            return
+
+        self._sync_state_from_table()
+
+        rows = []
+        for cmd in self._commands:
+            cmd_id = cmd["id"]
+            use, val = self._state.get(cmd_id, (0, None))
+            rows.append((cmd_id, use, val))
+
+        self.service.save_values(self.config_id, rows)
 
     def _has_checked_commands(self) -> bool:
-        t = self.view.tableCommands
-        for row in self._cmd_by_row:
-            chk = t.cellWidget(row, 0)
-            if isinstance(chk, QCheckBox) and chk.isChecked():
-                return True
-        return False
+        self._sync_state_from_table()
+        return any(use for use, _ in self._state.values())
 
-    # ============ сбор данных ============
+    # ============ сборка content ============
 
     def _collect_values(self) -> dict[str, str]:
-        """Собирает отмеченные команды в {key_name: value}."""
-        values: dict[str, str] = {}
-        t = self.view.tableCommands
+        self._sync_state_from_table()
 
-        for row, info in self._cmd_by_row.items():
-            chk = t.cellWidget(row, 0)
-            if not isinstance(chk, QCheckBox) or not chk.isChecked():
-                continue
-            cmd = info["command"]
-            w = t.cellWidget(row, 2)
-            values[cmd["key_name"]] = self.view.read_widget_value(w)
-
+        values = {}
+        for cmd in self._commands:
+            use, val = self._state.get(cmd["id"], (0, None))
+            if use and val is not None:
+                values[cmd["key_name"]] = val
         return values
 
     # ============ применение ============
 
     def apply_silent(self) -> bool:
-        """Сохраняет cfg без перехода на главную.
-
-        Возвращает True при успехе.
-        """
         values = self._collect_values()
         if not values:
             return False
@@ -402,25 +334,32 @@ class EditorPresenter(BasePresenter):
         content = self.service.collect_content(values)
 
         try:
-            # 1. создать или обновить cfg
+            # 1. старое состояние из БД
+            old_state = {}
+            if self.config_id is not None:
+                saved = self.service.saved_values(self.config_id)
+                for cmd in self._commands:
+                    cmd_id = cmd["id"]
+                    if cmd_id in saved:
+                        old_state[cmd_id] = saved[cmd_id]
+                    else:
+                        old_state[cmd_id] = (0, None)
+            else:
+                for cmd in self._commands:
+                    old_state[cmd["id"]] = (0, None)
+
+            # 2. создать или обновить cfg
             self.config_id = self.service.ensure_config(
                 self.config_id, self.server_id,
                 "system.cfg", content,
             )
 
-            # 2. старые значения до сохранения
-            old_values = {
-                row["command_id"]: row["custom_value"]
-                for row in self.service.config_repo.values(
-                    self.config_id
-                )
-            }
-
-            # 3. новые значения
+            # 3. синхронизировать и сохранить
+            self._sync_state_from_table()
             self._save_values_to_db()
 
             # 4. логи
-            self._write_logs(old_values)
+            self._write_logs(old_state)
 
             return True
         except Exception as exc:
@@ -428,7 +367,6 @@ class EditorPresenter(BasePresenter):
             return False
 
     def on_apply(self):
-        """Полное сохранение + переход на главную."""
         values = self._collect_values()
         if not values:
             QMessageBox.information(
@@ -450,71 +388,106 @@ class EditorPresenter(BasePresenter):
         win = self.view.window()
         win.go_main(win.current_server_id)
 
-    def reset_all(self):
-        """Снимает все чекбоксы и возвращает значения к дефолтам."""
-        t = self.view.tableCommands
-        for row, info in self._cmd_by_row.items():
-            chk = t.cellWidget(row, 0)
-            w = t.cellWidget(row, 2)
-            if isinstance(chk, QCheckBox):
-                chk.setChecked(False)
-            default_value = info["command"]["default_value"]
-            if default_value is not None:
-                self.view.apply_value_to_widget(w, str(default_value))
-        self._update_group_checks()
+    def on_item_changed(self, item):
+        """Вызывается при ЛЮБОМ изменении ячейки.
 
-    def cancel(self):
-        """Отмена - назад, на главную."""
-        win = self.view.window()
-        win.go_main(win.current_server_id)
-
-    # ============ логи (diff внутри презентера) ============
-
-    def _write_logs(self, old_values: dict):
-        """Пишет изменившиеся значения в Logs.
-
-        Сравниваются ВСЕ команды, а не только отмеченные.
-        Если команда была отмечена, а стала снята — она тоже
-        попадёт в лог (new_val = None → "(выключено)").
-
-        old_values: {cmd_id: old_value} из БД до сохранения.
+        Обрабатываем два случая:
+          1. Изменился чекбокс команды → обновить групповой чекбокс.
+          2. Изменился групповой чекбокс → отметить/снять все видимые в группе.
         """
-        if self.config_id is None:
+        if item.column() != 0:
             return
 
         t = self.view.tableCommands
-        changes = []
+        marker = item.data(Qt.ItemDataRole.UserRole)
 
+        if marker is None:
+            return
+
+        # 1. групповой чекбокс
+        if isinstance(marker, str) and marker.startswith("GROUP:"):
+            code = marker[6:]
+            state = item.checkState()
+
+            # блокируем сигналы, чтобы не сработал itemChanged на командах
+            t.blockSignals(True)
+            if state == Qt.CheckState.Checked:
+                for r in self._group_rows.get(code, []):
+                    chk_item = t.item(r, 0)
+                    if chk_item is not None:
+                        chk_item.setCheckState(Qt.CheckState.Checked)
+            elif state == Qt.CheckState.Unchecked:
+                for r in self._group_rows.get(code, []):
+                    chk_item = t.item(r, 0)
+                    if chk_item is not None:
+                        chk_item.setCheckState(Qt.CheckState.Unchecked)
+            t.blockSignals(False)
+
+            self._update_group_checks()
+            return
+
+        # 2. чекбокс команды
+        if isinstance(marker, str) and marker.startswith("CMD:"):
+            row = t.row(item)
+            # включить/выключить ячейку значения
+            checked = (item.checkState() == Qt.CheckState.Checked)
+            self.view.set_value_enabled(row, checked)
+
+            # обновить групповой чекбокс
+            self._update_group_checks()
+            return
+
+    def reset_all(self):
+        t = self.view.tableCommands
+        t.blockSignals(True)
         for row, info in self._cmd_by_row.items():
-            cmd = info["command"]
-            cmd_id = cmd["id"]
-            chk = t.cellWidget(row, 0)
-            w = t.cellWidget(row, 2)
-            if not isinstance(chk, QCheckBox):
+            chk_item = t.item(row, 0)
+            val_item = t.item(row, 2)
+            if chk_item is not None:
+                chk_item.setCheckState(Qt.CheckState.Unchecked)
+            default_value = info["command"]["default_value"]
+            if val_item is not None and default_value is not None:
+                val_item.setText(str(default_value))
+            self.view.set_value_enabled(row, False)
+        t.blockSignals(False)
+        self._update_group_checks()
+
+    def cancel(self):
+        win = self.view.window()
+        win.go_main(win.current_server_id)
+
+    # ============ логи ============
+
+    def _write_logs(self, old_state: dict):
+        if self.config_id is None:
+            return
+
+        id_to_key = {
+            cmd["id"]: cmd["key_name"]
+            for cmd in self._commands
+        }
+
+        changes = []
+        for cmd_id, (old_use, old_val) in old_state.items():
+            new_use, new_val = self._state.get(cmd_id, (0, None))
+
+            old_norm = old_val if old_use else None
+            new_norm = new_val if new_use else None
+
+            old_str = None if old_norm is None else str(old_norm).strip()
+            new_str = None if new_norm is None else str(new_norm).strip()
+
+            if old_str == new_str:
                 continue
 
-            # новое состояние
-            if chk.isChecked():
-                new_val = self.view.read_widget_value(w)
-            else:
-                new_val = None
-
-            # старое состояние
-            old_val = old_values.get(cmd_id)
-
-            old_norm = None if old_val is None else str(old_val).strip()
-            new_norm = None if new_val is None else str(new_val).strip()
-            if old_norm == new_norm:
+            key = id_to_key.get(cmd_id)
+            if key is None:
                 continue
 
-            old_display = (
-                old_norm if old_norm is not None else "(выключено)"
-            )
-            new_display = (
-                new_norm if new_norm is not None else "(выключено)"
-            )
+            old_display = old_str if old_str is not None else "(выключено)"
+            new_display = new_str if new_str is not None else "(выключено)"
 
-            changes.append((cmd["key_name"], old_display, new_display))
+            changes.append((key, old_display, new_display))
 
         if not changes:
             return
