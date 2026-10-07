@@ -6,7 +6,7 @@
 import os
 
 from PyQt6.QtCore import QUrl, Qt
-from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
+# from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput <- раскомментировать при возвращении плеера
 
 from logic.presenters.base_presenter import BasePresenter
 
@@ -18,8 +18,8 @@ class VideoPresenter(BasePresenter):
         super().__init__(view)
         self.service = service  # CommandRepository
 
-        self.player: QMediaPlayer | None = None
-        self.audio: QAudioOutput | None = None
+        self.player = None
+        self.audio = None
         self._last_sync_ms = -10000
 
     # ============ инициализация плеера ============
@@ -30,6 +30,7 @@ class VideoPresenter(BasePresenter):
         Возвращает True при успехе, False если QtMultimedia недоступен.
         """
         try:
+            from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput # убрать при возвращении плеера
             self.player = QMediaPlayer(self.view)
             self.audio = QAudioOutput(self.view)
             self.player.setAudioOutput(self.audio)
