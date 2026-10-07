@@ -1,4 +1,5 @@
 """Единое окно с QStackedWidget. Переключает страницы."""
+import webbrowser
 from PyQt6.QtWidgets import QMainWindow, QStackedWidget
 
 from database.db_manager import DBManager
@@ -16,8 +17,9 @@ from logic.page_profile import PageProfile
 from logic.page_server import PageServer
 from logic.page_main import PageMain
 from logic.page_editor import PageEditor
-from logic.page_video import PageVideo
+from logic.page_video import PageVideo # скрыто: F1 открывает браузер
 
+VIDEO_URL = "https://github.com/chlkrtg/Aion.CfgStudio/releases/tag/v1.0"
 
 class AppWindow(QMainWindow):
     def __init__(self, db: DBManager):
@@ -63,10 +65,12 @@ class AppWindow(QMainWindow):
             self, self.config_service, self.reference_service
         )
         self.page_editor = PageEditor(self, self.editor_service)
-        self.page_video = PageVideo(self, self.command_repo)
+        # self.page_video = PageVideo(self, self.command_repo)
 
         for page in (self.page_profile, self.page_server,
-                     self.page_main, self.page_editor, self.page_video):
+                     self.page_main, self.page_editor
+                         #, self.page_video #
+                ):
             self.stack.addWidget(page)
 
         self.go_profile()
@@ -126,13 +130,19 @@ class AppWindow(QMainWindow):
         self._switch(self.page_editor)
 
     def go_video(self):
-        self._previous_page = self.stack.currentWidget()
-        self._switch(self.page_video)
+        # self._previous_page = self.stack.currentWidget()
+        # self._switch(self.page_video)
+        webbrowser.open(VIDEO_URL)
 
     def go_back_from_video(self):
-        """Возвращает на страницу, откуда (!) открыли видео"""
-        if self._previous_page is not None:
-            self._switch(self._previous_page)
+        """Возвращает на предыдущую страницу.
+
+        Сейчас не используется (страница видео скрыта).
+        Оставлено на случай, если вернёшь плеер.
+        """
+        prev = getattr(self, "_previous_page", None)
+        if prev is not None:
+            self._switch(prev)
             self._previous_page = None
         else:
             self.go_profile()
