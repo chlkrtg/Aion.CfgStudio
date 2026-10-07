@@ -19,12 +19,12 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
     MAX_PROFILE_NAME_LEN = MAX_PROFILE_NAME_LEN
     MAX_DESCRIPTION_LEN = MAX_DESCRIPTION_LEN
 
-    def __init__(self, parent, service):
+    def __init__(self, parent, service, reference):
         super().__init__(parent)
         self.setupUi(self)
 
         # =========== презентер ===========
-        self.presenter = ProfilePresenter(self, service)
+        self.presenter = ProfilePresenter(self, service, reference)
 
         # =========== UI ===========
         self.listProfiles.setContextMenuPolicy(
@@ -97,7 +97,7 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
     # ============== UI-хелперы (зовёт презентер) ==============
 
-    def fill_details(self, profile):
+    def fill_details(self, profile, stats):
         """Заполняет правую панель данными профиля."""
         self.editDescription.blockSignals(True)
         self.editDescription.setPlainText(profile["description"] or "")
@@ -105,11 +105,9 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
         self.lblName.setText(f"Выбранный профиль: {profile['name']}")
 
-        pid = profile["id"]
-        servers = self.presenter.service.repo.count_servers(pid)
-        configs = self.presenter.service.repo.count_configs(pid)
         self.lblStats.setText(
-            f"Серверов: {servers} | Конфигураций: {configs}"
+            f"Серверов: {stats['servers']} | "
+            f"Конфигураций: {stats['configs']}"
         )
 
         first_letter = (profile["name"] or "?")[0].upper()

@@ -12,9 +12,10 @@ from logic.presenters.base_presenter import BasePresenter
 class ProfilePresenter(BasePresenter):
     """Логика страницы профилей."""
 
-    def __init__(self, view, service):
+    def __init__(self, view, service, reference):
         super().__init__(view)
         self.service = service
+        self.reference = reference
 
     # ============ жизненный цикл ============
 
@@ -96,7 +97,11 @@ class ProfilePresenter(BasePresenter):
             return
 
         # заполнить панель (View сам знает, как это рисовать)
-        view.fill_details(profile)
+        stats = {
+            "servers": self.reference.count_servers(profile_id),
+            "configs": self.reference.count_configs_in_profile(profile_id),
+        }
+        view.fill_details(profile, stats)
 
     # ============ автосохранение описания ============
 

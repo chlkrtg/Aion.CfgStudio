@@ -18,12 +18,12 @@ class PageMain(BasePage, Ui_MainWindow):
     # константы доступны презентеру через view.MAX_*
     MAX_CONFIG_NAME_LEN = MAX_CONFIG_NAME_LEN
 
-    def __init__(self, parent, service):
+    def __init__(self, parent, service, reference):
         super().__init__(parent)
         self.setupUi(self)
 
         # =============== презентер ===============
-        self.presenter = MainPresenter(self, service)
+        self.presenter = MainPresenter(self, service, reference)
 
         # =============== UI ===============
         self.treeConfigs.setContextMenuPolicy(

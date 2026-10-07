@@ -19,12 +19,12 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
     MAX_SERVER_NAME_LEN = MAX_SERVER_NAME_LEN
     MAX_NOTE_LEN = MAX_NOTE_LEN
 
-    def __init__(self, parent, service):
+    def __init__(self, parent, service, reference):
         super().__init__(parent)
         self.setupUi(self)
 
         # =========== презентер ===========
-        self.presenter = ServerPresenter(self, service)
+        self.presenter = ServerPresenter(self, service, reference)
 
         # =========== UI ===========
         self.listServers.setContextMenuPolicy(
@@ -106,17 +106,14 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
     # ============== UI-хелперы (зовёт презентер) ==============
 
-    def fill_details(self, server):
+    def fill_details(self, server, stats):
         """Заполняет правую панель данными сервера."""
         self.lblServerName.setText(
             f"Выбранный сервер: {server['name']}"
         )
         self.lblRegionValue.setText(server["region"] or "—")
 
-        configs = self.presenter.service.repo.count_configs(
-            server["id"]
-        )
-        self.lblConfigsValue.setText(str(configs))
+        self.lblConfigsValue.setText(str(stats["configs"]))
 
         # заметка: блокируем сигналы, чтобы не запускать автосохранение
         self.editNote.blockSignals(True)

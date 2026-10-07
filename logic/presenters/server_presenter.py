@@ -11,9 +11,10 @@ from logic.presenters.base_presenter import BasePresenter
 class ServerPresenter(BasePresenter):
     """Логика страницы серверов внутри профиля."""
 
-    def __init__(self, view, service):
+    def __init__(self, view, service, reference):
         super().__init__(view)
         self.service = service
+        self.reference = reference
         self.profile_id: int | None = None
 
     # ============ контекст ============
@@ -49,10 +50,10 @@ class ServerPresenter(BasePresenter):
                 select_id = current.data(Qt.ItemDataRole.UserRole)
 
         # обновить заголовок (какой профиль открыт)
-        profile = self.service.get_profile_info(self.profile_id)
-        if profile:
+        profile_name = self.reference.get_profile_name(self.profile_id)
+        if profile_name:
             view.lblTitle.setText(
-                f"Профиль: {profile['name']} / Выберите сервер"
+                f"Профиль: {profile_name} / Выберите сервер"
             )
 
         # перестроить список
@@ -102,7 +103,10 @@ class ServerPresenter(BasePresenter):
             view.clear_details()
             return
 
-        view.fill_details(server)
+        stats = {
+            "configs": self.reference.count_configs_in_server(server_id),
+        }
+        view.fill_details(server, stats)
 
     # ============ заметка ============
 

@@ -53,9 +53,15 @@ class AppWindow(QMainWindow):
         self.current_server_id = None
         self.current_config_id = None
 
-        self.page_profile = PageProfile(self, self.profile_service)
-        self.page_server = PageServer(self, self.server_service)
-        self.page_main = PageMain(self, self.config_service)
+        self.page_profile = PageProfile(
+            self, self.profile_service, self.reference_service
+        )
+        self.page_server = PageServer(
+            self, self.server_service, self.reference_service
+        )
+        self.page_main = PageMain(
+            self, self.config_service, self.reference_service
+        )
         self.page_editor = PageEditor(self, self.editor_service)
         self.page_video = PageVideo(self, self.command_repo)
 

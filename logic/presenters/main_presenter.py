@@ -15,9 +15,10 @@ from logic.presenters.base_presenter import BasePresenter
 class MainPresenter(BasePresenter):
     """Логика страницы cfg."""
 
-    def __init__(self, view, service):
+    def __init__(self, view, service, reference):
         super().__init__(view)
         self.service = service
+        self.reference = reference
         self.profile_id: int | None = None
         self.server_id: int | None = None
 
@@ -53,18 +54,20 @@ class MainPresenter(BasePresenter):
                 select_id = current.data(0, Qt.ItemDataRole.UserRole)
 
         # обновить заголовок окна
-        profile = None
-        server = None
-        if self.profile_id:
-            profile = self.service.repo.db.get_profile(self.profile_id)
-        if self.server_id:
-            server = self.service.repo.db.get_server(self.server_id)
+        profile_name = (
+            self.reference.get_profile_name(self.profile_id)
+            if self.profile_id else None
+        )
+        server_name = (
+            self.reference.get_server_name(self.server_id)
+            if self.server_id else None
+        )
 
         title = "Aion.CfgStudio"
-        if profile:
-            title += f" — {profile['name']}"
-        if server:
-            title += f" / {server['name']}"
+        if profile_name:
+            title += f" — {profile_name}"
+        if server_name:
+            title += f" / {server_name}"
         view.window().setWindowTitle(title)
 
         view.treeConfigs.clear()
