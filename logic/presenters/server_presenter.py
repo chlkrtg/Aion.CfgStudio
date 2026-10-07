@@ -182,7 +182,7 @@ class ServerPresenter(BasePresenter):
             )
             return
         sid = item.data(Qt.ItemDataRole.UserRole)
-        configs = self.service.repo.count_configs(sid)
+        configs = self.reference.count_configs_in_server(sid)
         ans = QMessageBox.question(
             view, "Удалить",
             f"Удалить сервер «{item.text()}» со всеми cfg?\n\n"

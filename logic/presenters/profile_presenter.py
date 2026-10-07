@@ -188,8 +188,8 @@ class ProfilePresenter(BasePresenter):
             return
 
         pid = item.data(Qt.ItemDataRole.UserRole)
-        servers = self.service.repo.count_servers(pid)
-        configs = self.service.repo.count_configs(pid)
+        servers = self.reference.count_servers(pid)
+        configs = self.reference.count_configs_in_profile(pid)
 
         ans = QMessageBox.question(
             view, "Удалить",
