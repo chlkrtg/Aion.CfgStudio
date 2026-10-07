@@ -1,5 +1,10 @@
 # Aion.CfgStudio
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
+[![PyQt6](https://img.shields.io/badge/PyQt6-6.11-green.svg)](https://riverbankcomputing.com/software/pyqt/)
+[![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-lightgrey.svg)]()
+
 Десктопное приложение для редактирования конфигурационных файлов клиента игры Aion. Написано на Python + PyQt6, использует SQLite, собирается в standalone `.exe`.
 
 ![Скриншот главного окна](docs/screenshots/intro.png)
@@ -11,6 +16,7 @@
 - Редактор 1100+ команд: фильтры по категории, режиму и поиску; удаление дубликатов в импортированных конфигах (в качестве финального знания берётся значение последнего вхождения соответствующей команды).
 - История изменений: фиксируются только реально изменившиеся значения.
 - Видео-руководство: F1 открывает видео на GitHub (плеер скрыт, код сохранён).
+  
 ## Скриншоты
 
 ### Профили
@@ -306,6 +312,82 @@ Aion.CfgEditor/
 | ↑ / ↓ | Громкость (в плеере)               |
 | 0–9 | Переход к % видео (в плеере)       |
 | Esc | Назад                              |
+
+## База данных
+
+Проект использует **SQLite** - встроенную СУБД, не требующую установки сервера. База создаётся автоматически при первом запуске приложения.
+
+### Расположение
+
+Место расположения базы данных зависит от режима запуска:
+
+- **Из исходников** (`python main.py`) - `aion_cfg_studio.db` в корне проекта.
+- **Из `.exe`** - `%APPDATA%\AionCfgStudio\aion_cfg_studio.db`.
+
+Такое разделение позволяет: в dev-режиме держать БД рядом с кодом для отладки, а в собранном `.exe` - сохранять данные в профиле Windows, не требуя прав администратора и не теряя данные при переустановке.
+
+### Схема (8 таблиц)
+
+`Profiles` - профили пользователя.
+
+`Servers` - серверы внутри профиля.
+
+`Prefixes` - категории команд (g_, r_, …).
+
+`Commands` - 1105 команд с описанием и типом.
+
+`ConfigFiles` - конфигурационные файлы.
+
+`ConfigValues` - значения команд в конкретном cfg.
+
+`Logs` - история изменений.
+
+`VideoChapters` - главы видео-руководства.
+
+**Связи между таблицами**:
+
+`Profiles → Servers → ConfigFiles → ConfigValues`
+
+`ConfigFiles → Logs`
+
+`Commands → ConfigValues`
+
+`Prefixes → Commands`
+
+`VideoChapters - изолированная таблица.`
+
+### Ключевые ограничения
+
+**Profiles.name**: UNIQUE (нельзя два профиля с одинаковым именем).
+
+**Servers (profile_id, name)**: UNIQUE (в одном профиле два сервера с одним именем невозможны, в разных - допустимо).
+
+**Commands.key_name**: UNIQUE (каждая команда уникальна).
+
+**ConfigValues (config_id, command_id)**: UNIQUE (одна команда в одном cfg встречается один раз; используется для ON CONFLICT DO UPDATE).
+
+### Каскадное удаление
+
+Все дочерние таблицы связаны с родителями через **ON DELETE CASCADE**. Удаление профиля автоматически удаляет серверы, cfg, значения и логи.
+
+Один SQL-запрос `DELETE FROM Profiles WHERE id = ?;` - и вся ветка данных уходит автоматически.
+
+Для работы каскадов в db_manager._conn обязательно включён `PRAGMA foreign_keys = ON`, без него SQLite игнорирует внешние ключи.
+
+### Первый запуск
+
+При старте приложения DBManager:
+
+1. Создаёт таблицы из `database/schema.sql` (если их нет).
+2. Проверяет, пуста ли таблица Commands.
+3. Если пуста - заливает seed-файлы (`seed_commands.sql`, `seed_updates.sql`, `seed_modes.sql`): 1105 команд и 18 префиксов.
+4. Заливает 8 глав видео из `schema.sql`.
+
+### Обновление существующей БД
+
+Чтобы использовать свою базу данных: из исходников - положите `aion_cfg_studio.db` в корень проекта; из .exe - положите в `%APPDATA%\AionCfgStudio\`.
+
+Если БД нет, она создастся заново с seed-данными.
 
 ## Лицензия [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
