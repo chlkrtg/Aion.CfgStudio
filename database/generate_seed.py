@@ -13,7 +13,7 @@ OUT_PATH = os.path.join(BASE_DIR, "database", "seed_commands.sql")
 
 
 # ==================== СПИСОК КОМАНД ====================
-# Формат: "key_name" — только имя.
+# Формат: "key_name" - только имя.
 # Описания подставляются автоматически: конкретные или по префиксу.
 
 ALL_COMMANDS = [
@@ -1063,7 +1063,7 @@ PREFIX_CODES = sorted(PREFIX_DESCRIPTIONS.keys(), key=len, reverse=True)
 
 
 def detect_prefix(key: str) -> str:
-    """Определяет префикс команды. Если не подходит — 'misc'."""
+    """Определяет префикс команды. Если не подходит - 'misc'."""
     for code in PREFIX_CODES:
         if key.startswith(code):
             return code
@@ -1139,7 +1139,7 @@ def main():
         code = detect_prefix(key)
         grouped.setdefault(code, []).append(key)
 
-    # порядок — как в PREFIX_DESCRIPTIONS
+    # порядок как в PREFIX_DESCRIPTIONS
     order = list(PREFIX_DESCRIPTIONS.keys())
 
     for code in order:

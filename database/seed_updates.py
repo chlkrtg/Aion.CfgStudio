@@ -24,7 +24,7 @@ def main() -> int:
             conn.executescript(sql)
         print(f"Применён: {os.path.basename(SQL_PATH)}")
 
-    # 2. seed_modes.sql — пометка команд из стандартного cfg
+    # 2. seed_modes.sql - пометка команд из стандартного cfg
     if os.path.isfile(MODES_PATH):
         sql = open(MODES_PATH, "r", encoding="utf-8").read()
         with db._conn() as conn:

@@ -40,6 +40,9 @@ class PageMain(BasePage, Ui_MainWindow):
             self._show_context_menu
         )
 
+        self.treeConfigs.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.editFilter.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
+
         self._connect_signals()
 
         # хоткеи

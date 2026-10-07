@@ -5,7 +5,7 @@
 это позволяет сохранять и логировать изменения скрытых команд тоже.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QMessageBox, QCheckBox
+from PyQt6.QtWidgets import QMessageBox
 
 from logic.presenters.base_presenter import BasePresenter
 
@@ -48,13 +48,33 @@ class EditorPresenter(BasePresenter):
         self.refresh()
 
     def on_leave(self):
+        """Автосохранение при уходе.
+
+        - существующий cfg - сохраняем ConfigValues + пишем логи;
+        - новый cfg с отметкамиЖ спрашиваем, сохранять ли как system.cfg.
+        """
         if self.config_id is not None:
             try:
+                # 1. старое состояние из БД (ДО сохранения)
+                old_state = {}
+                saved = self.service.saved_values(self.config_id)
+                for cmd in self._commands:
+                    cmd_id = cmd["id"]
+                    if cmd_id in saved:
+                        old_state[cmd_id] = saved[cmd_id]
+                    else:
+                        old_state[cmd_id] = (0, None)
+
+                # 2. сохранить текущие значения
                 self._save_values_to_db()
+
+                # 3. записать логи изменившихся
+                self._write_logs(old_state)
             except Exception as exc:
                 print(f"[EditorPresenter] autosave failed: {exc}")
             return
 
+        # новый cfg - диалог
         if self._has_checked_commands():
             ans = QMessageBox.question(
                 self.view, "Несохранённый конфиг",
@@ -150,8 +170,8 @@ class EditorPresenter(BasePresenter):
     def apply_filters(self, sync=True):
         """Определяет видимые команды и перестраивает таблицу.
 
-        sync=True — синхронизировать _state с текущей таблицей.
-        sync=False — не синхронизировать (при входе на страницу).
+        sync=True - синхронизировать _state с текущей таблицей.
+        sync=False - не синхронизировать (при входе на страницу).
         """
         if sync:
             self._sync_state_from_table()
@@ -194,9 +214,8 @@ class EditorPresenter(BasePresenter):
         self._cmd_by_row.clear()
         self._group_rows.clear()
         self._group_header_row.clear()
-        self._group_chk.clear()
 
-        t.blockSignals(True)  # ← блокируем сигналы
+        t.blockSignals(True)  # блокируем сигналы
         t.setUpdatesEnabled(False)
         t.setRowCount(0)
 
@@ -210,7 +229,6 @@ class EditorPresenter(BasePresenter):
                 t.insertRow(row)
                 view.make_group_header(row, pcode, prefix["name"])
 
-                chk_item = t.item(row, 0)
                 self._group_header_row[pcode] = row
                 self._group_rows[pcode] = []
 

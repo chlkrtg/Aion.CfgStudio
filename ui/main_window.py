@@ -114,7 +114,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "Aion.CfgStudio"))
         self.lblTreeTitle.setStyleSheet(_translate("MainWindow", "font-weight: bold;"))
         self.lblTreeTitle.setText(_translate("MainWindow", "Конфигурации"))
-        self.editFilter.setPlaceholderText(_translate("MainWindow", "Поиск конфигурации..."))
+        self.editFilter.setPlaceholderText(_translate("MainWindow", "Поиск конфигурации по названию или времени..."))
         self.treeConfigs.headerItem().setText(0, _translate("MainWindow", "Название"))
         self.treeConfigs.headerItem().setText(1, _translate("MainWindow", "Изменён"))
         self.btnAddConfig.setText(_translate("MainWindow", "Новый CFG (Ctrl + N)"))

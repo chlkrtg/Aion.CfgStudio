@@ -91,7 +91,7 @@ class ServerPresenter(BasePresenter):
         if previous is not None:
             self._persist_note(previous)
 
-        # если ничего не выбрано — очистить
+        # если ничего не выбрано - очистить
         if current is None:
             view.clear_details()
             return

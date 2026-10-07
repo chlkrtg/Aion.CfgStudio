@@ -14,9 +14,9 @@ class CommandRepository:
         """Все команды с заданным режимом.
 
         mode:
-            "simple"   - только simple
+            "simple" - только simple
             "advanced" - simple + advanced
-            "debug"    - все команды
+            "debug" - все команды
         """
         return self.db.list_commands(mode)
 
