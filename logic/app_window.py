@@ -136,3 +136,9 @@ class AppWindow(QMainWindow):
             self._previous_page = None
         else:
             self.go_profile()
+
+    def closeEvent(self, event):
+        page = self.stack.currentWidget()
+        if page and hasattr(page, "on_leave"):
+            page.on_leave()
+        super().closeEvent(event)
