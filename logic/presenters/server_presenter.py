@@ -49,7 +49,7 @@ class ServerPresenter(BasePresenter):
                 select_id = current.data(Qt.ItemDataRole.UserRole)
 
         # обновить заголовок (какой профиль открыт)
-        profile = self.service.repo.db.get_profile(self.profile_id)
+        profile = self.service.get_profile_info(self.profile_id)
         if profile:
             view.lblTitle.setText(
                 f"Профиль: {profile['name']} / Выберите сервер"

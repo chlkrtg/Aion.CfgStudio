@@ -9,8 +9,6 @@ from logic.base_page import BasePage
 from logic.context_menu import build_context_menu
 from logic.shortcuts import bind_shortcuts, FOCUSED
 from logic.constants import MAX_SERVER_NAME_LEN, MAX_NOTE_LEN
-from logic.repositories import ServerRepository
-from logic.services import ServerService
 from logic.presenters import ServerPresenter
 from ui.server_select import Ui_ServerSelectDialog
 
@@ -21,13 +19,11 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
     MAX_SERVER_NAME_LEN = MAX_SERVER_NAME_LEN
     MAX_NOTE_LEN = MAX_NOTE_LEN
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, service):
         super().__init__(parent)
         self.setupUi(self)
 
         # =========== презентер ===========
-        repo = ServerRepository(self.db)
-        service = ServerService(repo)
         self.presenter = ServerPresenter(self, service)
 
         # =========== UI ===========

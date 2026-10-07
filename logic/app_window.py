@@ -2,6 +2,16 @@
 from PyQt6.QtWidgets import QMainWindow, QStackedWidget
 
 from database.db_manager import DBManager
+from logic.repositories import (
+    ProfileRepository, ServerRepository,
+    ConfigRepository, CommandRepository,
+)
+from logic.services import (
+    ProfileService, ServerService,
+    ConfigService, EditorService,
+    ReferenceService,
+)
+
 from logic.page_profile import PageProfile
 from logic.page_server import PageServer
 from logic.page_main import PageMain
@@ -16,19 +26,38 @@ class AppWindow(QMainWindow):
         self.setWindowTitle("Aion.CfgStudio")
         self.resize(700, 700)
 
+        # ============= репозитории  =============
+        self.profile_repo = ProfileRepository(db)
+        self.server_repo = ServerRepository(db)
+        self.config_repo = ConfigRepository(db)
+        self.command_repo = CommandRepository(db)
+
+        # ============= сервисы =============
+        self.profile_service = ProfileService(self.profile_repo)
+        self.server_service = ServerService(self.server_repo)
+        self.config_service = ConfigService(
+            self.config_repo, self.command_repo
+        )
+        self.editor_service = EditorService(
+            self.config_repo, self.command_repo, self.config_service
+        )
+        self.reference_service = ReferenceService(
+            self.profile_repo, self.server_repo, self.config_repo
+        )
+
+        # ============= UI =============
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
 
         self.current_profile_id = None
         self.current_server_id = None
         self.current_config_id = None
-        self._previous_page = None
 
-        self.page_profile = PageProfile(self)
-        self.page_server = PageServer(self)
-        self.page_main = PageMain(self)
-        self.page_editor = PageEditor(self)
-        self.page_video = PageVideo(self)
+        self.page_profile = PageProfile(self, self.profile_service)
+        self.page_server = PageServer(self, self.server_service)
+        self.page_main = PageMain(self, self.config_service)
+        self.page_editor = PageEditor(self, self.editor_service)
+        self.page_video = PageVideo(self, self.command_repo)
 
         for page in (self.page_profile, self.page_server,
                      self.page_main, self.page_editor, self.page_video):

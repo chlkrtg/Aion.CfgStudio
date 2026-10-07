@@ -9,10 +9,6 @@ from logic.base_page import BasePage
 from logic.context_menu import build_context_menu
 from logic.shortcuts import bind_shortcuts, FOCUSED
 from logic.constants import MAX_CONFIG_NAME_LEN
-from logic.repositories import (
-    ConfigRepository, CommandRepository,
-)
-from logic.services import ConfigService
 from logic.presenters import MainPresenter
 from ui.main_window import Ui_MainWindow
 
@@ -22,14 +18,11 @@ class PageMain(BasePage, Ui_MainWindow):
     # константы доступны презентеру через view.MAX_*
     MAX_CONFIG_NAME_LEN = MAX_CONFIG_NAME_LEN
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, service):
         super().__init__(parent)
         self.setupUi(self)
 
         # =============== презентер ===============
-        config_repo = ConfigRepository(self.db)
-        command_repo = CommandRepository(self.db)
-        service = ConfigService(config_repo, command_repo)
         self.presenter = MainPresenter(self, service)
 
         # =============== UI ===============

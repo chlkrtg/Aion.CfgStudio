@@ -12,19 +12,17 @@ from PyQt6.QtWidgets import (
 
 from logic.base_page import BasePage
 from logic.shortcuts import bind_shortcut, bind_shortcuts, WITH_CHILDREN
-from logic.repositories import CommandRepository
 from logic.presenters import VideoPresenter
 from ui.video_help import Ui_VideoHelpDialog
 
 
 class PageVideo(BasePage, Ui_VideoHelpDialog):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, command_repo):
         super().__init__(parent)
         self.setupUi(self)
 
         # ================== презентер ==================
-        command_repo = CommandRepository(self.db)
         self.presenter = VideoPresenter(self, command_repo)
         self.presenter.init_player()
 

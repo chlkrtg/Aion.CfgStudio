@@ -9,8 +9,6 @@ from logic.base_page import BasePage
 from logic.context_menu import build_context_menu
 from logic.shortcuts import bind_shortcuts, FOCUSED
 from logic.constants import MAX_PROFILE_NAME_LEN, MAX_DESCRIPTION_LEN
-from logic.repositories import ProfileRepository
-from logic.services import ProfileService
 from logic.presenters import ProfilePresenter
 from ui.profile_select import Ui_ProfileSelectDialog
 
@@ -21,13 +19,11 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
     MAX_PROFILE_NAME_LEN = MAX_PROFILE_NAME_LEN
     MAX_DESCRIPTION_LEN = MAX_DESCRIPTION_LEN
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, service):
         super().__init__(parent)
         self.setupUi(self)
 
         # =========== презентер ===========
-        repo = ProfileRepository(self.db)
-        service = ProfileService(repo)
         self.presenter = ProfilePresenter(self, service)
 
         # =========== UI ===========

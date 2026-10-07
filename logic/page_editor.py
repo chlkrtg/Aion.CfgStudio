@@ -10,9 +10,7 @@ from PyQt6.QtWidgets import (
 
 from logic.base_page import BasePage
 from logic.constants import MAX_CONFIG_NAME_LEN
-from logic.repositories import ConfigRepository, CommandRepository
 from logic.value_delegate import ValueDelegate
-from logic.services import ConfigService, EditorService
 from logic.presenters import EditorPresenter
 from ui.command_editor import Ui_CommandEditorDialog
 
@@ -21,17 +19,11 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
 
     MAX_CONFIG_NAME_LEN = MAX_CONFIG_NAME_LEN
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, service):
         super().__init__(parent)
         self.setupUi(self)
 
         # ================== презентер ==================
-        config_repo = ConfigRepository(self.db)
-        command_repo = CommandRepository(self.db)
-        config_service = ConfigService(config_repo, command_repo)
-        service = EditorService(
-            config_repo, command_repo, config_service
-        )
         self.presenter = EditorPresenter(self, service)
 
         # ================== UI ==================

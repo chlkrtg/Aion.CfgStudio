@@ -101,3 +101,10 @@ class ServerService:
                 f"Имя слишком длинное (макс. {MAX_SERVER_NAME_LEN})."
             )
         return name
+
+    def get_profile_info(self, profile_id: int):
+        """Возвращает профиль для отображения (имя и т.п.).
+
+        Нужен презентеру, чтобы показать заголовок «Профиль: X».
+        """
+        return self.repo.db.get_profile(profile_id)
