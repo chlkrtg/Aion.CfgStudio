@@ -411,7 +411,8 @@ class EditorPresenter(BasePresenter):
 
         Обрабатываем два случая:
           1. Изменился чекбокс команды → обновить групповой чекбокс.
-          2. Изменился групповой чекбокс → отметить/снять все видимые в группе.
+          2. Изменился групповой чекбокс → отметить/снять все видимые
+             в группе И активировать/деактивировать их ячейки значений.
         """
         if item.column() != 0:
             return
@@ -427,19 +428,28 @@ class EditorPresenter(BasePresenter):
             code = marker[6:]
             state = item.checkState()
 
-            # блокируем сигналы, чтобы не сработал itemChanged на командах
             t.blockSignals(True)
-            if state == Qt.CheckState.Checked:
-                for r in self._group_rows.get(code, []):
-                    chk_item = t.item(r, 0)
-                    if chk_item is not None:
-                        chk_item.setCheckState(Qt.CheckState.Checked)
-            elif state == Qt.CheckState.Unchecked:
-                for r in self._group_rows.get(code, []):
-                    chk_item = t.item(r, 0)
-                    if chk_item is not None:
-                        chk_item.setCheckState(Qt.CheckState.Unchecked)
+            rows = self._group_rows.get(code, [])
+            target_checked = (state == Qt.CheckState.Checked)
+            target_unchecked = (state == Qt.CheckState.Unchecked)
+
+            for r in rows:
+                chk_item = t.item(r, 0)
+                if chk_item is None:
+                    continue
+                if target_checked:
+                    chk_item.setCheckState(Qt.CheckState.Checked)
+                elif target_unchecked:
+                    chk_item.setCheckState(Qt.CheckState.Unchecked)
             t.blockSignals(False)
+
+            # активировать / деактивировать ячейки значений
+            for r in rows:
+                chk_item = t.item(r, 0)
+                if chk_item is None:
+                    continue
+                checked = (chk_item.checkState() == Qt.CheckState.Checked)
+                self.view.set_value_enabled(r, checked)
 
             self._update_group_checks()
             return
@@ -447,11 +457,8 @@ class EditorPresenter(BasePresenter):
         # 2. чекбокс команды
         if isinstance(marker, str) and marker.startswith("CMD:"):
             row = t.row(item)
-            # включить/выключить ячейку значения
             checked = (item.checkState() == Qt.CheckState.Checked)
             self.view.set_value_enabled(row, checked)
-
-            # обновить групповой чекбокс
             self._update_group_checks()
             return
 
