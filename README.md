@@ -105,9 +105,7 @@ View -> Presenter → Service -> Repository -> DBManager
 
 ### Вариант 1 - готовая сборка
 
-1. Скачай `AionCfgStudio_Setup_v1.1.exe` из [Releases](https://github.com/chlkrtg/Aion.CfgStudio/releases).
-2. Запусти установщик.
-3. Ярлык появится в меню "Пуск".
+Скачай инсталлятор `AionCfgStudio_Setup_v1.1.exe` или портативную версию `AionCfgStudio.rar` из [Releases](https://github.com/chlkrtg/Aion.CfgStudio/releases/tag/v1.1).
 
 Требования: Windows 10/11.
 
