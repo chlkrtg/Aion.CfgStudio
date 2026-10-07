@@ -58,9 +58,7 @@
 
 ### Вариант 1 - готовая сборка
 
-1. Скачайте `AionCfgStudio_Setup_v1.0.exe` из [Releases](https://github.com/chlkrtg/Aion.CfgStudio/releases/tag/v1.0).
-2. Запустите установщик.
-3. Ярлык появится в меню "Пуск".
+Скачайте инсталлятор `AionCfgStudio_Setup_v1.0.exe` или портативную версию `AionCfgStudio.rar` из [Releases](https://github.com/chlkrtg/Aion.CfgStudio/releases/tag/v1.0).
 
 Требования: Windows 10/11.
 
