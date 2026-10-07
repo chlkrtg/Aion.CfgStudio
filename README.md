@@ -7,7 +7,7 @@
 
 Десктопное приложение для редактирования конфигурационных файлов клиента игры Aion. Написано на Python + PyQt6, использует SQLite, собирается в standalone `.exe`.
 
-![Скриншот главного окна](docs/screenshots/main.png)
+![Скриншот главного окна](docs/screenshots/intro.png)
 
 ## Возможности
 
@@ -27,6 +27,32 @@
 | Сборка | PyInstaller (`--onedir`) |
 | Установщик | Inno Setup 6 |
 | Тема | qdarktheme |
+
+## Скриншоты
+
+### Профили
+
+![Профили](docs/screenshots/profiles.png)
+
+### Серверы
+
+![Серверы](docs/screenshots/servers.png)
+
+### Дерево конфигураций
+
+![Дерево cfg](docs/screenshots/main.png)
+
+### Редактор команд
+
+![Редактор](docs/screenshots/editor.png)
+
+### История изменений
+
+![История](docs/screenshots/logs.png)
+
+### Видео-плеер
+
+![Плеер](docs/screenshots/player.png)
 
 ## Установка
 
