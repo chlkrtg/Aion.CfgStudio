@@ -5,7 +5,7 @@
 [![PyQt6](https://img.shields.io/badge/PyQt6-6.11-green.svg)](https://riverbankcomputing.com/software/pyqt/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-lightgrey.svg)]()
 
-Десктопное приложение для редактирования конфигурационных файлов клиента игры Aion. Написано на Python + PyQt6, использует SQLite, собирается в standalone `.exe`. Демонстрация работы приложения доступна по [ссылке](https://youtu.be/TK2jVAArRhM)
+Десктопное приложение для редактирования конфигурационных файлов клиента игры Aion. Написано на Python + PyQt6, использует SQLite, собирается в standalone `.exe`. Демонстрация работы приложения доступна по [ссылке](https://youtu.be/TK2jVAArRhM).
 
 ![Скриншот главного окна](docs/screenshots/intro.png)
 
