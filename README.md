@@ -5,7 +5,9 @@
 [![PyQt6](https://img.shields.io/badge/PyQt6-6.11-green.svg)](https://riverbankcomputing.com/software/pyqt/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-lightgrey.svg)]()
 
-Десктопное приложение для редактирования конфигурационных файлов клиента игры Aion. Написано на Python + PyQt6, использует SQLite, собирается в standalone `.exe`. Демонстрация работы приложения доступна по [ссылке](https://youtu.be/TK2jVAArRhM).
+Десктопное приложение для редактирования конфигурационных файлов клиента игры Aion. Написано на Python + PyQt6, использует SQLite, собирается в standalone `.exe`. 
+
+Демонстрация работы приложения доступна по [ссылке](https://youtu.be/TK2jVAArRhM).
 
 ![Скриншот главного окна](docs/screenshots/intro.png)
 
@@ -87,7 +89,7 @@ python main.py
 
 ### Видео-руководство
 
-В репозитории видео **не хранится** (слишком большое). Оно поставляется **вместе с установщиком** из раздела [Releases](https://github.com/chlkrtg/Aion.CfgStudio/releases).
+В репозитории видео **не хранится** (слишком большое). Оно поставляется **вместе с установщиком** из раздела [Releases](https://github.com/chlkrtg/Aion.CfgStudio/releases/tag/v1.0).
 
 **Если вы собираете из исходников** - положите `tutorial.mp4` в папку `media/`. Без него приложение работает, но кнопка **F1** покажет "видео не найдено".
 
@@ -202,7 +204,10 @@ Aion.CfgEditor/
 ├── docs/                       # документация
 │   └── screenshots/
 │       ├── editor.png
+│       ├── servers.png
+│       ├── profiles.png
 │       ├── main.png
+│       ├── logs.png
 │       └── player.png
 ├── installer/                  # установщик
 │   └── AionCfgStudio.iss       # Inno Setup
@@ -272,13 +277,13 @@ Aion.CfgEditor/
 
 ### Ключевые ограничения
 
-Profiles.name: UNIQUE (нельзя два профиля с одинаковым именем).
+**Profiles.name**: UNIQUE (нельзя два профиля с одинаковым именем).
 
-Servers (profile_id, name): UNIQUE (в одном профиле два сервера с одним именем невозможны, в разных - допустимо).
+**Servers (profile_id, name)**: UNIQUE (в одном профиле два сервера с одним именем невозможны, в разных - допустимо).
 
-Commands.key_name: UNIQUE (каждая команда уникальна).
+**Commands.key_name**: UNIQUE (каждая команда уникальна).
 
-ConfigValues (config_id, command_id): UNIQUE (одна команда в одном cfg встречается один раз; используется для ON CONFLICT DO UPDATE).
+**ConfigValues (config_id, command_id)**: UNIQUE (одна команда в одном cfg встречается один раз; используется для ON CONFLICT DO UPDATE).
 
 ### Каскадное удаление
 
@@ -286,7 +291,7 @@ ConfigValues (config_id, command_id): UNIQUE (одна команда в одн�
 
 Один SQL-запрос `DELETE FROM Profiles WHERE id = ?;` – и вся ветка данных уходит автоматически.
 
-Для работы каскадов в db_manager._conn обязательно включён **PRAGMA foreign_keys = ON**, без него SQLite игнорирует внешние ключи.
+Для работы каскадов в `db_manager._conn` обязательно включён `PRAGMA foreign_keys = ON`, без него SQLite игнорирует внешние ключи.
 
 ### Первый запуск
 
@@ -311,7 +316,7 @@ MIT - см. [LICENSE](LICENSE).
 
 - [xan105/Aion-open-system-cfg-editor](https://github.com/xan105/Aion-open-system-cfg-editor) - алгоритм XOR-деобфускации.
 - [Silero TTS](https://github.com/snakers4/silero-models) - озвучка видео-руководства.
-- [qdarktheme](https://github.com/5yutan5/PyQtDarkTheme) - тёмная тема.
+- [qdarktheme](https://github.com/5yutan5/PyQtDarkTheme) - тёмная тема приложения.
 
 ## Дисклеймер
 
