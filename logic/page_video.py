@@ -119,8 +119,10 @@ class PageVideo(BasePage, Ui_VideoHelpDialog):
     def on_enter(self):
         self.presenter.on_enter()
 
-    def on_leave(self):
+    def on_leave(self) -> bool:
         self.presenter.on_leave()
+
+        return True
 
     # ============== UI-хелперы (зовёт презентер) ==============
 

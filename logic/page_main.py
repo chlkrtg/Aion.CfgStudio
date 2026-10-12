@@ -66,6 +66,8 @@ class PageMain(BasePage, Ui_MainWindow):
         self.btnDeleteConfig.clicked.connect(self.presenter.delete_config)
         self.btnShowLogs.clicked.connect(self.presenter.show_logs)
         self.btnRenameConfig.clicked.connect(self.presenter.rename_config)
+        self.btnSavePreview.clicked.connect(self.presenter.save_preview)
+        self.btnRevertPreview.clicked.connect(self.presenter.revert_preview)
 
         self.treeConfigs.itemSelectionChanged.connect(
             self.presenter.on_selection
@@ -107,8 +109,8 @@ class PageMain(BasePage, Ui_MainWindow):
     def on_enter(self):
         self.presenter.on_enter()
 
-    def on_leave(self):
-        self.presenter.on_leave()
+    def on_leave(self) -> bool:
+        return self.presenter.on_leave()
 
     # ============== UI-хелперы (зовёт презентер) ==============
 

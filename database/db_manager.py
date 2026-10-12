@@ -293,6 +293,14 @@ class DBManager:
                 (config_id,),
             ).fetchall()
 
+    def clear_config_values(self, config_id: int):
+        """Удаляет все значения команд в cfg."""
+        with self._conn() as conn:
+            conn.execute(
+                "DELETE FROM ConfigValues WHERE config_id = ?",
+                (config_id,),
+            )
+
     def save_config_values_bulk(self, config_id: int, values: list[tuple]):
         """Сохраняет много значений разом.
                 values: список кортежей (command_id, use_custom, custom_value)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>739</width>
-    <height>370</height>
+    <width>742</width>
+    <height>405</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -155,7 +155,21 @@
       <item>
        <widget class="QPlainTextEdit" name="editPreview">
         <property name="readOnly">
-         <bool>true</bool>
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnSavePreview">
+        <property name="text">
+         <string>Сохранить</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnRevertPreview">
+        <property name="text">
+         <string>Отменить</string>
         </property>
        </widget>
       </item>
@@ -217,9 +231,9 @@
    </property>
   </action>
   <action name="actionChangeServer">
-    <property name="text">
-     <string>Сменить сервер...</string>
-    </property>
+   <property name="text">
+    <string>Сменить сервер...</string>
+   </property>
   </action>
   <action name="actionVideoHelp">
    <property name="text">

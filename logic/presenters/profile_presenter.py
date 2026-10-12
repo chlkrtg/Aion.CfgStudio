@@ -23,9 +23,11 @@ class ProfilePresenter(BasePresenter):
         """Загрузка списка при входе."""
         self.refresh()
 
-    def on_leave(self):
+    def on_leave(self) -> bool:
         """Сохранение описания при уходе."""
         self.save_description()
+
+        return True
 
     # ============ загрузка ============
 

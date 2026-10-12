@@ -99,10 +99,15 @@ class AppWindow(QMainWindow):
     # ========== навигация ==========
 
     def _switch(self, page):
-        """Вызов функций при смене страниц"""
+        """Вызов функций при смене страниц.
+
+        Если on_leave вернул False — навигация отменяется.
+        """
         old = self.stack.currentWidget()
         if old and hasattr(old, "on_leave"):
-            old.on_leave()
+            result = old.on_leave()
+            if result is not True:
+                return
 
         self.stack.setCurrentWidget(page)
 
@@ -150,5 +155,8 @@ class AppWindow(QMainWindow):
     def closeEvent(self, event):
         page = self.stack.currentWidget()
         if page and hasattr(page, "on_leave"):
-            page.on_leave()
+            result = page.on_leave()
+            if result is not True:
+                event.ignore()
+                return
         super().closeEvent(event)

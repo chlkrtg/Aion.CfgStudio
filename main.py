@@ -133,6 +133,15 @@ def main() -> int:
             QLabel { font-size: 12pt; }
             QListWidget { font-size: 12pt; }
             QLineEdit { font-size: 12pt; }
+            QPushButton:hover {
+                background-color: #3a3a4a;
+                border: 1px solid #d4a95a;
+            }
+        
+            QPushButton:pressed {
+                background-color: #d4a95a;
+                color: #1e2026;
+            }
         """,
     )
 

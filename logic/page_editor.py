@@ -113,10 +113,12 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
     def on_enter(self):
         self.presenter.on_enter()
 
-    def on_leave(self):
+    def on_leave(self) -> bool:
         self.tableCommands.clearSelection()
         self.tableCommands.setCurrentCell(-1, -1)
         self.presenter.on_leave()
+
+        return True
 
     # ============== UI-хелперы (зовёт презентер) ==============
 

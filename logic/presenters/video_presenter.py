@@ -54,9 +54,11 @@ class VideoPresenter(BasePresenter):
         self.load_chapters()
         self.load_video_if_exists()
 
-    def on_leave(self):
+    def on_leave(self) -> bool:
         if self.player is not None:
             self.player.pause()
+
+        return True
 
     # ============ главы ============
 

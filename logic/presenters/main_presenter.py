@@ -38,8 +38,38 @@ class MainPresenter(BasePresenter):
         self.refresh()
 
     def on_leave(self):
+        # проверка несохранённых правок
+        if self._has_unsaved_changes():
+            ans = QMessageBox.question(
+                self.view, "Несохранённые изменения",
+                "В превью есть несохранённые правки.\n"
+                "Сохранить перед выходом?",
+                QMessageBox.StandardButton.Yes
+                | QMessageBox.StandardButton.No
+                | QMessageBox.StandardButton.Cancel,
+            )
+            if ans == QMessageBox.StandardButton.Cancel:
+                return False
+            if ans == QMessageBox.StandardButton.Yes:
+                self.save_preview()
+
         self.view.clear_preview()
         self.view.treeConfigs.clearSelection()
+        return True
+
+    def _has_unsaved_changes(self) -> bool:
+        """Проверяет, отличается ли текст превью от БД."""
+        view = self.view
+        item = view.treeConfigs.currentItem()
+        if item is None:
+            return False
+
+        config_id = item.data(0, Qt.ItemDataRole.UserRole)
+        cfg = self.service.repo.get(config_id)
+        if not cfg:
+            return False
+
+        return view.editPreview.toPlainText() != (cfg["content"] or "")
 
     # ============= загрузка =============
 
@@ -382,3 +412,76 @@ class MainPresenter(BasePresenter):
         if self.profile_id is None:
             return
         self.view.window().go_server(self.profile_id)
+
+    def save_preview(self):
+        """Сохраняет текст из окна предпросмотра в cfg.
+
+        Команды, которых нет в БД, отсекаются.
+        Дубликаты схлопываются в одно вхождение.
+        """
+        view = self.view
+        item = view.treeConfigs.currentItem()
+        if item is None:
+            QMessageBox.warning(
+                view, "Ошибка",
+                "Не выбран конфигурационный файл."
+            )
+            return
+
+        config_id = item.data(0, Qt.ItemDataRole.UserRole)
+        text = view.editPreview.toPlainText()
+
+        if not text.strip():
+            ans = QMessageBox.question(
+                view, "Очистить cfg?",
+                "Вы уверены, что хотите удалить всё содержимое cfg?",
+                QMessageBox.StandardButton.Yes
+                | QMessageBox.StandardButton.No,
+            )
+            if ans != QMessageBox.StandardButton.Yes:
+                return
+
+        try:
+            unknown, duplicates = self.service.save_content(
+                config_id, text
+            )
+        except ValueError as exc:
+            QMessageBox.warning(view, "Ошибка", str(exc))
+            return
+
+        # формируем сообщение
+        msgs = []
+        if unknown:
+            msgs.append(
+                f"Неизвестных команд (нет в БД): {unknown}"
+            )
+        if duplicates:
+            msgs.append(
+                f"Дубликатов удалено: {duplicates}"
+            )
+
+        if msgs:
+            QMessageBox.information(
+                view, "Сохранено",
+                "Конфигурация сохранена.\n\n" + "\n".join(msgs)
+            )
+        else:
+            QMessageBox.information(
+                view, "Готово", "Конфигурация сохранена."
+            )
+
+        self.refresh(select_id=config_id)
+
+    def revert_preview(self):
+        """Сбрасывает правки в превью, возвращает текст из БД."""
+        view = self.view
+        item = view.treeConfigs.currentItem()
+        if item is None:
+            return
+
+        config_id = item.data(0, Qt.ItemDataRole.UserRole)
+        cfg = self.service.repo.get(config_id)
+        if not cfg:
+            return
+
+        view.editPreview.setPlainText(cfg["content"] or "")

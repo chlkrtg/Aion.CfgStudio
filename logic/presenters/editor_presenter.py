@@ -47,7 +47,7 @@ class EditorPresenter(BasePresenter):
     def on_enter(self):
         self.refresh()
 
-    def on_leave(self):
+    def on_leave(self) -> bool:
         """Автосохранение при уходе.
 
         - существующий cfg - сохраняем ConfigValues + пишем логи;
@@ -85,6 +85,8 @@ class EditorPresenter(BasePresenter):
             )
             if ans == QMessageBox.StandardButton.Yes:
                 self.apply_silent()
+
+        return True
 
     # ============ refresh ============
 

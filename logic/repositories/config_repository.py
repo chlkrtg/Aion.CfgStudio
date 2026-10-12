@@ -59,3 +59,7 @@ class ConfigRepository:
     def log_change(self, config_id: int, key: str, old: str, new: str):
         """Запись в историю изменений."""
         self.db.log_change(config_id, key, old, new)
+
+    def clear_values(self, config_id: int):
+        """Удаляет все ConfigValues для cfg."""
+        self.db.clear_config_values(config_id)

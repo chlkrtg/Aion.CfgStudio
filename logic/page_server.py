@@ -99,10 +99,12 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
     def on_enter(self):
         self.presenter.on_enter()
 
-    def on_leave(self):
+    def on_leave(self) -> bool:
         if self._save_timer.isActive():
             self._save_timer.stop()
         self.presenter.on_leave()
+
+        return True
 
     # ============== UI-хелперы (зовёт презентер) ==============
 

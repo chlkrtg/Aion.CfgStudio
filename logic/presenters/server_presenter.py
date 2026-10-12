@@ -28,8 +28,10 @@ class ServerPresenter(BasePresenter):
     def on_enter(self):
         self.refresh()
 
-    def on_leave(self):
+    def on_leave(self) -> bool:
         self.save_note()
+
+        return True
 
     # ============ загрузка ============
 
