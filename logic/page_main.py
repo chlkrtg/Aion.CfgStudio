@@ -37,18 +37,9 @@ class PageMain(BasePage, Ui_MainWindow):
 
         self._connect_signals()
 
-        # хоткеи через реестр (пока без override из БД, дефолты)
-        bind_actions(self, {
-            "global.video": lambda: self.window().go_video(),
-            "main.open": self.presenter.open_selected,
-            "main.create": lambda: self.window().go_editor(None),
-            "main.import": self.presenter.import_config,
-            "main.export": self.presenter.export_config,
-            "main.rename": self.presenter.rename_config,
-            "main.delete": self.presenter.delete_config,
-            "main.save": self.presenter.save_preview,
-            "main.quit": self.presenter.change_server,
-        }, keys=self.window().shortcut_service.keys_for_scope("main"))
+        # хоткеи через реестр (см. rebind_shortcuts)
+        self._shortcut_handles: dict[str, list] = {}
+        self.rebind_shortcuts()
 
     # ============== сигналы ==============
 
@@ -94,6 +85,32 @@ class PageMain(BasePage, Ui_MainWindow):
             lambda: self.window().go_editor(None)
         )
 
+    def _bindings(self) -> dict:
+        return {
+            "global.video": lambda: self.window().go_video(),
+            "main.open":    self.presenter.open_selected,
+            "main.create":  lambda: self.window().go_editor(None),
+            "main.import":  self.presenter.import_config,
+            "main.export":  self.presenter.export_config,
+            "main.rename":  self.presenter.rename_config,
+            "main.delete":  self.presenter.delete_config,
+            "main.save":    self.presenter.save_preview,
+            "main.quit":    self.presenter.change_server,
+        }
+
+    def rebind_shortcuts(self):
+        for handles in self._shortcut_handles.values():
+            for sc in handles:
+                sc.setEnabled(False)
+                sc.deleteLater()
+        self._shortcut_handles.clear()
+
+        self._shortcut_handles = bind_actions(
+            self,
+            self._bindings(),
+            keys=self.window().shortcut_service.keys_for_scope("main"),
+        )
+
     # ============== контекст ==============
 
     def set_context(self, profile_id: int, server_id: int):
@@ -133,6 +150,7 @@ class PageMain(BasePage, Ui_MainWindow):
     # ============== меню ==============
 
     def build_menus(self) -> dict:
+        win = self.window()
         return {
             "Файл": [
                 self.actionNewConfig,
@@ -143,6 +161,8 @@ class PageMain(BasePage, Ui_MainWindow):
                 self.actionChangeServer,
             ],
             "Помощь": [
+                win.actionShortcuts,
+                None,
                 self.actionVideoHelp,
                 self.actionAbout,
             ],

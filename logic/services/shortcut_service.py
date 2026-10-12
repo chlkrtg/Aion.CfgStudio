@@ -52,14 +52,44 @@ class ShortcutService:
         """Сохраняет override.
 
         Если key совпадает с дефолтом, override удаляется.
+
+        Raises:
+            ValueError: клавиша конфликтует с другим действием
+                        в том же scope (включая GLOBAL и дефолты).
         """
         action = ACTIONS[action_id]
+
+        # 0. Валидация: пусто или только модификаторы — не хоткей
+        if not key or self._is_modifier_only(key):
+            raise ValueError(
+                f"«{key}» — не является комбинацией клавиш."
+            )
+
+        # 1. Совпадает с дефолтом - просто снимаем override.
         if key == action.default_key:
             self.repo.delete(action_id)
             self._overrides.pop(action_id, None)
-        else:
-            self.repo.upsert(action_id, key)
-            self._overrides[action_id] = key
+            return
+
+        # 2. Проверяем конфликт
+        conflict = self.find_conflict(action_id, key)
+        if conflict is not None:
+            other = ACTIONS[conflict]
+            raise ValueError(
+                f"Клавиша «{key}» уже занята действием "
+                f"«{other.title}» ({other.id})."
+            )
+
+        # 3. Сохраняем override
+        self.repo.upsert(action_id, key)
+        self._overrides[action_id] = key
+
+    @staticmethod
+    def _is_modifier_only(key: str) -> bool:
+        """True, если key - только модификаторы (Shift, Ctrl+Shift, ...)."""
+        parts = [p.strip() for p in key.split("+")]
+        modifiers = {"Shift", "Ctrl", "Alt", "Meta"}
+        return all(p in modifiers for p in parts)
 
     def reset_key(self, action_id: str):
         """Сбрасывает одно действие к дефолту."""
@@ -95,3 +125,7 @@ class ShortcutService:
         if a == Scope.GLOBAL or b == Scope.GLOBAL:
             return True
         return a == b
+
+    def has_override(self, action_id: str) -> bool:
+        """Есть ли у действия override (не дефолт)."""
+        return action_id in self._overrides

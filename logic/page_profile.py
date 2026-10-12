@@ -48,15 +48,9 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
         self._connect_signals()
 
-        # хоткеи
-        bind_actions(self, {
-            "global.video": lambda: self.window().go_video(),
-            "profile.enter": self.presenter.enter,
-            "profile.create": self.presenter.create,
-            "profile.rename": self.presenter.rename,
-            "profile.delete": self.presenter.delete,
-            "profile.quit": lambda: self.window().close(),
-        }, keys=self.window().shortcut_service.keys_for_scope("profile"))
+        # хоткеи (см. rebind_shortcuts)
+        self._shortcut_handles: dict[str, list] = {}
+        self.rebind_shortcuts()
 
     # ============== сигналы ==============
 
@@ -77,6 +71,31 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
         )
         self.btnVideoHelp.clicked.connect(
             lambda: self.window().go_video()
+        )
+
+    def _bindings(self) -> dict:
+        """Действия страницы — action_id → slot."""
+        return {
+            "global.video":   lambda: self.window().go_video(),
+            "profile.enter":  self.presenter.enter,
+            "profile.create": self.presenter.create,
+            "profile.rename": self.presenter.rename,
+            "profile.delete": self.presenter.delete,
+            "profile.quit":   lambda: self.window().close(),
+        }
+
+    def rebind_shortcuts(self):
+        """Перевешивает хоткеи с актуальными override'ами."""
+        for handles in self._shortcut_handles.values():
+            for sc in handles:
+                sc.setEnabled(False)
+                sc.deleteLater()
+        self._shortcut_handles.clear()
+
+        self._shortcut_handles = bind_actions(
+            self,
+            self._bindings(),
+            keys=self.window().shortcut_service.keys_for_scope("profile"),
         )
 
     # ============== жизненный цикл ==============
@@ -150,3 +169,11 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
             ("Удалить (Delete)", self.presenter.delete),
         ])
         menu.exec(self.listProfiles.mapToGlobal(pos))
+
+    def build_menus(self) -> dict:
+        win = self.window()
+        return {
+            "Настройки": [
+                win.actionShortcuts,
+            ],
+        }

@@ -1,5 +1,6 @@
 """Единое окно с QStackedWidget. Переключает страницы."""
 import webbrowser
+from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QMainWindow, QStackedWidget
 
 from database.db_manager import DBManager
@@ -49,6 +50,12 @@ class AppWindow(QMainWindow):
             self.profile_repo, self.server_repo, self.config_repo
         )
         self.shortcut_service = ShortcutService(self.shortcut_repo)
+
+        # ============= действия окна =============
+        self.actionShortcuts = QAction("Горячие клавиши...", self)
+        self.actionShortcuts.triggered.connect(
+            self._open_shortcuts_editor
+        )
 
         # ============= UI =============
         self.stack = QStackedWidget()
@@ -136,6 +143,22 @@ class AppWindow(QMainWindow):
         self.current_config_id = config_id
         self.page_editor.set_context(config_id, self.current_server_id)
         self._switch(self.page_editor)
+
+    def _open_shortcuts_editor(self):
+        """Открывает модальный редактор хоткеев."""
+        from logic.shortcuts_editor import ShortcutsEditorDialog
+
+        dlg = ShortcutsEditorDialog(self, self.shortcut_service)
+        dlg.shortcuts_changed.connect(self.refresh_shortcuts)
+        dlg.exec()
+
+    def refresh_shortcuts(self):
+        for page in (self.page_profile, self.page_server,
+                     self.page_main, self.page_editor):
+            has = hasattr(page, "rebind_shortcuts")
+            print(f"  {type(page).__name__}: rebind={has}")
+            if has:
+                page.rebind_shortcuts()
 
     def go_video(self):
         # self._previous_page = self.stack.currentWidget() <- раскомментировать при возвращении плеера

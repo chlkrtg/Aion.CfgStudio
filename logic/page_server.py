@@ -53,15 +53,9 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
         self._connect_signals()
 
-        # хоткеи через реестр (пока без override из БД, дефолты)
-        bind_actions(self, {
-            "global.video": lambda: self.window().go_video(),
-            "server.enter": self.presenter.enter,
-            "server.create": self.presenter.create,
-            "server.rename": self.presenter.rename,
-            "server.delete": self.presenter.delete,
-            "server.quit": lambda: self.window().go_profile(),
-        }, keys=self.window().shortcut_service.keys_for_scope("server"))
+        # хоткеи через реестр (см. rebind_shortcuts)
+        self._shortcut_handles: dict[str, list] = {}
+        self.rebind_shortcuts()
 
     # ============== сигналы ==============
 
@@ -82,6 +76,29 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
         )
         self.btnCancel.clicked.connect(
             lambda: self.window().go_profile()
+        )
+
+    def _bindings(self) -> dict:
+        return {
+            "global.video":  lambda: self.window().go_video(),
+            "server.enter":  self.presenter.enter,
+            "server.create": self.presenter.create,
+            "server.rename": self.presenter.rename,
+            "server.delete": self.presenter.delete,
+            "server.quit":   lambda: self.window().go_profile(),
+        }
+
+    def rebind_shortcuts(self):
+        for handles in self._shortcut_handles.values():
+            for sc in handles:
+                sc.setEnabled(False)
+                sc.deleteLater()
+        self._shortcut_handles.clear()
+
+        self._shortcut_handles = bind_actions(
+            self,
+            self._bindings(),
+            keys=self.window().shortcut_service.keys_for_scope("server"),
         )
 
     # ============== жизненный цикл ==============
@@ -162,3 +179,11 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
             ("Удалить (Delete)", self.presenter.delete),
         ])
         menu.exec(self.listServers.mapToGlobal(pos))
+
+    def build_menus(self) -> dict:
+        win = self.window()
+        return {
+            "Настройки": [
+                win.actionShortcuts,
+            ],
+        }

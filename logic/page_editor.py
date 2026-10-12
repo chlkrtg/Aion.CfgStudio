@@ -29,8 +29,12 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
 
         # ================== UI ==================
         self._setup_table()
+        self._setup_table()
         self._connect_signals()
-        self._setup_shortcuts()
+
+        # хоткеи (см. rebind_shortcuts)
+        self._shortcut_handles: dict[str, list] = {}
+        self.rebind_shortcuts()
 
     # ============== настройка таблицы ==============
 
@@ -93,12 +97,24 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
             self.presenter.on_item_changed
         )
 
-    def _setup_shortcuts(self):
-        """Хоткеи через реестр (пока без override из БД — дефолты)."""
-        bind_actions(self, {
+    def _bindings(self) -> dict:
+        return {
             "global.video": lambda: self.window().go_video(),
             "editor.cancel": self.presenter.cancel,
-        }, keys=self.window().shortcut_service.keys_for_scope("editor"))
+        }
+
+    def rebind_shortcuts(self):
+        for handles in self._shortcut_handles.values():
+            for sc in handles:
+                sc.setEnabled(False)
+                sc.deleteLater()
+        self._shortcut_handles.clear()
+
+        self._shortcut_handles = bind_actions(
+            self,
+            self._bindings(),
+            keys=self.window().shortcut_service.keys_for_scope("editor"),
+        )
 
 
 
@@ -227,6 +243,8 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         m = win.page_main
         return {
             "Помощь": [
+                win.actionShortcuts,
+                None,
                 m.actionVideoHelp,
                 m.actionAbout,
             ],
