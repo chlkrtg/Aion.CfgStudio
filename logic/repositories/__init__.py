@@ -7,10 +7,12 @@ from logic.repositories.profile_repository import ProfileRepository
 from logic.repositories.server_repository import ServerRepository
 from logic.repositories.config_repository import ConfigRepository
 from logic.repositories.command_repository import CommandRepository
+from logic.repositories.shortcut_repository import ShortcutRepository
 
 __all__ = [
     "ProfileRepository",
     "ServerRepository",
     "ConfigRepository",
     "CommandRepository",
+    "ShortcutRepository",
 ]

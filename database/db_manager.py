@@ -341,6 +341,39 @@ class DBManager:
                 "SELECT * FROM VideoChapters ORDER BY timestamp_ms"
             ).fetchall()
 
+    # ==================== ХОТКЕИ ====================
+
+    def list_shortcuts(self):
+        """Все override'ы хоткеев: [{'action_id': ..., 'key': ...}, ...]."""
+        with self._conn() as conn:
+            return conn.execute(
+                "SELECT action_id, key FROM Shortcuts"
+            ).fetchall()
+
+    def upsert_shortcut(self, action_id: str, key: str):
+        """Сохраняет override хоткея (или обновляет существующий)."""
+        with self._conn() as conn:
+            conn.execute(
+                "INSERT INTO Shortcuts (action_id, key) VALUES (?, ?) "
+                "ON CONFLICT(action_id) DO UPDATE SET "
+                "key = excluded.key, "
+                "updated_at = CURRENT_TIMESTAMP",
+                (action_id, key),
+            )
+
+    def delete_shortcut(self, action_id: str):
+        """Сбрасывает override, действие вернётся к дефолту из реестра."""
+        with self._conn() as conn:
+            conn.execute(
+                "DELETE FROM Shortcuts WHERE action_id = ?",
+                (action_id,),
+            )
+
+    def delete_all_shortcuts(self):
+        """Удаляет все override'ы хоткеев."""
+        with self._conn() as conn:
+            conn.execute("DELETE FROM Shortcuts")
+
     # ==================== ДУБЛИРОВАНИЕ ====================
 
     def duplicate_config(self, config_id: int, new_name: str) -> int:

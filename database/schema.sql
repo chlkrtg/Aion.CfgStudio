@@ -123,3 +123,9 @@ INSERT OR IGNORE INTO VideoChapters (id, title, timestamp_ms, description) VALUE
 
 (8, 'Заключение', 196500,
  'Приятной настройки. Спасибо за выбор Aion.CfgStudio!');
+
+ CREATE TABLE IF NOT EXISTS Shortcuts (
+    action_id  TEXT PRIMARY KEY,
+    key        TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

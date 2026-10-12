@@ -8,6 +8,7 @@ from logic.services.server_service import ServerService
 from logic.services.config_service import ConfigService
 from logic.services.editor_service import EditorService
 from logic.services.reference_service import ReferenceService
+from logic.services.shortcut_service import ShortcutService
 
 __all__ = [
     "ProfileService",
@@ -15,4 +16,5 @@ __all__ = [
     "ConfigService",
     "EditorService",
     "ReferenceService",
+    "ShortcutService",
 ]
