@@ -3,13 +3,14 @@
 Вся логика - в EditorPresenter.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont, QShortcut, QKeySequence
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QTableWidgetItem, QHeaderView, QAbstractItemView
 )
 
 from logic.base_page import BasePage
 from logic.constants import MAX_CONFIG_NAME_LEN
+from logic.shortcuts import bind_actions
 from logic.value_delegate import ValueDelegate
 from logic.presenters import EditorPresenter
 from ui.command_editor import Ui_CommandEditorDialog
@@ -93,14 +94,13 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         )
 
     def _setup_shortcuts(self):
-        """Хоткеи, работающие на странице."""
-        QShortcut(
-            QKeySequence("F1"), self.listPrefixes
-        ).activated.connect(lambda: self.window().go_video())
+        """Хоткеи через реестр (пока без override из БД — дефолты)."""
+        bind_actions(self, {
+            "global.video": lambda: self.window().go_video(),
+            "editor.cancel": self.presenter.cancel,
+        }, keys={})
 
-        QShortcut(
-            QKeySequence("Ctrl+Q"), self.listPrefixes
-        ).activated.connect(self.presenter.cancel)
+
 
     # ============== контекст ==============
 

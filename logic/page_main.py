@@ -3,11 +3,10 @@
 Вся логика - в MainPresenter.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QShortcut, QKeySequence
 
 from logic.base_page import BasePage
 from logic.context_menu import build_context_menu
-from logic.shortcuts import bind_shortcuts, FOCUSED
+from logic.shortcuts import bind_actions
 from logic.constants import MAX_CONFIG_NAME_LEN
 from logic.presenters import MainPresenter
 from ui.main_window import Ui_MainWindow
@@ -38,21 +37,18 @@ class PageMain(BasePage, Ui_MainWindow):
 
         self._connect_signals()
 
-        # хоткеи
-        bind_shortcuts(self.treeConfigs, {
-            "F1": lambda: self.window().go_video(),
-            "F2": self.presenter.rename_config,
-            "Delete": self.presenter.delete_config,
-            "Ctrl+N": lambda: self.window().go_editor(None),
-            "Ctrl+O": self.presenter.import_config,
-            "Ctrl+S": self.presenter.export_config,
-            "Ctrl+E": self.presenter.open_selected,
-        }, FOCUSED)
-
-        # Ctrl+Q - назад к выбору сервера
-        QShortcut(QKeySequence("Ctrl+Q"), self).activated.connect(
-            self.presenter.change_server
-        )
+        # хоткеи через реестр (пока без override из БД, дефолты)
+        bind_actions(self, {
+            "global.video": lambda: self.window().go_video(),
+            "main.open": self.presenter.open_selected,
+            "main.create": lambda: self.window().go_editor(None),
+            "main.import": self.presenter.import_config,
+            "main.export": self.presenter.export_config,
+            "main.rename": self.presenter.rename_config,
+            "main.delete": self.presenter.delete_config,
+            "main.save": self.presenter.save_preview,
+            "main.quit": self.presenter.change_server,
+        }, keys={})
 
     # ============== сигналы ==============
 

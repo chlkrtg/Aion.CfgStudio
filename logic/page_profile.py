@@ -3,11 +3,10 @@
 Вся логика - в ProfilePresenter.
 """
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QShortcut, QKeySequence
 
 from logic.base_page import BasePage
 from logic.context_menu import build_context_menu
-from logic.shortcuts import bind_shortcuts, FOCUSED
+from logic.shortcuts import bind_actions
 from logic.constants import MAX_PROFILE_NAME_LEN, MAX_DESCRIPTION_LEN
 from logic.presenters import ProfilePresenter
 from ui.profile_select import Ui_ProfileSelectDialog
@@ -50,19 +49,14 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
         self._connect_signals()
 
         # хоткеи
-        bind_shortcuts(self.listProfiles, {
-            "F1": lambda: self.window().go_video(),
-            "F2": self.presenter.rename,
-            "Return": self.presenter.enter,
-            "Enter": self.presenter.enter,
-            "Ctrl+N": self.presenter.create,
-            "Delete": self.presenter.delete,
-        }, FOCUSED)
-
-        # Ctrl+Q на странице
-        QShortcut(QKeySequence("Ctrl+Q"), self).activated.connect(
-            lambda: self.window().close()
-        )
+        bind_actions(self, {
+            "global.video": lambda: self.window().go_video(),
+            "profile.enter": self.presenter.enter,
+            "profile.create": self.presenter.create,
+            "profile.rename": self.presenter.rename,
+            "profile.delete": self.presenter.delete,
+            "profile.quit": lambda: self.window().close(),
+        }, keys={})
 
     # ============== сигналы ==============
 

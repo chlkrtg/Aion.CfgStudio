@@ -3,11 +3,10 @@
 Вся логика - в ServerPresenter.
 """
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QShortcut, QKeySequence
 
 from logic.base_page import BasePage
 from logic.context_menu import build_context_menu
-from logic.shortcuts import bind_shortcuts, FOCUSED
+from logic.shortcuts import bind_actions
 from logic.constants import MAX_SERVER_NAME_LEN, MAX_NOTE_LEN
 from logic.presenters import ServerPresenter
 from ui.server_select import Ui_ServerSelectDialog
@@ -54,20 +53,15 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
         self._connect_signals()
 
-        # хоткеи
-        bind_shortcuts(self.listServers, {
-            "F1": lambda: self.window().go_video(),
-            "F2": self.presenter.rename,
-            "Return": self.presenter.enter,
-            "Enter": self.presenter.enter,
-            "Ctrl+N": self.presenter.create,
-            "Delete": self.presenter.delete,
-        }, FOCUSED)
-
-        # Ctrl+Q на странице - назад к выбору профиля
-        QShortcut(QKeySequence("Ctrl+Q"), self).activated.connect(
-            lambda: self.window().go_profile()
-        )
+        # хоткеи через реестр (пока без override из БД, дефолты)
+        bind_actions(self, {
+            "global.video": lambda: self.window().go_video(),
+            "server.enter": self.presenter.enter,
+            "server.create": self.presenter.create,
+            "server.rename": self.presenter.rename,
+            "server.delete": self.presenter.delete,
+            "server.quit": lambda: self.window().go_profile(),
+        }, keys={})
 
     # ============== сигналы ==============
 
