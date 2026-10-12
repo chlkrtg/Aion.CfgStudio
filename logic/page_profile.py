@@ -56,7 +56,7 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
             "profile.rename": self.presenter.rename,
             "profile.delete": self.presenter.delete,
             "profile.quit": lambda: self.window().close(),
-        }, keys={})
+        }, keys=self.window().shortcut_service.keys_for_scope("profile"))
 
     # ============== сигналы ==============
 

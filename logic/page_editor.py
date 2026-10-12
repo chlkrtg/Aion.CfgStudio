@@ -98,7 +98,7 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         bind_actions(self, {
             "global.video": lambda: self.window().go_video(),
             "editor.cancel": self.presenter.cancel,
-        }, keys={})
+        }, keys=self.window().shortcut_service.keys_for_scope("editor"))
 
 
 

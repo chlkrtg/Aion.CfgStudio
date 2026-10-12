@@ -61,7 +61,7 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
             "server.rename": self.presenter.rename,
             "server.delete": self.presenter.delete,
             "server.quit": lambda: self.window().go_profile(),
-        }, keys={})
+        }, keys=self.window().shortcut_service.keys_for_scope("server"))
 
     # ============== сигналы ==============
 

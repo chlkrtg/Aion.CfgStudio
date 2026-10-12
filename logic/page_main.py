@@ -48,7 +48,7 @@ class PageMain(BasePage, Ui_MainWindow):
             "main.delete": self.presenter.delete_config,
             "main.save": self.presenter.save_preview,
             "main.quit": self.presenter.change_server,
-        }, keys={})
+        }, keys=self.window().shortcut_service.keys_for_scope("main"))
 
     # ============== сигналы ==============
 

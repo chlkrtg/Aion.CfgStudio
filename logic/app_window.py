@@ -6,11 +6,12 @@ from database.db_manager import DBManager
 from logic.repositories import (
     ProfileRepository, ServerRepository,
     ConfigRepository, CommandRepository,
+    ShortcutRepository,
 )
 from logic.services import (
     ProfileService, ServerService,
     ConfigService, EditorService,
-    ReferenceService,
+    ReferenceService, ShortcutService,
 )
 
 from logic.page_profile import PageProfile
@@ -33,6 +34,7 @@ class AppWindow(QMainWindow):
         self.server_repo = ServerRepository(db)
         self.config_repo = ConfigRepository(db)
         self.command_repo = CommandRepository(db)
+        self.shortcut_repo = ShortcutRepository(db)
 
         # ============= сервисы =============
         self.profile_service = ProfileService(self.profile_repo)
@@ -46,6 +48,7 @@ class AppWindow(QMainWindow):
         self.reference_service = ReferenceService(
             self.profile_repo, self.server_repo, self.config_repo
         )
+        self.shortcut_service = ShortcutService(self.shortcut_repo)
 
         # ============= UI =============
         self.stack = QStackedWidget()
