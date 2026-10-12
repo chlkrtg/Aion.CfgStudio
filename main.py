@@ -133,14 +133,24 @@ def main() -> int:
             QLabel { font-size: 12pt; }
             QListWidget { font-size: 12pt; }
             QLineEdit { font-size: 12pt; }
-            QPushButton:hover {
-                background-color: #3a3a4a;
-                border: 1px solid #d4a95a;
-            }
         
             QPushButton:pressed {
                 background-color: #d4a95a;
                 color: #1e2026;
+            }
+            
+            QComboBox:hover,
+            QLineEdit:hover,
+            QPlainTextEdit:hover,
+            QTextEdit:hover {
+                border: 1px solid #5a5a6a;
+            }
+            
+            QComboBox:focus,
+            QLineEdit:focus,
+            QPlainTextEdit:focus,
+            QTextEdit:focus {
+                border: 1px solid #d4a95a;
             }
         """,
     )

@@ -11,6 +11,21 @@ class BasePage(QWidget):
         """Доступ к БД через родительское окно."""
         return self.window().db
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # плавный hover для всех кнопок (вызывается после setupUi наследника)
+        # ВАЖНО: вызываем через QTimer.singleShot(0, ...), чтобы кнопки уже были
+        # созданы в setupUi дочерней страницы
+        from PyQt6.QtCore import QTimer
+        QTimer.singleShot(0, lambda: self._install_hover())
+        # или сразу, если наследник вызывает super().__init__ ПОСЛЕ setupUi
+        # (у тебя setupUi вызывается в наследнике, поэтому используем QTimer)
+
+    def _install_hover(self):
+        """Устанавливает hover-анимации на все кнопки страницы."""
+        from logic.widgets.hover_helpers import install_hover_for_all
+        install_hover_for_all(self)
+
     # ==================== Жизненный цикл ====================
 
     def on_enter(self):

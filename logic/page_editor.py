@@ -114,9 +114,14 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         self.presenter.on_enter()
 
     def on_leave(self) -> bool:
+        # сначала спрашиваем презентер (диалог сохранения)
+        result = self.presenter.on_leave()
+        if result is not True:
+            return False  # отмена: не чистим UI и не уходим
+
+        # только если уходим, сбрасываем выделение
         self.tableCommands.clearSelection()
         self.tableCommands.setCurrentCell(-1, -1)
-        self.presenter.on_leave()
 
         return True
 
