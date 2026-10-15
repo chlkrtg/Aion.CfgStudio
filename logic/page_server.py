@@ -4,12 +4,14 @@
 """
 from PyQt6.QtCore import Qt, QTimer
 
-from logic.base_page import BasePage
-from logic.context_menu import build_context_menu
-from logic.shortcuts import bind_actions
-from logic.constants import MAX_SERVER_NAME_LEN, MAX_NOTE_LEN
+from logic.widgets.base_page import BasePage
+from logic.widgets.context_menu import build_context_menu
+from logic.widgets.shortcuts import bind_actions
+from logic.core.constants import MAX_SERVER_NAME_LEN, MAX_NOTE_LEN
+from logic.widgets.shortcut_labels import with_hotkey
 from logic.presenters import ServerPresenter
 from ui.server_select import Ui_ServerSelectDialog
+from logic.core.i18n import t
 
 
 class PageServer(BasePage, Ui_ServerSelectDialog):
@@ -104,8 +106,6 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
     def retranslate(self):
         """Обновляет подписи кнопок с актуальными хоткеями."""
-        from logic.i18n import t
-        from logic.shortcut_labels import with_hotkey
         svc = self.window().shortcut_service
 
         self.setWindowTitle(t("server.window_title"))
@@ -163,7 +163,6 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
     def fill_details(self, server, stats):
         """Заполняет правую панель данными сервера."""
-        from logic.i18n import t
         self.lblServerName.setText(
             t("server.lbl_selected").format(name=server["name"])
         )
@@ -182,7 +181,6 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
     def clear_details(self):
         """Очищает правую панель."""
-        from logic.i18n import t
         self.lblServerName.setText(t("server.lbl_none"))
         self.lblRegionValue.setText("—")
         self.lblConfigsValue.setText("0")
@@ -204,9 +202,6 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
     # ============== контекстное меню ==============
 
     def _show_context_menu(self, pos):
-        from logic.i18n import t
-        from logic.shortcut_labels import with_hotkey
-
         item = self.listServers.itemAt(pos)
         if item is None:
             return
@@ -229,7 +224,6 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
         menu.exec(self.listServers.mapToGlobal(pos))
 
     def build_menus(self) -> dict:
-        from logic.i18n import t
         win = self.window()
         m = win.page_main
         return {

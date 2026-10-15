@@ -2,7 +2,7 @@
 
 Тонкий: хранит код языка, синхронизирует с БД и с i18n.
 """
-from logic import i18n
+from logic.core import i18n
 
 
 SETTING_KEY = "language"

@@ -7,7 +7,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
 
 from logic.presenters.base_presenter import BasePresenter
-from logic.i18n import t
+from logic.core.i18n import t
 
 
 class ProfilePresenter(BasePresenter):

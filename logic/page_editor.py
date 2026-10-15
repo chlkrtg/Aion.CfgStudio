@@ -8,11 +8,13 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem, QHeaderView, QAbstractItemView
 )
 
-from logic.base_page import BasePage
-from logic.constants import MAX_CONFIG_NAME_LEN
-from logic.shortcuts import bind_actions
-from logic.value_delegate import ValueDelegate
+from logic.widgets.base_page import BasePage
+from logic.core.constants import MAX_CONFIG_NAME_LEN
+from logic.widgets.shortcuts import bind_actions
+from logic.widgets.value_delegate import ValueDelegate
+from logic.widgets.shortcut_labels import with_hotkey
 from logic.presenters import EditorPresenter
+from logic.core.i18n import t
 from ui.command_editor import Ui_CommandEditorDialog
 
 
@@ -39,7 +41,6 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
     # ============== настройка таблицы ==============
 
     def _setup_table(self):
-        from logic.i18n import t
         tbl = self.tableCommands
         tbl.setColumnCount(5)
         tbl.setHorizontalHeaderLabels([
@@ -123,8 +124,6 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
 
     def retranslate(self):
         """Обновляет подписи кнопок с актуальными хоткеями."""
-        from logic.i18n import t
-        from logic.shortcut_labels import with_hotkey
         svc = self.window().shortcut_service
 
         self.setWindowTitle(t("editor.window_title"))
@@ -290,7 +289,6 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
     # ============== меню ==============
 
     def build_menus(self) -> dict:
-        from logic.i18n import t
         win = self.window()
         m = win.page_main
         return {

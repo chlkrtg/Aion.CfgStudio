@@ -8,7 +8,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QMessageBox, QListWidgetItem
 
 from logic.presenters.base_presenter import BasePresenter
-from logic.i18n import t
+from logic.core.i18n import t
 
 
 MODE_SIMPLE = {"simple"}

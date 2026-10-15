@@ -6,7 +6,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
 
 from logic.presenters.base_presenter import BasePresenter
-from logic.i18n import t
+from logic.core.i18n import t
 
 
 class ServerPresenter(BasePresenter):
@@ -55,7 +55,6 @@ class ServerPresenter(BasePresenter):
         # обновить заголовок (какой профиль открыт)
         profile_name = self.reference.get_profile_name(self.profile_id)
         if profile_name:
-            from logic.i18n import t
             view.lblTitle.setText(
                 t("server.title").format(name=profile_name)
             )

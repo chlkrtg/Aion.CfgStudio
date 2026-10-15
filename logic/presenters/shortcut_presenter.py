@@ -7,9 +7,9 @@
 """
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QMessageBox, QTreeWidgetItem
-from logic.i18n import t
+from logic.core.i18n import t
 
-from logic.actions import ACTIONS, Scope, by_scope
+from logic.core.actions import ACTIONS, Scope, by_scope
 from logic.presenters.base_presenter import BasePresenter
 
 

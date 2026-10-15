@@ -3,8 +3,8 @@
 Сервис знает о реестре действий (ACTIONS) и о репозитории.
 Не знает о Qt и о страницах.
 """
-from logic.actions import ACTIONS, Scope
-from logic.i18n import t
+from logic.core.actions import ACTIONS, Scope
+from logic.core.i18n import t
 
 
 class ShortcutService:

@@ -2,7 +2,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QShortcut, QKeySequence
 
-from logic.actions import ACTIONS
+from logic.core.actions import ACTIONS
 
 
 # Контексты срабатывания (псевдонимы)

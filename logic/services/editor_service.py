@@ -3,7 +3,7 @@
 Сервис работает с чистыми данными: списки, словари.
 Не знает о Qt и виджетах.
 """
-from logic.i18n import t
+from logic.core.i18n import t
 
 
 class EditorService:

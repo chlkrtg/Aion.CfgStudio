@@ -6,11 +6,11 @@
 import os
 import re
 
-from logic.constants import MAX_CONFIG_NAME_LEN
+from logic.core.constants import MAX_CONFIG_NAME_LEN
 from parsers.cfg_crypto import (
     decrypt, encrypt, looks_like_encrypted,
 )
-from logic.i18n import t
+from logic.core.i18n import t
 
 
 # Регулярка для строк cfg вида: key = "value"  или  key = value

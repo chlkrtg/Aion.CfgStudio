@@ -10,8 +10,8 @@ from PyQt6.QtWidgets import (
     QListWidgetItem, QMessageBox, QStyle, QSizePolicy,
 )
 
-from logic.base_page import BasePage
-from logic.shortcuts import bind_shortcut, bind_shortcuts, WITH_CHILDREN
+from logic.widgets.base_page import BasePage
+from logic.widgets.shortcuts import bind_shortcut, bind_shortcuts, WITH_CHILDREN
 from logic.presenters import VideoPresenter
 from ui.video_help import Ui_VideoHelpDialog
 

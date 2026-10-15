@@ -1,6 +1,6 @@
 """Единое окно с QStackedWidget. Переключает страницы."""
 import webbrowser
-from logic.i18n import t
+from logic.core.i18n import t
 from PyQt6.QtGui import QAction, QActionGroup
 from PyQt6.QtWidgets import QMainWindow, QStackedWidget
 
@@ -172,7 +172,7 @@ class AppWindow(QMainWindow):
 
     def _open_shortcuts_editor(self):
         """Открывает модальный редактор хоткеев."""
-        from logic.shortcuts_editor import ShortcutsEditorDialog
+        from logic.widgets.shortcuts_editor import ShortcutsEditorDialog
 
         dlg = ShortcutsEditorDialog(self, self.shortcut_service)
         dlg.shortcuts_changed.connect(self.refresh_shortcuts)

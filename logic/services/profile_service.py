@@ -3,11 +3,11 @@
 Все методы бросают ValueError при нарушении правил.
 UI-слой сам решает, как показать ошибку.
 """
-from logic.constants import (
+from logic.core.constants import (
     MAX_PROFILE_NAME_LEN,
     MAX_DESCRIPTION_LEN,
 )
-from logic.i18n import t
+from logic.core.i18n import t
 
 
 class ProfileService:

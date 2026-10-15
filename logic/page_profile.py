@@ -4,12 +4,14 @@
 """
 from PyQt6.QtCore import Qt, QTimer
 
-from logic.base_page import BasePage
-from logic.context_menu import build_context_menu
-from logic.shortcuts import bind_actions
-from logic.constants import MAX_PROFILE_NAME_LEN, MAX_DESCRIPTION_LEN
+from logic.widgets.base_page import BasePage
+from logic.widgets.context_menu import build_context_menu
+from logic.widgets.shortcuts import bind_actions
+from logic.widgets.shortcut_labels import with_hotkey
+from logic.core.constants import MAX_PROFILE_NAME_LEN, MAX_DESCRIPTION_LEN
 from logic.presenters import ProfilePresenter
 from ui.profile_select import Ui_ProfileSelectDialog
+from logic.core.i18n import t
 
 
 class PageProfile(BasePage, Ui_ProfileSelectDialog):
@@ -101,8 +103,6 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
     def retranslate(self):
         """Обновляет тексты страницы при смене языка / хоткеев."""
-        from logic.i18n import t
-        from logic.shortcut_labels import with_hotkey
         svc = self.window().shortcut_service
 
         # заголовок окна
@@ -155,7 +155,6 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
     def fill_details(self, profile, stats):
         """Заполняет правую панель данными профиля."""
-        from logic.i18n import t
         self.editDescription.blockSignals(True)
         self.editDescription.setPlainText(profile["description"] or "")
         self.editDescription.blockSignals(False)
@@ -177,7 +176,6 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
     def clear_details(self):
         """Очищает правую панель."""
-        from logic.i18n import t
         self.lblName.setText(t("profile.lbl_none"))
         self.editDescription.blockSignals(True)
         self.editDescription.clear()
@@ -198,9 +196,6 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
     # ============== контекстное меню ==============
 
     def _show_context_menu(self, pos):
-        from logic.i18n import t
-        from logic.shortcut_labels import with_hotkey
-
         item = self.listProfiles.itemAt(pos)
         if item is None:
             return
@@ -223,7 +218,6 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
         menu.exec(self.listProfiles.mapToGlobal(pos))
 
     def build_menus(self) -> dict:
-        from logic.i18n import t
         win = self.window()
         m = win.page_main
         return {

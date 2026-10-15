@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
 
 from logic.presenters import ShortcutPresenter
 from ui.shortcuts_editor import Ui_ShortcutsEditorDialog
-from logic.i18n import t
+from logic.core.i18n import t
 
 
 # Клавиши, которые нельзя назначать (конфликт с системой / Qt)
@@ -287,8 +287,7 @@ class ShortcutsEditorDialog(QDialog, Ui_ShortcutsEditorDialog):
     # ============ View-хелперы (зовёт презентер) ============
 
     def ask_key(self, action_id: str) -> str | None:
-        from logic.actions import ACTIONS
-        from logic.i18n import t
+        from logic.core.actions import ACTIONS
         action = ACTIONS[action_id]
 
         dlg = KeyCaptureDialog(self, t(action.title))
