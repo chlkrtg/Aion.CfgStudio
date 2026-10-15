@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
 
 from logic.presenters.base_presenter import BasePresenter
+from logic.i18n import t
 
 
 class ServerPresenter(BasePresenter):
@@ -127,8 +128,9 @@ class ServerPresenter(BasePresenter):
             self.service.update_note(sid, text)
         except Exception as exc:
             QMessageBox.warning(
-                self.view, "Ошибка",
-                f"Не удалось сохранить заметку:\n{exc}"
+                self.view,
+                t("dialog.error_title"),
+                t("server.error.save_note").format(exc=exc),
             )
 
     # ============ действия ============
@@ -138,7 +140,8 @@ class ServerPresenter(BasePresenter):
         if self.profile_id is None:
             return
         name, ok = view.ask_name_hint(
-            "Новый сервер", "Имя сервера",
+            t("server.dialog.new.title"),
+            t("server.dialog.new.label"),
             view.MAX_SERVER_NAME_LEN,
         )
         if not ok:
@@ -146,7 +149,7 @@ class ServerPresenter(BasePresenter):
         try:
             new_id = self.service.create(self.profile_id, name)
         except ValueError as exc:
-            QMessageBox.warning(view, "Ошибка", str(exc))
+            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
             return
         self.refresh(select_id=new_id)
 
@@ -155,14 +158,15 @@ class ServerPresenter(BasePresenter):
         item = view.listServers.currentItem()
         if item is None:
             QMessageBox.information(
-                view, "Переименование",
-                "Не выбран сервер для переименования."
+                view, t("server.dialog.rename.title"),
+                t("server.error.not_found"),
             )
             return
         sid = item.data(Qt.ItemDataRole.UserRole)
         old_name = item.text()
         new_name, ok = view.ask_name_hint(
-            "Переименовать сервер", "Новое имя",
+            t("server.dialog.rename.title"),
+            t("server.dialog.rename.label"),
             view.MAX_SERVER_NAME_LEN,
             default=old_name,
         )
@@ -171,7 +175,7 @@ class ServerPresenter(BasePresenter):
         try:
             self.service.rename(sid, new_name, self.profile_id)
         except ValueError as exc:
-            QMessageBox.warning(view, "Ошибка", str(exc))
+            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
             return
         self.refresh(select_id=sid)
 
@@ -179,19 +183,16 @@ class ServerPresenter(BasePresenter):
         view = self.view
         item = view.listServers.currentItem()
         if item is None:
-            QMessageBox.information(
-                view, "Удаление",
-                "Не выбран сервер для удаления."
-            )
             return
         sid = item.data(Qt.ItemDataRole.UserRole)
         configs = self.reference.count_configs_in_server(sid)
         ans = QMessageBox.question(
-            view, "Удалить",
-            f"Удалить сервер «{item.text()}» со всеми cfg?\n\n"
-            f"Будет удалено: конфигураций - {configs}.",
-            QMessageBox.StandardButton.Yes
-            | QMessageBox.StandardButton.No,
+            view,
+            t("server.dialog.delete.title"),
+            t("server.confirm.delete").format(
+                name=item.text(), c=configs
+            ),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if ans == QMessageBox.StandardButton.Yes:
             self.service.delete(sid)
@@ -201,19 +202,16 @@ class ServerPresenter(BasePresenter):
         view = self.view
         item = view.listServers.currentItem()
         if item is None:
-            QMessageBox.information(
-                view, "Дублирование",
-                "Не выбран сервер для дублирования."
-            )
             return
         sid = item.data(Qt.ItemDataRole.UserRole)
         server = self.service.repo.get(sid)
         if not server:
             return
         new_name, ok = view.ask_name_hint(
-            "Дублировать сервер", "Имя нового сервера",
+            t("server.dialog.dup.title"),
+            t("server.dialog.dup.label"),
             view.MAX_SERVER_NAME_LEN,
-            default=f"{server['name']} (копия)",
+            default=f"{server['name']} {t('server.copy_suffix')}",
         )
         if not ok:
             return
@@ -222,7 +220,7 @@ class ServerPresenter(BasePresenter):
                 sid, new_name, self.profile_id
             )
         except ValueError as exc:
-            QMessageBox.warning(view, "Ошибка", str(exc))
+            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
             return
         self.refresh(select_id=new_id)
 
@@ -232,8 +230,8 @@ class ServerPresenter(BasePresenter):
         item = view.listServers.currentItem()
         if item is None:
             QMessageBox.information(
-                view, "Вход",
-                "Не выбран сервер для входа."
+                view, t("server.dialog.enter.title"),
+                t("server.error.not_found"),
             )
             return
         server_id = item.data(Qt.ItemDataRole.UserRole)

@@ -3,6 +3,7 @@
 Все методы бросают ValueError при нарушении правил.
 """
 from logic.constants import MAX_SERVER_NAME_LEN, MAX_NOTE_LEN
+from logic.i18n import t
 
 
 class ServerService:
@@ -21,12 +22,10 @@ class ServerService:
                         в этом профиле.
         """
         name = self._validate_name(name)
-        if any(
-            s["name"] == name
-            for s in self.repo.all_for_profile(profile_id)
-        ):
+        if any(s["name"] == name
+               for s in self.repo.all_for_profile(profile_id)):
             raise ValueError(
-                f"Сервер «{name}» уже существует в этом профиле."
+                t("server.error.exists").format(name=name)
             )
         return self.repo.create(profile_id, name)
 
@@ -42,22 +41,16 @@ class ServerService:
             ValueError: сервер не найден или имя занято.
         """
         new_name = self._validate_name(new_name)
-
         server = self.repo.get(server_id)
         if not server:
-            raise ValueError("Сервер не найден.")
-
+            raise ValueError(t("server.error.not_found"))
         if server["name"] == new_name:
             return
-
-        if any(
-            s["name"] == new_name and s["id"] != server_id
-            for s in self.repo.all_for_profile(profile_id)
-        ):
+        if any(s["name"] == new_name and s["id"] != server_id
+               for s in self.repo.all_for_profile(profile_id)):
             raise ValueError(
-                f"Сервер «{new_name}» уже существует в этом профиле."
+                t("server.error.exists").format(name=new_name)
             )
-
         self.repo.rename(server_id, new_name)
 
     # =========== заметка ===========
@@ -81,12 +74,10 @@ class ServerService:
             ValueError: имя пустое или занято.
         """
         new_name = self._validate_name(new_name)
-        if any(
-            s["name"] == new_name
-            for s in self.repo.all_for_profile(profile_id)
-        ):
+        if any(s["name"] == new_name
+               for s in self.repo.all_for_profile(profile_id)):
             raise ValueError(
-                f"Сервер «{new_name}» уже существует."
+                t("server.error.exists").format(name=new_name)
             )
         return self.repo.duplicate(server_id, new_name)
 
@@ -95,10 +86,10 @@ class ServerService:
     def _validate_name(self, name: str) -> str:
         name = name.strip()
         if not name:
-            raise ValueError("Имя не может быть пустым.")
+            raise ValueError(t("server.error.empty"))
         if len(name) > MAX_SERVER_NAME_LEN:
             raise ValueError(
-                f"Имя слишком длинное (макс. {MAX_SERVER_NAME_LEN})."
+                t("server.error.too_long").format(n=MAX_SERVER_NAME_LEN)
             )
         return name
 

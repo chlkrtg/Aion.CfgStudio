@@ -65,6 +65,15 @@ class _HoverAnimator(QObject):
         if obj is not self._button:
             return False
 
+        if event.type() == QEvent.Type.EnabledChange:
+            self._apply(
+                float(self._anim.currentValue() or 0.0)
+            )
+            return False
+
+        if not self._button.isEnabled():
+            return False
+
         if event.type() == QEvent.Type.Enter:
             self._animate_to(1.0)
         elif event.type() == QEvent.Type.Leave:
@@ -86,6 +95,19 @@ class _HoverAnimator(QObject):
 
     def _apply(self, t: float):
         """Применяет стиль с интерполяцией по t (0..1)."""
+        if not self._button.isEnabled():
+            # disabled — нейтральный стиль, hover не подсвечиваем
+            self._button.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {BG_NORMAL.name()};
+                    color: #666666;
+                    border: 1px solid {BORDER_NORMAL.name()};
+                    border-radius: 3px;
+                    padding: 4px 10px;
+                }}
+            """)
+            return
+
         bg = _lerp_color(BG_NORMAL, BG_HOVER, t)
         border = _lerp_color(BORDER_NORMAL, BORDER_HOVER, t)
 

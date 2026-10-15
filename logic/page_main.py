@@ -202,6 +202,9 @@ class PageMain(BasePage, Ui_MainWindow):
             self.btnDeleteConfig,
             self.btnShowLogs,
             self.btnRenameConfig,
+            self.btnSavePreview,
+            self.btnRevertPreview,
+            self.editPreview,
         )
 
     # ============== меню ==============
