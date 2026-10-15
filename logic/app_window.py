@@ -1,18 +1,19 @@
 """Единое окно с QStackedWidget. Переключает страницы."""
 import webbrowser
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QActionGroup
 from PyQt6.QtWidgets import QMainWindow, QStackedWidget
 
 from database.db_manager import DBManager
 from logic.repositories import (
     ProfileRepository, ServerRepository,
     ConfigRepository, CommandRepository,
-    ShortcutRepository,
+    ShortcutRepository, SettingsRepository,
 )
 from logic.services import (
     ProfileService, ServerService,
     ConfigService, EditorService,
     ReferenceService, ShortcutService,
+    LanguageService,
 )
 
 from logic.page_profile import PageProfile
@@ -31,6 +32,7 @@ class AppWindow(QMainWindow):
         self.resize(700, 700)
 
         # ============= репозитории  =============
+        self.settings_repo = SettingsRepository(db)
         self.profile_repo = ProfileRepository(db)
         self.server_repo = ServerRepository(db)
         self.config_repo = ConfigRepository(db)
@@ -38,6 +40,7 @@ class AppWindow(QMainWindow):
         self.shortcut_repo = ShortcutRepository(db)
 
         # ============= сервисы =============
+        self.language_service = LanguageService(self.settings_repo)
         self.profile_service = ProfileService(self.profile_repo)
         self.server_service = ServerService(self.server_repo)
         self.config_service = ConfigService(
@@ -56,6 +59,29 @@ class AppWindow(QMainWindow):
         self.actionShortcuts.triggered.connect(
             self._open_shortcuts_editor
         )
+
+        # ---- меню «Язык» ----
+        self.actionGroupLang = QActionGroup(self)
+        self.actionGroupLang.setExclusive(True)
+
+        self.actionLangRu = QAction("Русский", self, checkable=True)
+        self.actionLangEn = QAction("English", self, checkable=True)
+
+        self.actionGroupLang.addAction(self.actionLangRu)
+        self.actionGroupLang.addAction(self.actionLangEn)
+
+        self.actionLangRu.triggered.connect(
+            lambda: self._change_language("ru")
+        )
+        self.actionLangEn.triggered.connect(
+            lambda: self._change_language("en")
+        )
+
+        # отметить текущий
+        if self.language_service.current == "ru":
+            self.actionLangRu.setChecked(True)
+        else:
+            self.actionLangEn.setChecked(True)
 
         # ============= UI =============
         self.stack = QStackedWidget()
@@ -151,6 +177,14 @@ class AppWindow(QMainWindow):
         dlg = ShortcutsEditorDialog(self, self.shortcut_service)
         dlg.shortcuts_changed.connect(self.refresh_shortcuts)
         dlg.exec()
+
+    def _change_language(self, lang: str):
+        """Переключение языка."""
+        if not self.language_service.set(lang):
+            return
+        # i18n уже переключён сервисом.
+        # Реальный retranslate_all() появится в коммите 3.
+        print(f"[AppWindow] язык переключён на: {lang}")
 
     def refresh_shortcuts(self):
         """Перевешивает хоткеи и обновляет подписи на всех страницах."""

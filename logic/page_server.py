@@ -207,8 +207,16 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
     def build_menus(self) -> dict:
         win = self.window()
+        m = win.page_main
         return {
             "Настройки": [
                 win.actionShortcuts,
+                None,
+                win.actionLangRu,
+                win.actionLangEn,
+            ],
+            "Помощь": [
+                m.actionVideoHelp,
+                m.actionAbout,
             ],
         }

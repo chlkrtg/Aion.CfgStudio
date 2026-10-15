@@ -129,3 +129,8 @@ INSERT OR IGNORE INTO VideoChapters (id, title, timestamp_ms, description) VALUE
     key        TEXT NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS Settings (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);

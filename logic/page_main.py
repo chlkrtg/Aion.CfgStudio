@@ -185,9 +185,13 @@ class PageMain(BasePage, Ui_MainWindow):
                 self.actionChangeProfile,
                 self.actionChangeServer,
             ],
-            "Помощь": [
+            "Настройки": [
                 win.actionShortcuts,
                 None,
+                win.actionLangRu,
+                win.actionLangEn,
+            ],
+            "Помощь": [
                 self.actionVideoHelp,
                 self.actionAbout,
             ],

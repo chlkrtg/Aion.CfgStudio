@@ -491,3 +491,24 @@ class DBManager:
                         (new_cfg_id, cfg["id"]),
                     )
             return new_profile_id # для фокуса на элементе
+
+    # ==================== НАСТРОЙКИ ====================
+
+    def get_setting(self, key: str, default: str | None = None) -> str | None:
+        with self._conn() as conn:
+            row = conn.execute(
+                "SELECT value FROM Settings WHERE key = ?", (key,)
+            ).fetchone()
+            return row["value"] if row else default
+
+    def set_setting(self, key: str, value: str):
+        with self._conn() as conn:
+            conn.execute(
+                "INSERT INTO Settings (key, value) VALUES (?, ?) "
+                "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                (key, value),
+            )
+
+    def delete_setting(self, key: str):
+        with self._conn() as conn:
+            conn.execute("DELETE FROM Settings WHERE key = ?", (key,))

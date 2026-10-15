@@ -250,9 +250,13 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         win = self.window()
         m = win.page_main
         return {
-            "Помощь": [
+            "Настройки": [
                 win.actionShortcuts,
                 None,
+                win.actionLangRu,
+                win.actionLangEn,
+            ],
+            "Помощь": [
                 m.actionVideoHelp,
                 m.actionAbout,
             ],
