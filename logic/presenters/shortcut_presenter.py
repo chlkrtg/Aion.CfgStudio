@@ -7,19 +7,19 @@
 """
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QMessageBox, QTreeWidgetItem
+from logic.i18n import t
 
 from logic.actions import ACTIONS, Scope, by_scope
 from logic.presenters.base_presenter import BasePresenter
 
 
 # Отображаемые имена секций (в порядке показа)
-SCOPE_TITLES = [
-    (Scope.GLOBAL,  "Глобальные"),
-    (Scope.PROFILE, "Профили"),
-    (Scope.SERVER,  "Серверы"),
-    (Scope.MAIN,    "Cfg-файлы"),
-    (Scope.EDITOR,  "Редактор"),
-    # Scope.VIDEO - пока не показываем: actions не зарегистрированы
+SCOPE_KEYS = [
+    (Scope.GLOBAL,  "shortcuts.section.global"),
+    (Scope.PROFILE, "shortcuts.section.profile"),
+    (Scope.SERVER,  "shortcuts.section.server"),
+    (Scope.MAIN,    "shortcuts.section.main"),
+    (Scope.EDITOR,  "shortcuts.section.editor"),
 ]
 
 
@@ -50,12 +50,12 @@ class ShortcutPresenter(BasePresenter):
         view.treeShortcuts.clear()
         self._items.clear()
 
-        for scope, title in SCOPE_TITLES:
+        for scope, title_key in SCOPE_KEYS:
             actions = by_scope(scope)
             if not actions:
                 continue
 
-            section = QTreeWidgetItem([title, "", ""])
+            section = QTreeWidgetItem([t(title_key), "", ""])
             section.setFirstColumnSpanned(True)
             section.setFlags(Qt.ItemFlag.ItemIsEnabled)
 
@@ -67,7 +67,7 @@ class ShortcutPresenter(BasePresenter):
 
             for action in actions:
                 item = QTreeWidgetItem([
-                    action.title,
+                    t(action.title),
                     self._display_key(action.id),
                     self._display_default(action),
                 ])
@@ -113,7 +113,9 @@ class ShortcutPresenter(BasePresenter):
         try:
             self.service.set_key(action_id, new_key)
         except ValueError as exc:
-            QMessageBox.warning(self.view, "Конфликт", str(exc))
+            QMessageBox.warning(
+                self.view, t("dialog.conflict_title"), str(exc)
+            )
             return
 
         self._refresh_row(action_id)
@@ -130,9 +132,9 @@ class ShortcutPresenter(BasePresenter):
     def on_reset_all(self):
         """«Сбросить всё» - с подтверждением."""
         ans = QMessageBox.question(
-            self.view, "Сбросить все хоткеи?",
-            "Все переназначенные клавиши вернутся к значениям "
-            "по умолчанию. Продолжить?",
+            self.view,
+            t("dialog.reset_all_title"),
+            t("dialog.reset_all_text"),
             QMessageBox.StandardButton.Yes
             | QMessageBox.StandardButton.No,
         )
@@ -150,3 +152,24 @@ class ShortcutPresenter(BasePresenter):
         if item is None:
             return
         item.setText(1, self._display_key(action_id))
+
+    def retranslate(self):
+        """Обновляет тексты в редакторе хоткеев."""
+        view = self.view
+
+        view.setWindowTitle(t("shortcuts.window_title"))
+        view.lblHint.setText(t("shortcuts.lbl_hint"))
+
+        view.treeShortcuts.setHeaderLabels([
+            t("shortcuts.col_action"),
+            t("shortcuts.col_key"),
+            t("shortcuts.col_default"),
+        ])
+
+        view.btnChange.setText(t("shortcuts.btn_change"))
+        view.btnReset.setText(t("shortcuts.btn_reset"))
+        view.btnResetAll.setText(t("shortcuts.btn_reset_all"))
+        view.btnClose.setText(t("shortcuts.btn_close"))
+
+        # перестроить дерево, потому что секции — переведённые
+        self._build_tree()

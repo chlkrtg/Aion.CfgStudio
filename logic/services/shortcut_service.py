@@ -4,6 +4,7 @@
 Не знает о Qt и о страницах.
 """
 from logic.actions import ACTIONS, Scope
+from logic.i18n import t
 
 
 class ShortcutService:
@@ -76,8 +77,9 @@ class ShortcutService:
         if conflict is not None:
             other = ACTIONS[conflict]
             raise ValueError(
-                f"Клавиша «{key}» уже занята действием "
-                f"«{other.title}» ({other.id})."
+                t("shortcut.conflict").format(
+                    key=key, title=t(other.title), id=other.id
+                )
             )
 
         # 3. Сохраняем override

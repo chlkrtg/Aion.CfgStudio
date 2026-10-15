@@ -89,7 +89,7 @@ def for_page(scope: Scope) -> list[Action]:
 _register(
     Action(
         id="global.video",
-        title="Видео-руководство",
+        title="action.global.video",
         scope=Scope.GLOBAL,
         default_key="F1",
         context="window",
@@ -101,7 +101,7 @@ _register(
 _register(
     Action(
         id="profile.enter",
-        title="Войти в профиль",
+        title="action.profile.enter",
         scope=Scope.PROFILE,
         default_key="Return",
         extra_keys=("Enter",),
@@ -110,7 +110,7 @@ _register(
     ),
     Action(
         id="profile.create",
-        title="Новый профиль",
+        title="action.profile.create",
         scope=Scope.PROFILE,
         default_key="Ctrl+N",
         context="focused",
@@ -118,7 +118,7 @@ _register(
     ),
     Action(
         id="profile.rename",
-        title="Переименовать профиль",
+        title="action.profile.rename",
         scope=Scope.PROFILE,
         default_key="F2",
         context="focused",
@@ -126,7 +126,7 @@ _register(
     ),
     Action(
         id="profile.delete",
-        title="Удалить профиль",
+        title="action.profile.delete",
         scope=Scope.PROFILE,
         default_key="Delete",
         context="focused",
@@ -134,7 +134,7 @@ _register(
     ),
     Action(
         id="profile.quit",
-        title="Закрыть приложение",
+        title="action.profile.quit",
         scope=Scope.PROFILE,
         default_key="Ctrl+Q",
         context="window",
@@ -146,7 +146,7 @@ _register(
 _register(
     Action(
         id="server.enter",
-        title="Войти в сервер",
+        title="action.server.enter",
         scope=Scope.SERVER,
         default_key="Return",
         extra_keys=("Enter",),
@@ -155,7 +155,7 @@ _register(
     ),
     Action(
         id="server.create",
-        title="Новый сервер",
+        title="action.server.create",
         scope=Scope.SERVER,
         default_key="Ctrl+N",
         context="focused",
@@ -163,7 +163,7 @@ _register(
     ),
     Action(
         id="server.rename",
-        title="Переименовать сервер",
+        title="action.server.rename",
         scope=Scope.SERVER,
         default_key="F2",
         context="focused",
@@ -171,7 +171,7 @@ _register(
     ),
     Action(
         id="server.delete",
-        title="Удалить сервер",
+        title="action.server.delete",
         scope=Scope.SERVER,
         default_key="Delete",
         context="focused",
@@ -179,7 +179,7 @@ _register(
     ),
     Action(
         id="server.quit",
-        title="Назад к профилям",
+        title="action.server.quit",
         scope=Scope.SERVER,
         default_key="Ctrl+Q",
         context="window",
@@ -191,7 +191,7 @@ _register(
 _register(
     Action(
         id="main.open",
-        title="Открыть редактор",
+        title="action.main.open",
         scope=Scope.MAIN,
         default_key="Ctrl+E",
         context="focused",
@@ -199,7 +199,7 @@ _register(
     ),
     Action(
         id="main.create",
-        title="Новый cfg",
+        title="action.main.create",
         scope=Scope.MAIN,
         default_key="Ctrl+N",
         context="focused",
@@ -207,7 +207,7 @@ _register(
     ),
     Action(
         id="main.import",
-        title="Импорт cfg",
+        title="action.main.import",
         scope=Scope.MAIN,
         default_key="Ctrl+O",
         context="focused",
@@ -215,7 +215,7 @@ _register(
     ),
     Action(
         id="main.export",
-        title="Экспорт cfg",
+        title="action.main.export",
         scope=Scope.MAIN,
         default_key="Ctrl+S",
         context="focused",
@@ -223,7 +223,7 @@ _register(
     ),
     Action(
         id="main.rename",
-        title="Переименовать cfg",
+        title="action.main.rename",
         scope=Scope.MAIN,
         default_key="F2",
         context="focused",
@@ -231,7 +231,7 @@ _register(
     ),
     Action(
         id="main.delete",
-        title="Удалить cfg",
+        title="action.main.delete",
         scope=Scope.MAIN,
         default_key="Delete",
         context="focused",
@@ -239,7 +239,7 @@ _register(
     ),
     Action(
         id="main.save",
-        title="Сохранить изменения (предпросмотр)",
+        title="action.main.save",
         scope=Scope.MAIN,
         default_key="",
         context="focused",
@@ -247,7 +247,7 @@ _register(
     ),
     Action(
         id="main.quit",
-        title="Назад к серверам",
+        title="action.main.quit",
         scope=Scope.MAIN,
         default_key="Ctrl+Q",
         context="window",

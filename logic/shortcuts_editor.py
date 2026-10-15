@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
 
 from logic.presenters import ShortcutPresenter
 from ui.shortcuts_editor import Ui_ShortcutsEditorDialog
+from logic.i18n import t
 
 
 # Клавиши, которые нельзя назначать (конфликт с системой / Qt)
@@ -104,7 +105,7 @@ class KeyCaptureDialog(QDialog):
 
     def __init__(self, parent, action_title: str):
         super().__init__(parent)
-        self.setWindowTitle("Назначить клавишу")
+        self.setWindowTitle(t("shortcuts.capture.title"))
         self.setModal(True)
         self.setMinimumWidth(360)
 
@@ -112,21 +113,20 @@ class KeyCaptureDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        self._lblAction = QLabel(f"Действие: {action_title}")
+        self._lblAction = QLabel(
+            t("shortcuts.capture.action").format(title=action_title)
+        )
         font = self._lblAction.font()
         font.setBold(True)
         self._lblAction.setFont(font)
         layout.addWidget(self._lblAction)
 
-        self._lblHint = QLabel(
-            "Нажмите нужную клавишу или комбинацию.\n"
-            "Esc - отмена."
-        )
+        self._lblHint = QLabel(t("shortcuts.capture.hint"))
         self._lblHint.setWordWrap(True)
         self._lblHint.setStyleSheet("color: #888;")
         layout.addWidget(self._lblHint)
 
-        self._lblPreview = QLabel("—")
+        self._lblPreview = QLabel(t("shortcuts.capture.preview_empty"))
         self._lblPreview.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._lblPreview.setStyleSheet(
             "font-size: 20px; padding: 12px; "
@@ -259,6 +259,7 @@ class ShortcutsEditorDialog(QDialog, Ui_ShortcutsEditorDialog):
 
         # заполнить дерево
         self.presenter.on_enter()
+        self.presenter.retranslate()
 
     # ============ настройка ============
 
@@ -286,11 +287,11 @@ class ShortcutsEditorDialog(QDialog, Ui_ShortcutsEditorDialog):
     # ============ View-хелперы (зовёт презентер) ============
 
     def ask_key(self, action_id: str) -> str | None:
-        """Открывает capture-диалог. Возвращает клавишу или None."""
         from logic.actions import ACTIONS
+        from logic.i18n import t
         action = ACTIONS[action_id]
 
-        dlg = KeyCaptureDialog(self, action.title)
+        dlg = KeyCaptureDialog(self, t(action.title))
         if dlg.exec() != QDialog.DialogCode.Accepted:
             return None
         return dlg.result_key
