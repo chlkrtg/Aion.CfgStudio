@@ -155,6 +155,10 @@ STRINGS = {
         "action.main.save":            "Сохранить изменения (предпросмотр)",
         "action.main.quit":            "Назад к серверам",
         "shortcut.conflict": "Клавиша «{key}» уже занята действием «{title}».",
+
+        # ================= ДИАЛОГИ ==============
+        "dialog.input_hint":   "{label} (макс. {n}):",
+        "dialog.error_title":  "Ошибка",
     },
 
     "en": {
@@ -306,6 +310,10 @@ STRINGS = {
         "action.main.quit":            "Back to servers",
         "action.editor.cancel":        "Cancel and exit",
         "shortcut.conflict": "Key «{key}» is already used by «{title}».",
+
+        # ============ DIALOGS ================
+        "dialog.input_hint":   "{label} (max {n}):",
+        "dialog.error_title":  "Error",
     },
 }
 

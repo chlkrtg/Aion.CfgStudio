@@ -108,9 +108,10 @@ class BasePage(QWidget):
     def ask_name_hint(self, title: str, label: str, max_len: int,
                       default: str = "") -> tuple[str, bool]:
         """ask_name с подсказкой о максимальной длине."""
+        from logic.i18n import t
         return self.ask_name(
             title,
-            f"{label} (макс. {max_len}):",
+            t("dialog.input_hint").format(label=label, n=max_len),
             default=default,
             max_len=max_len,
         )
