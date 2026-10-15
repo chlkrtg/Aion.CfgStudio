@@ -56,17 +56,16 @@ class AppWindow(QMainWindow):
         self.shortcut_service = ShortcutService(self.shortcut_repo)
 
         # ============= действия окна =============
-        self.actionShortcuts = QAction("Горячие клавиши...", self)
-        self.actionShortcuts.triggered.connect(
-            self._open_shortcuts_editor
-        )
+
+        self.actionShortcuts = QAction(t("menu.shortcuts"), self)
+        self.actionShortcuts.triggered.connect(self._open_shortcuts_editor)
 
         # ---- меню «Язык» ----
         self.actionGroupLang = QActionGroup(self)
         self.actionGroupLang.setExclusive(True)
 
-        self.actionLangRu = QAction("Русский", self, checkable=True)
-        self.actionLangEn = QAction("English", self, checkable=True)
+        self.actionLangRu = QAction(t("menu.lang.ru"), self, checkable=True)
+        self.actionLangEn = QAction(t("menu.lang.en"), self, checkable=True)
 
         self.actionGroupLang.addAction(self.actionLangRu)
         self.actionGroupLang.addAction(self.actionLangEn)

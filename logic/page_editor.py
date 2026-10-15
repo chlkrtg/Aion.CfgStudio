@@ -290,16 +290,17 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
     # ============== меню ==============
 
     def build_menus(self) -> dict:
+        from logic.i18n import t
         win = self.window()
         m = win.page_main
         return {
-            "Настройки": [
+            t("menu.settings"): [
                 win.actionShortcuts,
                 None,
                 win.actionLangRu,
                 win.actionLangEn,
             ],
-            "Помощь": [
+            t("menu.help"): [
                 m.actionVideoHelp,
                 m.actionAbout,
             ],
