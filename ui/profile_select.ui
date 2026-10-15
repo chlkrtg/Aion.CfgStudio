@@ -58,31 +58,22 @@
          <layout class="QHBoxLayout" name="profileButtons">
           <item>
            <widget class="QPushButton" name="btnNew">
-            <property name="toolTip">
-             <string>Создать профиль (Ctrl+N)</string>
-            </property>
             <property name="text">
-             <string>+ Новый</string>
+             <string>Новый</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="btnRename">
-            <property name="toolTip">
-             <string>Переименовать (F2)</string>
-            </property>
             <property name="text">
-             <string>✎</string>
+             <string>Переименовать</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="btnDelete">
-            <property name="toolTip">
-             <string>Удалить (Delete)</string>
-            </property>
             <property name="text">
-             <string>−</string>
+             <string>Удалить</string>
             </property>
            </widget>
           </item>
@@ -191,7 +182,7 @@
      <item>
       <widget class="QPushButton" name="btnVideoHelp">
        <property name="text">
-        <string>Видео-руководство (F1)</string>
+        <string>Видео-руководство</string>
        </property>
       </widget>
      </item>

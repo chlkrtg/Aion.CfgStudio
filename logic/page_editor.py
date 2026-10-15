@@ -35,6 +35,7 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         # хоткеи (см. rebind_shortcuts)
         self._shortcut_handles: dict[str, list] = {}
         self.rebind_shortcuts()
+        self.retranslate()
 
     # ============== настройка таблицы ==============
 
@@ -116,7 +117,14 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
             keys=self.window().shortcut_service.keys_for_scope("editor"),
         )
 
+    def retranslate(self):
+        """Обновляет подписи кнопок с актуальными хоткеями."""
+        from logic.shortcut_labels import with_hotkey
+        svc = self.window().shortcut_service
 
+        self.btnCancel.setText(
+            with_hotkey("Отмена", svc, "editor.cancel")
+        )
 
     # ============== контекст ==============
 

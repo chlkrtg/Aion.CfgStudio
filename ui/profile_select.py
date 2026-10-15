@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'ui\profile_select.ui'
+# Form implementation generated from reading ui file 'ui/profile_select.ui'
 #
 # Created by: PyQt6 UI code generator 6.11.0
 #
@@ -108,13 +108,13 @@ class Ui_ProfileSelectDialog(object):
         self.lblTitle.setText(_translate("ProfileSelectDialog", "Выберите профиль"))
         self.lblProfilesTitle.setStyleSheet(_translate("ProfileSelectDialog", "font-weight: bold;"))
         self.lblProfilesTitle.setText(_translate("ProfileSelectDialog", "Профили"))
-        self.btnNew.setText(_translate("ProfileSelectDialog", "Новый профиль (Ctrl+N)"))
-        self.btnRename.setText(_translate("ProfileSelectDialog", "Переименовать (F2)"))
-        self.btnDelete.setText(_translate("ProfileSelectDialog", "Удалить (Delete)"))
+        self.btnNew.setText(_translate("ProfileSelectDialog", "Новый профиль"))
+        self.btnRename.setText(_translate("ProfileSelectDialog", "Переименовать"))
+        self.btnDelete.setText(_translate("ProfileSelectDialog", "Удалить"))
         self.lblDetailsTitle.setStyleSheet(_translate("ProfileSelectDialog", "font-weight: bold;"))
         self.lblDetailsTitle.setText(_translate("ProfileSelectDialog", "Информация"))
         self.lblName.setText(_translate("ProfileSelectDialog", "— профиль не выбран —"))
         self.lblStats.setText(_translate("ProfileSelectDialog", "Серверов: 0 | Конфигураций: 0"))
-        self.btnVideoHelp.setText(_translate("ProfileSelectDialog", "Видео-руководство (F1)"))
-        self.btnCancel.setText(_translate("ProfileSelectDialog", "Выход (Ctrl + Q)"))
+        self.btnVideoHelp.setText(_translate("ProfileSelectDialog", "Видео-руководство"))
+        self.btnCancel.setText(_translate("ProfileSelectDialog", "Выход"))
         self.btnEnter.setText(_translate("ProfileSelectDialog", "Войти"))

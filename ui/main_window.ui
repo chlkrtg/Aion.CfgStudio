@@ -210,21 +210,6 @@
     <string>Экспорт CFG...</string>
    </property>
   </action>
-  <action name="actionRename">
-   <property name="text">
-    <string>Переименовать</string>
-   </property>
-  </action>
-  <action name="actionDuplicate">
-   <property name="text">
-    <string>Дублировать</string>
-   </property>
-  </action>
-  <action name="actionDelete">
-   <property name="text">
-    <string>Удалить</string>
-   </property>
-  </action>
   <action name="actionChangeProfile">
    <property name="text">
     <string>Сменить профиль...</string>
@@ -243,11 +228,6 @@
   <action name="actionAbout">
    <property name="text">
     <string>О программе</string>
-   </property>
-  </action>
-  <action name="actionExit">
-   <property name="text">
-    <string>Выход</string>
    </property>
   </action>
  </widget>

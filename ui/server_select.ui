@@ -59,21 +59,21 @@
           <item>
            <widget class="QPushButton" name="btnNewServer">
             <property name="text">
-             <string>+ Новый</string>
+             <string>Новый</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="btnRenameServer">
             <property name="text">
-             <string>✎</string>
+             <string>Переименовать</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="btnDeleteServer">
             <property name="text">
-             <string>−</string>
+             <string>Удалить</string>
             </property>
            </widget>
           </item>
@@ -202,9 +202,9 @@
    <item>
     <layout class="QHBoxLayout" name="bottomLayout">
      <item>
-      <widget class="QPushButton" name="btnBack">
+      <widget class="QPushButton" name="btnVideoHelp">
        <property name="text">
-        <string>← Назад к профилям</string>
+        <string>Видео-руководство</string>
        </property>
       </widget>
      </item>
@@ -224,7 +224,7 @@
      <item>
       <widget class="QPushButton" name="btnCancel">
        <property name="text">
-        <string>Отмена</string>
+        <string>← Назад к профилям</string>
        </property>
       </widget>
      </item>

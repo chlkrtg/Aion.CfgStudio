@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'ui\server_select.ui'
+# Form implementation generated from reading ui file 'ui/server_select.ui'
 #
 # Created by: PyQt6 UI code generator 6.11.0
 #
@@ -119,9 +119,9 @@ class Ui_ServerSelectDialog(object):
         self.lblTitle.setText(_translate("ServerSelectDialog", "Профиль: — / Выберите сервер"))
         self.lblServersTitle.setStyleSheet(_translate("ServerSelectDialog", "font-weight: bold;"))
         self.lblServersTitle.setText(_translate("ServerSelectDialog", "Серверы"))
-        self.btnNewServer.setText(_translate("ServerSelectDialog", "Новый сервер (Ctrl + N)"))
-        self.btnRenameServer.setText(_translate("ServerSelectDialog", "Переименовать (F2)"))
-        self.btnDeleteServer.setText(_translate("ServerSelectDialog", "Удалить (Delete)"))
+        self.btnNewServer.setText(_translate("ServerSelectDialog", "Новый"))
+        self.btnRenameServer.setText(_translate("ServerSelectDialog", "Переименовать"))
+        self.btnDeleteServer.setText(_translate("ServerSelectDialog", "Удалить"))
         self.lblServerDetailsTitle.setStyleSheet(_translate("ServerSelectDialog", "font-weight: bold;"))
         self.lblServerDetailsTitle.setText(_translate("ServerSelectDialog", "Информация"))
         self.lblServerName.setText(_translate("ServerSelectDialog", "— сервер не выбран —"))
@@ -129,6 +129,6 @@ class Ui_ServerSelectDialog(object):
         self.lblRegionValue.setText(_translate("ServerSelectDialog", "—"))
         self.lblConfigsCaption.setText(_translate("ServerSelectDialog", "Конфигураций:"))
         self.lblConfigsValue.setText(_translate("ServerSelectDialog", "0"))
-        self.btnVideoHelp.setText(_translate("ServerSelectDialog", "Видео-руководство (F1)"))
-        self.btnCancel.setText(_translate("ServerSelectDialog", "Выбор профиля (Ctrl + Q)"))
+        self.btnVideoHelp.setText(_translate("ServerSelectDialog", "Видео-руководство"))
+        self.btnCancel.setText(_translate("ServerSelectDialog", "← Назад к профилям"))
         self.btnEnter.setText(_translate("ServerSelectDialog", "Войти"))

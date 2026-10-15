@@ -40,6 +40,7 @@ class PageMain(BasePage, Ui_MainWindow):
         # хоткеи через реестр (см. rebind_shortcuts)
         self._shortcut_handles: dict[str, list] = {}
         self.rebind_shortcuts()
+        self.retranslate()
 
     # ============== сигналы ==============
 
@@ -64,9 +65,6 @@ class PageMain(BasePage, Ui_MainWindow):
         # actions (меню)
         self.actionChangeServer.triggered.connect(
             self.presenter.change_server
-        )
-        self.actionRename.triggered.connect(
-            self.presenter.rename_config
         )
         self.actionVideoHelp.triggered.connect(
             lambda: self.window().go_video()
@@ -109,6 +107,33 @@ class PageMain(BasePage, Ui_MainWindow):
             self,
             self._bindings(),
             keys=self.window().shortcut_service.keys_for_scope("main"),
+        )
+
+    def retranslate(self):
+        """Обновляет подписи кнопок с актуальными хоткеями."""
+        from logic.shortcut_labels import with_hotkey
+        svc = self.window().shortcut_service
+
+        self.btnAddConfig.setText(
+            with_hotkey("Новый CFG", svc, "main.create")
+        )
+        self.btnImportConfig.setText(
+            with_hotkey("Импорт...", svc, "main.import")
+        )
+        self.btnExportConfig.setText(
+            with_hotkey("Экспорт...", svc, "main.export")
+        )
+        self.btnRenameConfig.setText(
+            with_hotkey("Переименовать", svc, "main.rename")
+        )
+        self.btnDeleteConfig.setText(
+            with_hotkey("Удалить", svc, "main.delete")
+        )
+        self.btnSavePreview.setText(
+            with_hotkey("Сохранить", svc, "main.save")
+        )
+        self.btnOpenEditor.setText(
+            with_hotkey("Открыть редактор", svc, "main.open")
         )
 
     # ============== контекст ==============

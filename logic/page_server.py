@@ -56,6 +56,7 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
         # хоткеи через реестр (см. rebind_shortcuts)
         self._shortcut_handles: dict[str, list] = {}
         self.rebind_shortcuts()
+        self.retranslate()
 
     # ============== сигналы ==============
 
@@ -99,6 +100,30 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
             self,
             self._bindings(),
             keys=self.window().shortcut_service.keys_for_scope("server"),
+        )
+
+    def retranslate(self):
+        """Обновляет подписи кнопок с актуальными хоткеями."""
+        from logic.shortcut_labels import with_hotkey
+        svc = self.window().shortcut_service
+
+        self.btnNewServer.setText(
+            with_hotkey("Новый", svc, "server.create")
+        )
+        self.btnRenameServer.setText(
+            with_hotkey("Переименовать", svc, "server.rename")
+        )
+        self.btnDeleteServer.setText(
+            with_hotkey("Удалить", svc, "server.delete")
+        )
+        self.btnEnter.setText(
+            with_hotkey("Войти", svc, "server.enter")
+        )
+        self.btnVideoHelp.setText(
+            with_hotkey("Видео-руководство", svc, "global.video")
+        )
+        self.btnCancel.setText(
+            with_hotkey("← Назад к профилям", svc, "server.quit")
         )
 
     # ============== жизненный цикл ==============

@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'ui\command_editor.ui'
+# Form implementation generated from reading ui file 'ui/command_editor.ui'
 #
 # Created by: PyQt6 UI code generator 6.11.0
 #
@@ -29,11 +29,18 @@ class Ui_CommandEditorDialog(object):
         self.comboMode.setObjectName("comboMode")
         self.comboMode.addItem("")
         self.comboMode.addItem("")
+        self.comboMode.addItem("")
         self.topLayout.addWidget(self.comboMode)
         self.editSearch = QtWidgets.QLineEdit(parent=CommandEditorDialog)
         self.editSearch.setMinimumWidth(200)
         self.editSearch.setObjectName("editSearch")
         self.topLayout.addWidget(self.editSearch)
+        self.btnExpandAll = QtWidgets.QPushButton(parent=CommandEditorDialog)
+        self.btnExpandAll.setObjectName("btnExpandAll")
+        self.topLayout.addWidget(self.btnExpandAll)
+        self.btnCollapseAll = QtWidgets.QPushButton(parent=CommandEditorDialog)
+        self.btnCollapseAll.setObjectName("btnCollapseAll")
+        self.topLayout.addWidget(self.btnCollapseAll)
         self.rootLayout.addLayout(self.topLayout)
         self.centerLayout = QtWidgets.QHBoxLayout()
         self.centerLayout.setObjectName("centerLayout")
@@ -105,9 +112,12 @@ class Ui_CommandEditorDialog(object):
         self.lblFileName.setStyleSheet(_translate("CommandEditorDialog", "font-weight: bold;"))
         self.lblFileName.setText(_translate("CommandEditorDialog", "Файл: —"))
         self.lblMode.setText(_translate("CommandEditorDialog", "Режим:"))
-        self.comboMode.setItemText(0, _translate("CommandEditorDialog", "Стандартные"))
+        self.comboMode.setItemText(0, _translate("CommandEditorDialog", "Простые"))
         self.comboMode.setItemText(1, _translate("CommandEditorDialog", "Расширенные"))
+        self.comboMode.setItemText(2, _translate("CommandEditorDialog", "Все (включая отладку)"))
         self.editSearch.setPlaceholderText(_translate("CommandEditorDialog", "Поиск команды..."))
+        self.btnExpandAll.setText(_translate("CommandEditorDialog", "Развернуть всё"))
+        self.btnCollapseAll.setText(_translate("CommandEditorDialog", "Свернуть всё"))
         self.lblPrefixesTitle.setStyleSheet(_translate("CommandEditorDialog", "font-weight: bold;"))
         self.lblPrefixesTitle.setText(_translate("CommandEditorDialog", "Категории команд"))
         self.lblPrefixInfo.setText(_translate("CommandEditorDialog", "Выберите категорию для фильтрации"))
@@ -123,5 +133,5 @@ class Ui_CommandEditorDialog(object):
         item = self.tableCommands.horizontalHeaderItem(4)
         item.setText(_translate("CommandEditorDialog", "Описание"))
         self.btnResetAll.setText(_translate("CommandEditorDialog", "Сбросить всё к стандартным"))
-        self.btnCancel.setText(_translate("CommandEditorDialog", "Отмена (Ctrl + Q)"))
-        self.btnApply.setText(_translate("CommandEditorDialog", "Сохранить"))
+        self.btnCancel.setText(_translate("CommandEditorDialog", "Отмена"))
+        self.btnApply.setText(_translate("CommandEditorDialog", "Применить"))

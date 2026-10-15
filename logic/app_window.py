@@ -153,12 +153,13 @@ class AppWindow(QMainWindow):
         dlg.exec()
 
     def refresh_shortcuts(self):
+        """Перевешивает хоткеи и обновляет подписи на всех страницах."""
         for page in (self.page_profile, self.page_server,
                      self.page_main, self.page_editor):
-            has = hasattr(page, "rebind_shortcuts")
-            print(f"  {type(page).__name__}: rebind={has}")
-            if has:
+            if hasattr(page, "rebind_shortcuts"):
                 page.rebind_shortcuts()
+            if hasattr(page, "retranslate"):
+                page.retranslate()
 
     def go_video(self):
         # self._previous_page = self.stack.currentWidget() <- раскомментировать при возвращении плеера

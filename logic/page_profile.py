@@ -51,6 +51,7 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
         # хоткеи (см. rebind_shortcuts)
         self._shortcut_handles: dict[str, list] = {}
         self.rebind_shortcuts()
+        self.retranslate()
 
     # ============== сигналы ==============
 
@@ -96,6 +97,30 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
             self,
             self._bindings(),
             keys=self.window().shortcut_service.keys_for_scope("profile"),
+        )
+
+    def retranslate(self):
+        """Обновляет подписи кнопок с актуальными хоткеями."""
+        from logic.shortcut_labels import with_hotkey
+        svc = self.window().shortcut_service
+
+        self.btnNew.setText(
+            with_hotkey("Новый", svc, "profile.create")
+        )
+        self.btnRename.setText(
+            with_hotkey("Переименовать", svc, "profile.rename")
+        )
+        self.btnDelete.setText(
+            with_hotkey("Удалить", svc, "profile.delete")
+        )
+        self.btnEnter.setText(
+            with_hotkey("Войти", svc, "profile.enter")
+        )
+        self.btnVideoHelp.setText(
+            with_hotkey("Видео-руководство", svc, "global.video")
+        )
+        self.btnCancel.setText(
+            with_hotkey("Выход", svc, "profile.quit")
         )
 
     # ============== жизненный цикл ==============
