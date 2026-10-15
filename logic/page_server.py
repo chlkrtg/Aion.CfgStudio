@@ -104,26 +104,43 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
     def retranslate(self):
         """Обновляет подписи кнопок с актуальными хоткеями."""
+        from logic.i18n import t
         from logic.shortcut_labels import with_hotkey
         svc = self.window().shortcut_service
 
+        self.setWindowTitle(t("server.window_title"))
+
+        self.lblServersTitle.setText(t("server.lbl_servers"))
+        self.lblServerDetailsTitle.setText(t("server.lbl_details"))
+        self.lblRegionCaption.setText(t("server.lbl_region"))
+        self.lblConfigsCaption.setText(t("server.lbl_configs"))
+
+        self.editNote.setPlaceholderText(
+            t("server.note_placeholder").format(n=MAX_NOTE_LEN)
+        )
+
         self.btnNewServer.setText(
-            with_hotkey("Новый", svc, "server.create")
+            with_hotkey(t("server.btn_new"), svc, "server.create")
         )
         self.btnRenameServer.setText(
-            with_hotkey("Переименовать", svc, "server.rename")
+            with_hotkey(t("server.btn_rename"), svc, "server.rename")
         )
         self.btnDeleteServer.setText(
-            with_hotkey("Удалить", svc, "server.delete")
+            with_hotkey(t("server.btn_delete"), svc, "server.delete")
         )
         self.btnEnter.setText(
-            with_hotkey("Войти", svc, "server.enter")
+            with_hotkey(t("server.btn_enter"), svc, "server.enter")
         )
         self.btnVideoHelp.setText(
-            with_hotkey("Видео-руководство", svc, "global.video")
+            with_hotkey(t("server.btn_video"), svc, "global.video")
         )
         self.btnCancel.setText(
-            with_hotkey("← Назад к профилям", svc, "server.quit")
+            with_hotkey(t("server.btn_back"), svc, "server.quit")
+        )
+
+        # переприменить текущее состояние
+        self.presenter.on_server_selected(
+            self.listServers.currentItem(), None
         )
 
     # ============== жизненный цикл ==============
@@ -146,19 +163,17 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
     def fill_details(self, server, stats):
         """Заполняет правую панель данными сервера."""
+        from logic.i18n import t
         self.lblServerName.setText(
-            f"Выбранный сервер: {server['name']}"
+            t("server.lbl_selected").format(name=server["name"])
         )
         self.lblRegionValue.setText(server["region"] or "—")
-
         self.lblConfigsValue.setText(str(stats["configs"]))
 
-        # заметка: блокируем сигналы, чтобы не запускать автосохранение
         self.editNote.blockSignals(True)
         self.editNote.setPlainText(server["note"] or "")
         self.editNote.blockSignals(False)
 
-        # иконка - первая буква имени
         first_letter = (server["name"] or "?")[0].upper()
         self.lblServerIcon.setText(first_letter)
         self.lblServerIcon.setStyleSheet(
@@ -167,7 +182,8 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
     def clear_details(self):
         """Очищает правую панель."""
-        self.lblServerName.setText("— сервер не выбран —")
+        from logic.i18n import t
+        self.lblServerName.setText(t("server.lbl_none"))
         self.lblRegionValue.setText("—")
         self.lblConfigsValue.setText("0")
         self.editNote.blockSignals(True)
@@ -188,20 +204,27 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
     # ============== контекстное меню ==============
 
     def _show_context_menu(self, pos):
+        from logic.i18n import t
+        from logic.shortcut_labels import with_hotkey
+
         item = self.listServers.itemAt(pos)
         if item is None:
             return
 
         self.listServers.setCurrentItem(item)
+        svc = self.window().shortcut_service
 
         menu = build_context_menu(self, [
-            ("Войти", self.presenter.enter),
+            (with_hotkey(t("ctx.enter"), svc, "server.enter"),
+             self.presenter.enter),
             None,
-            ("Дублировать", self.presenter.duplicate),
+            (t("ctx.duplicate"), self.presenter.duplicate),
             None,
-            ("Переименовать (F2)", self.presenter.rename),
+            (with_hotkey(t("ctx.rename"), svc, "server.rename"),
+             self.presenter.rename),
             None,
-            ("Удалить (Delete)", self.presenter.delete),
+            (with_hotkey(t("ctx.delete"), svc, "server.delete"),
+             self.presenter.delete),
         ])
         menu.exec(self.listServers.mapToGlobal(pos))
 

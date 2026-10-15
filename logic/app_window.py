@@ -1,5 +1,6 @@
 """Единое окно с QStackedWidget. Переключает страницы."""
 import webbrowser
+from logic.i18n import t
 from PyQt6.QtGui import QAction, QActionGroup
 from PyQt6.QtWidgets import QMainWindow, QStackedWidget
 
@@ -182,9 +183,24 @@ class AppWindow(QMainWindow):
         """Переключение языка."""
         if not self.language_service.set(lang):
             return
-        # i18n уже переключён сервисом.
-        # Реальный retranslate_all() появится в коммите 3.
-        print(f"[AppWindow] язык переключён на: {lang}")
+        self.retranslate_all()
+
+    def retranslate_all(self):
+        """Обновляет все тексты приложения после смены языка."""
+        # 1. действия окна
+        self.actionShortcuts.setText(t("menu.shortcuts"))
+        self.actionLangRu.setText(t("menu.lang.ru"))
+        self.actionLangEn.setText(t("menu.lang.en"))
+
+        # 2. страницы (в 3.3 сюда добавим их retranslate)
+        for page in (self.page_profile, self.page_server,
+                     self.page_main, self.page_editor):
+            if hasattr(page, "retranslate"):
+                page.retranslate()
+
+        # 3. меню текущей страницы
+        current = self.stack.currentWidget()
+        self._rebuild_menus(current)
 
     def refresh_shortcuts(self):
         """Перевешивает хоткеи и обновляет подписи на всех страницах."""

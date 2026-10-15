@@ -100,27 +100,43 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
         )
 
     def retranslate(self):
-        """Обновляет подписи кнопок с актуальными хоткеями."""
+        """Обновляет тексты страницы при смене языка / хоткеев."""
+        from logic.i18n import t
         from logic.shortcut_labels import with_hotkey
         svc = self.window().shortcut_service
 
+        # заголовок окна
+        self.setWindowTitle(t("profile.window_title"))
+
+        # статичные label'ы
+        self.lblTitle.setText(t("profile.lbl_title"))
+        self.lblProfilesTitle.setText(t("profile.lbl_profiles"))
+        self.lblDetailsTitle.setText(t("profile.lbl_details"))
+
+        # кнопки с хоткеями
         self.btnNew.setText(
-            with_hotkey("Новый", svc, "profile.create")
+            with_hotkey(t("profile.btn_new"), svc, "profile.create")
         )
         self.btnRename.setText(
-            with_hotkey("Переименовать", svc, "profile.rename")
+            with_hotkey(t("profile.btn_rename"), svc, "profile.rename")
         )
         self.btnDelete.setText(
-            with_hotkey("Удалить", svc, "profile.delete")
+            with_hotkey(t("profile.btn_delete"), svc, "profile.delete")
         )
         self.btnEnter.setText(
-            with_hotkey("Войти", svc, "profile.enter")
+            with_hotkey(t("profile.btn_enter"), svc, "profile.enter")
         )
         self.btnVideoHelp.setText(
-            with_hotkey("Видео-руководство", svc, "global.video")
+            with_hotkey(t("profile.btn_video"), svc, "global.video")
         )
         self.btnCancel.setText(
-            with_hotkey("Выход", svc, "profile.quit")
+            with_hotkey(t("profile.btn_cancel"), svc, "profile.quit")
+        )
+        self.editDescription.setPlaceholderText(
+            t("profile.desc_placeholder").format(n=MAX_DESCRIPTION_LEN)
+        )
+        self.presenter.on_profile_selected(
+            self.listProfiles.currentItem(), None
         )
 
     # ============== жизненный цикл ==============
@@ -139,15 +155,18 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
     def fill_details(self, profile, stats):
         """Заполняет правую панель данными профиля."""
+        from logic.i18n import t
         self.editDescription.blockSignals(True)
         self.editDescription.setPlainText(profile["description"] or "")
         self.editDescription.blockSignals(False)
 
-        self.lblName.setText(f"Выбранный профиль: {profile['name']}")
-
+        self.lblName.setText(
+            t("profile.lbl_selected").format(name=profile["name"])
+        )
         self.lblStats.setText(
-            f"Серверов: {stats['servers']} | "
-            f"Конфигураций: {stats['configs']}"
+            t("profile.stats").format(
+                s=stats["servers"], c=stats["configs"]
+            )
         )
 
         first_letter = (profile["name"] or "?")[0].upper()
@@ -158,11 +177,12 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
     def clear_details(self):
         """Очищает правую панель."""
-        self.lblName.setText("— профиль не выбран —")
+        from logic.i18n import t
+        self.lblName.setText(t("profile.lbl_none"))
         self.editDescription.blockSignals(True)
         self.editDescription.clear()
         self.editDescription.blockSignals(False)
-        self.lblStats.setText("Серверов: 0 | Конфигураций: 0")
+        self.lblStats.setText(t("profile.stats").format(s=0, c=0))
         self.lblAvatar.clear()
 
     def set_controls_enabled(self, enabled: bool):
@@ -178,20 +198,27 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
     # ============== контекстное меню ==============
 
     def _show_context_menu(self, pos):
+        from logic.i18n import t
+        from logic.shortcut_labels import with_hotkey
+
         item = self.listProfiles.itemAt(pos)
         if item is None:
             return
 
         self.listProfiles.setCurrentItem(item)
+        svc = self.window().shortcut_service
 
         menu = build_context_menu(self, [
-            ("Войти", self.presenter.enter),
+            (with_hotkey(t("ctx.enter"), svc, "profile.enter"),
+             self.presenter.enter),
             None,
-            ("Дублировать", self.presenter.duplicate),
+            (t("ctx.duplicate"), self.presenter.duplicate),
             None,
-            ("Переименовать (F2)", self.presenter.rename),
+            (with_hotkey(t("ctx.rename"), svc, "profile.rename"),
+             self.presenter.rename),
             None,
-            ("Удалить (Delete)", self.presenter.delete),
+            (with_hotkey(t("ctx.delete"), svc, "profile.delete"),
+             self.presenter.delete),
         ])
         menu.exec(self.listProfiles.mapToGlobal(pos))
 

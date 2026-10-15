@@ -29,7 +29,6 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
 
         # ================== UI ==================
         self._setup_table()
-        self._setup_table()
         self._connect_signals()
 
         # хоткеи (см. rebind_shortcuts)
@@ -40,34 +39,39 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
     # ============== настройка таблицы ==============
 
     def _setup_table(self):
-        t = self.tableCommands
-        t.setColumnCount(5)
-        t.setHorizontalHeaderLabels(
-            ["Исп.", "Команда", "Значение", "Дефолт", "Описание"]
-        )
-        t.verticalHeader().setDefaultSectionSize(32)
-        t.verticalHeader().setVisible(False)
+        from logic.i18n import t
+        tbl = self.tableCommands
+        tbl.setColumnCount(5)
+        tbl.setHorizontalHeaderLabels([
+            t("editor.col_use"),
+            t("editor.col_command"),
+            t("editor.col_value"),
+            t("editor.col_default"),
+            t("editor.col_description"),
+        ])
+        tbl.verticalHeader().setDefaultSectionSize(32)
+        tbl.verticalHeader().setVisible(False)
 
-        header = t.horizontalHeader()
+        header = tbl.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.Interactive)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.Interactive)
         header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
 
-        t.setEditTriggers(
+        tbl.setEditTriggers(
             QAbstractItemView.EditTrigger.CurrentChanged
             | QAbstractItemView.EditTrigger.DoubleClicked
             | QAbstractItemView.EditTrigger.EditKeyPressed
         )
 
-        t.setColumnWidth(0, 50)
-        t.setColumnWidth(1, 220)
-        t.setColumnWidth(2, 140)
-        t.setColumnWidth(3, 100)
+        tbl.setColumnWidth(0, 50)
+        tbl.setColumnWidth(1, 220)
+        tbl.setColumnWidth(2, 140)
+        tbl.setColumnWidth(3, 100)
 
         # ← делегат для колонки значений
-        t.setItemDelegateForColumn(2, ValueDelegate(t))
+        tbl.setItemDelegateForColumn(2, ValueDelegate(tbl))
 
         self.listPrefixes.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAsNeeded
@@ -75,7 +79,7 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         self.listPrefixes.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
-        t.setAlternatingRowColors(False)
+        tbl.setAlternatingRowColors(False)
 
     # ============== сигналы ==============
 
@@ -119,12 +123,51 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
 
     def retranslate(self):
         """Обновляет подписи кнопок с актуальными хоткеями."""
+        from logic.i18n import t
         from logic.shortcut_labels import with_hotkey
         svc = self.window().shortcut_service
 
+        self.setWindowTitle(t("editor.window_title"))
+
+        # top
+        self.lblMode.setText(t("editor.lbl_mode"))
+        self.editSearch.setPlaceholderText(t("editor.search_placeholder"))
+        self.btnExpandAll.setText(t("editor.btn_expand"))
+        self.btnCollapseAll.setText(t("editor.btn_collapse"))
+
+        # comboMode — НЕ менять порядок item'ов, только текст
+        self.comboMode.setItemText(0, t("editor.mode.simple"))
+        self.comboMode.setItemText(1, t("editor.mode.advanced"))
+        self.comboMode.setItemText(2, t("editor.mode.all"))
+
+        # left
+        self.lblPrefixesTitle.setText(t("editor.lbl_prefixes_title"))
+        self.lblPrefixInfo.setText(t("editor.lbl_prefix_info"))
+
+        # table headers
+        self.tableCommands.setHorizontalHeaderLabels([
+            t("editor.col_use"),
+            t("editor.col_command"),
+            t("editor.col_value"),
+            t("editor.col_default"),
+            t("editor.col_description"),
+        ])
+
+        # bottom
+        self.btnResetAll.setText(t("editor.btn_reset_all"))
         self.btnCancel.setText(
-            with_hotkey("Отмена", svc, "editor.cancel")
+            with_hotkey(t("editor.btn_cancel"), svc, "editor.cancel")
         )
+        self.btnApply.setText(t("editor.btn_apply"))
+
+        # «Все команды» в списке префиксов — первый item
+        if self.listPrefixes.count() > 0:
+            item = self.listPrefixes.item(0)
+            if item.data(Qt.ItemDataRole.UserRole) == "__ALL__":
+                item.setText(t("editor.prefix_all"))
+
+        # имя файла — через презентер
+        self.presenter._update_file_label()
 
     # ============== контекст ==============
 

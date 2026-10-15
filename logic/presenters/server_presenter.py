@@ -54,8 +54,9 @@ class ServerPresenter(BasePresenter):
         # обновить заголовок (какой профиль открыт)
         profile_name = self.reference.get_profile_name(self.profile_id)
         if profile_name:
+            from logic.i18n import t
             view.lblTitle.setText(
-                f"Профиль: {profile_name} / Выберите сервер"
+                t("server.title").format(name=profile_name)
             )
 
         # перестроить список

@@ -111,30 +111,61 @@ class PageMain(BasePage, Ui_MainWindow):
 
     def retranslate(self):
         """Обновляет подписи кнопок с актуальными хоткеями."""
+        from logic.i18n import t
         from logic.shortcut_labels import with_hotkey
         svc = self.window().shortcut_service
 
+        # заголовки
+        self.lblTreeTitle.setText(t("main.lbl_tree_title"))
+        self.lblPreviewTitle.setText(t("main.lbl_preview_title"))
+
+        # колонки дерева
+        self.treeConfigs.setHeaderLabels([
+            t("main.col_name"),
+            t("main.col_modified"),
+        ])
+
+        # placeholder фильтра
+        self.editFilter.setPlaceholderText(t("main.filter_placeholder"))
+
+        # кнопки с хоткеями
         self.btnAddConfig.setText(
-            with_hotkey("Новый CFG", svc, "main.create")
+            with_hotkey(t("main.btn_new"), svc, "main.create")
         )
         self.btnImportConfig.setText(
-            with_hotkey("Импорт...", svc, "main.import")
+            with_hotkey(t("main.btn_import"), svc, "main.import")
         )
         self.btnExportConfig.setText(
-            with_hotkey("Экспорт...", svc, "main.export")
+            with_hotkey(t("main.btn_export"), svc, "main.export")
         )
         self.btnRenameConfig.setText(
-            with_hotkey("Переименовать", svc, "main.rename")
+            with_hotkey(t("main.btn_rename"), svc, "main.rename")
         )
         self.btnDeleteConfig.setText(
-            with_hotkey("Удалить", svc, "main.delete")
+            with_hotkey(t("main.btn_delete"), svc, "main.delete")
         )
         self.btnSavePreview.setText(
-            with_hotkey("Сохранить", svc, "main.save")
+            with_hotkey(t("main.btn_save"), svc, "main.save")
         )
         self.btnOpenEditor.setText(
-            with_hotkey("Открыть редактор", svc, "main.open")
+            with_hotkey(t("main.btn_open_editor"), svc, "main.open")
         )
+
+        # кнопки без хоткеев
+        self.btnRevertPreview.setText(t("main.btn_revert"))
+        self.btnShowLogs.setText(t("main.btn_show_logs"))
+
+        # QAction
+        self.actionNewConfig.setText(t("main.action_new_config"))
+        self.actionImportCfg.setText(t("main.action_import_cfg"))
+        self.actionExportCfg.setText(t("main.action_export_cfg"))
+        self.actionChangeProfile.setText(t("main.action_change_profile"))
+        self.actionChangeServer.setText(t("main.action_change_server"))
+        self.actionVideoHelp.setText(t("main.action_video_help"))
+        self.actionAbout.setText(t("main.action_about"))
+
+        # переприменить текущее состояние
+        self.presenter.on_selection()
 
     # ============== контекст ==============
 
@@ -158,7 +189,8 @@ class PageMain(BasePage, Ui_MainWindow):
 
     def clear_preview(self):
         """Сбрасывает панель предпросмотра."""
-        self.lblPreviewName.setText("— файл не выбран —")
+        from logic.i18n import t
+        self.lblPreviewName.setText(t("main.lbl_preview_none"))
         self.editPreview.clear()
 
     def set_controls_enabled(self, enabled: bool):
@@ -175,9 +207,10 @@ class PageMain(BasePage, Ui_MainWindow):
     # ============== меню ==============
 
     def build_menus(self) -> dict:
+        from logic.i18n import t
         win = self.window()
         return {
-            "Файл": [
+            t("menu.file"): [
                 self.actionNewConfig,
                 self.actionImportCfg,
                 self.actionExportCfg,
@@ -185,13 +218,13 @@ class PageMain(BasePage, Ui_MainWindow):
                 self.actionChangeProfile,
                 self.actionChangeServer,
             ],
-            "Настройки": [
+            t("menu.settings"): [
                 win.actionShortcuts,
                 None,
                 win.actionLangRu,
                 win.actionLangEn,
             ],
-            "Помощь": [
+            t("menu.help"): [
                 self.actionVideoHelp,
                 self.actionAbout,
             ],
@@ -199,30 +232,39 @@ class PageMain(BasePage, Ui_MainWindow):
 
     def _show_about(self):
         from PyQt6.QtWidgets import QMessageBox
+        from logic.i18n import t
         QMessageBox.about(
-            self, "О программе",
-            "Aion.CfgStudio v1.0  by @chealkrtengghnle\n\n"
-            "Редактор конфигурационного файла system.cfg для Aion."
+            self,
+            t("dialog.about_title"),
+            t("dialog.about_text"),
         )
 
     # ============== контекстное меню ==============
 
     def _show_context_menu(self, pos):
+        from logic.i18n import t
+        from logic.shortcut_labels import with_hotkey
+
         item = self.treeConfigs.itemAt(pos)
         if item is None:
             return
 
         self.treeConfigs.setCurrentItem(item)
+        svc = self.window().shortcut_service
 
         menu = build_context_menu(self, [
-            ("Редактировать", self.presenter.open_selected),
+            (with_hotkey(t("ctx.edit"), svc, "main.open"),
+             self.presenter.open_selected),
             None,
-            ("Дублировать", self.presenter.duplicate_config),
+            (t("ctx.duplicate"), self.presenter.duplicate_config),
             None,
-            ("Переименовать (F2)", self.presenter.rename_config),
+            (with_hotkey(t("ctx.rename"), svc, "main.rename"),
+             self.presenter.rename_config),
             None,
-            ("Экспортировать (Ctrl + S)", self.presenter.export_config),
+            (with_hotkey(t("ctx.export"), svc, "main.export"),
+             self.presenter.export_config),
             None,
-            ("Удалить (Delete)", self.presenter.delete_config),
+            (with_hotkey(t("ctx.delete"), svc, "main.delete"),
+             self.presenter.delete_config),
         ])
         menu.exec(self.treeConfigs.mapToGlobal(pos))

@@ -5,7 +5,7 @@
 это позволяет сохранять и логировать изменения скрытых команд тоже.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtWidgets import QMessageBox, QListWidgetItem
 
 from logic.presenters.base_presenter import BasePresenter
 
@@ -173,16 +173,20 @@ class EditorPresenter(BasePresenter):
         self.apply_filters(sync=False)
 
     def _update_file_label(self):
+        from logic.i18n import t
         if self.config_id is None:
-            self.view.lblFileName.setText("Файл: (новый)")
+            self.view.lblFileName.setText(t("editor.lbl_file_new"))
             return
         cfg = self.service.config_repo.get(self.config_id)
         if cfg:
-            self.view.lblFileName.setText(f"Файл: {cfg['filename']}")
+            self.view.lblFileName.setText(
+                t("editor.lbl_file").format(name=cfg["filename"])
+            )
         else:
-            self.view.lblFileName.setText("Файл: —")
+            self.view.lblFileName.setText(t("editor.lbl_file_none"))
 
     def _load_prefixes(self):
+        from logic.i18n import t
         view = self.view
         current_code = None
         item = view.listPrefixes.currentItem()
@@ -191,7 +195,9 @@ class EditorPresenter(BasePresenter):
 
         view.listPrefixes.blockSignals(True)
         view.listPrefixes.clear()
-        view.listPrefixes.addItem("Все команды")
+        all_item = QListWidgetItem(t("editor.prefix_all"))
+        all_item.setData(Qt.ItemDataRole.UserRole, "__ALL__")
+        view.listPrefixes.addItem(all_item)
 
         if self._prefixes is None:
             self._prefixes = {
