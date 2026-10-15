@@ -3,6 +3,7 @@
 Сервис работает с чистыми данными: списки, словари.
 Не знает о Qt и виджетах.
 """
+from logic.i18n import t
 
 
 class EditorService:
@@ -73,16 +74,12 @@ class EditorService:
         """
         if config_id is None:
             if self.config_service is None:
-                raise RuntimeError(
-                    "EditorService: config_service не задан, "
-                    "нельзя создать новый cfg."
-                )
+                raise RuntimeError(t("editor.error.no_config_service"))
             if server_id is None:
-                raise ValueError("server_id не задан для нового cfg.")
+                raise ValueError(t("editor.error.server_required"))
             return self.config_service.create_from_content(
                 server_id, filename, content
             )
-
         self.config_repo.update(config_id, content)
         return config_id
 

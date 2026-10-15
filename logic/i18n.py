@@ -104,7 +104,7 @@ STRINGS = {
         "main.action_change_server":  "Сменить сервер...",
         "main.action_video_help":     "Видео-руководство",
         "main.action_about":          "О программе",
-        "main.dialog.import.title":     "Имя файла в проекте",
+        "main.dialog.import.title":     "Импорт cfg",
         "main.dialog.import.label":     "Имя",
         "main.dialog.export.format":    "Формат экспорта",
         "main.dialog.export.label":     "Выберите формат:",
@@ -116,6 +116,8 @@ STRINGS = {
         "main.dialog.dup.label":        "Имя нового файла",
         "main.dialog.delete.title":     "Удалить",
         "main.dialog.logs.title":       "История",
+        "main.dialog.export.filename_title": "Экспорт cfg",
+        "main.dialog.import.filename_title": "Импорт cfg",
 
         "main.error.no_selection":      "Не выбран конфигурационный файл.",
         "main.error.read":              "Ошибка чтения",
@@ -164,6 +166,22 @@ STRINGS = {
         "editor.dialog.unsaved.title": "Несохранённые изменения",
         "editor.dialog.unsaved.text":  "В превью есть несохранённые правки.\n"
                                        "Сохранить перед выходом?",
+
+        "editor.dialog.new.title":     "Несохранённый конфиг",
+        "editor.dialog.new.text":      "Вы отметили команды, но не сохранили конфиг.\n"
+                                      "Сохранить как system.cfg перед выходом?",
+        "editor.dialog.save.title":    "Сохранить?",
+        "editor.dialog.save.text":     "Конфигурация сохранена.",
+
+        "editor.info.nothing":         "Нечего сохранять",
+        "editor.info.nothing.text":    "Не отмечено ни одной команды.",
+        "editor.error.save":           "Ошибка сохранения",
+        "editor.error.save.text":      "Не удалось сохранить конфигурацию.",
+        "editor.info.done":            "Готово",
+
+        "editor.error.server_required": "server_id не задан для нового cfg.",
+        "editor.error.no_config_service": "EditorService: config_service не задан, "
+                                          "нельзя создать новый cfg.",
 
         # ============ РЕДАКТОР ХОТКЕЕВ ============
         "shortcuts.window_title":    "Горячие клавиши",
@@ -326,7 +344,7 @@ STRINGS = {
         "main.action_change_server":  "Change server...",
         "main.action_video_help":     "Video guide",
         "main.action_about":          "About",
-        "main.dialog.import.title":     "File name in project",
+        "main.dialog.import.title":     "Import cfg",
         "main.dialog.import.label":     "Name",
         "main.dialog.export.format":    "Export format",
         "main.dialog.export.label":     "Choose format:",
@@ -338,6 +356,8 @@ STRINGS = {
         "main.dialog.dup.label":        "New file name",
         "main.dialog.delete.title":     "Delete",
         "main.dialog.logs.title":       "History",
+        "main.dialog.export.filename_title": "Export cfg",
+        "main.dialog.import.filename_title": "Import cfg",
 
         "main.error.no_selection":      "No configuration file selected.",
         "main.error.read":              "Read error",
@@ -386,6 +406,22 @@ STRINGS = {
         "editor.dialog.unsaved.title": "Unsaved changes",
         "editor.dialog.unsaved.text":  "Preview has unsaved changes.\n"
                                        "Save before leaving?",
+
+        "editor.dialog.new.title":     "Unsaved config",
+        "editor.dialog.new.text":      "You have selected commands but haven't saved the config.\n"
+                                      "Save as system.cfg before leaving?",
+        "editor.dialog.save.title":    "Save?",
+        "editor.dialog.save.text":     "Configuration saved.",
+
+        "editor.info.nothing":         "Nothing to save",
+        "editor.info.nothing.text":    "No commands selected.",
+        "editor.error.save":           "Save error",
+        "editor.error.save.text":      "Failed to save configuration.",
+        "editor.info.done":            "Done",
+
+        "editor.error.server_required": "server_id is not set for a new cfg.",
+        "editor.error.no_config_service": "EditorService: config_service is not set, "
+                                          "cannot create a new cfg.",
 
         # ============ SHORTCUTS EDITOR ============
         "shortcuts.window_title":    "Hotkeys",

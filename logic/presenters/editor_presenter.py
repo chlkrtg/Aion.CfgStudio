@@ -8,6 +8,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QMessageBox, QListWidgetItem
 
 from logic.presenters.base_presenter import BasePresenter
+from logic.i18n import t
 
 
 MODE_SIMPLE = {"simple"}
@@ -55,13 +56,12 @@ class EditorPresenter(BasePresenter):
           No - уйти без сохранения
           Cancel - остаться
         """
-        # если cfg ещё не создан: это новый cfg, диалог про сохранение
         if self.config_id is None:
             if self._has_checked_commands():
                 ans = QMessageBox.question(
-                    self.view, "Несохранённый конфиг",
-                    "Вы отметили команды, но не сохранили конфиг.\n"
-                    "Сохранить как system.cfg перед выходом?",
+                    self.view,
+                    t("editor.dialog.new.title"),
+                    t("editor.dialog.new.text"),
                     QMessageBox.StandardButton.Yes
                     | QMessageBox.StandardButton.No
                     | QMessageBox.StandardButton.Cancel,
@@ -72,12 +72,11 @@ class EditorPresenter(BasePresenter):
                     self.apply_silent()
             return True
 
-        # существующий cfg: проверяем изменения
         if self._has_unsaved_changes():
             ans = QMessageBox.question(
-                self.view, "Несохранённые изменения",
-                "В редакторе есть несохранённые изменения.\n"
-                "Сохранить перед выходом?",
+                self.view,
+                t("editor.dialog.unsaved.title"),
+                t("editor.dialog.unsaved.text"),
                 QMessageBox.StandardButton.Yes
                 | QMessageBox.StandardButton.No
                 | QMessageBox.StandardButton.Cancel,
@@ -86,7 +85,6 @@ class EditorPresenter(BasePresenter):
                 return False
             if ans == QMessageBox.StandardButton.Yes:
                 self._save_current_state()
-
         return True
 
     def _has_unsaved_changes(self) -> bool:
@@ -173,7 +171,6 @@ class EditorPresenter(BasePresenter):
         self.apply_filters(sync=False)
 
     def _update_file_label(self):
-        from logic.i18n import t
         if self.config_id is None:
             self.view.lblFileName.setText(t("editor.lbl_file_new"))
             return
@@ -186,7 +183,6 @@ class EditorPresenter(BasePresenter):
             self.view.lblFileName.setText(t("editor.lbl_file_none"))
 
     def _load_prefixes(self):
-        from logic.i18n import t
         view = self.view
         current_code = None
         item = view.listPrefixes.currentItem()
@@ -471,20 +467,24 @@ class EditorPresenter(BasePresenter):
         values = self._collect_values()
         if not values:
             QMessageBox.information(
-                self.view, "Нечего сохранять",
-                "Не отмечено ни одной команды."
+                self.view,
+                t("editor.info.nothing"),
+                t("editor.info.nothing.text"),
             )
             return
 
         if not self.apply_silent():
             QMessageBox.critical(
-                self.view, "Ошибка сохранения",
-                "Не удалось сохранить конфигурацию."
+                self.view,
+                t("editor.error.save"),
+                t("editor.error.save.text"),
             )
             return
 
         QMessageBox.information(
-            self.view, "Готово", "Конфигурация сохранена."
+            self.view,
+            t("editor.info.done"),
+            t("editor.dialog.save.text"),
         )
         win = self.view.window()
         win.go_main(win.current_server_id)

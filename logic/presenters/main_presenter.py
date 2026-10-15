@@ -255,8 +255,10 @@ class MainPresenter(BasePresenter):
             return
 
         path, _ = QFileDialog.getSaveFileName(
-            view, "Экспорт cfg", cfg["filename"],
-            "Cfg (*.cfg);;Все файлы (*)"
+            view,
+            t("main.dialog.export.filename_title"),  # ← новый ключ
+            cfg["filename"],
+            "Cfg (*.cfg);;Все файлы (*)",  # ← фильтр не переводим
         )
         if not path:
             return
