@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
 )
 
 from logic.presenters.base_presenter import BasePresenter
+from logic.i18n import t
 
 
 class MainPresenter(BasePresenter):
@@ -38,12 +39,11 @@ class MainPresenter(BasePresenter):
         self.refresh()
 
     def on_leave(self):
-        # проверка несохранённых правок
         if self._has_unsaved_changes():
             ans = QMessageBox.question(
-                self.view, "Несохранённые изменения",
-                "В превью есть несохранённые правки.\n"
-                "Сохранить перед выходом?",
+                self.view,
+                t("editor.dialog.unsaved.title"),
+                t("editor.dialog.unsaved.text"),
                 QMessageBox.StandardButton.Yes
                 | QMessageBox.StandardButton.No
                 | QMessageBox.StandardButton.Cancel,
@@ -52,7 +52,6 @@ class MainPresenter(BasePresenter):
                 return False
             if ans == QMessageBox.StandardButton.Yes:
                 self.save_preview()
-
         self.view.clear_preview()
         self.view.treeConfigs.clearSelection()
         return True
@@ -206,14 +205,16 @@ class MainPresenter(BasePresenter):
         """Импорт cfg через диалог."""
         view = self.view
         path, _ = QFileDialog.getOpenFileName(
-            view, "Импорт cfg", "", "Cfg (*.cfg);;Все файлы (*)"
+            view, t("main.dialog.import.title"), "",
+            "Cfg (*.cfg);;Все файлы (*)"
         )
         if not path:
             return
 
         default_name = os.path.basename(path)
         name, ok = view.ask_name_hint(
-            "Имя файла в проекте", "Имя",
+            t("main.dialog.import.title"),
+            t("main.dialog.import.label"),
             view.MAX_CONFIG_NAME_LEN,
             default=default_name,
         )
@@ -225,10 +226,14 @@ class MainPresenter(BasePresenter):
                 path, self.server_id, name
             )
         except OSError as exc:
-            QMessageBox.critical(view, "Ошибка чтения", str(exc))
+            QMessageBox.critical(
+                view, t("main.error.read"), str(exc)
+            )
             return
         except ValueError as exc:
-            QMessageBox.warning(view, "Ошибка", str(exc))
+            QMessageBox.warning(
+                view, t("dialog.error_title"), str(exc)
+            )
             return
 
         self.refresh(select_id=config_id)
@@ -239,8 +244,8 @@ class MainPresenter(BasePresenter):
         item = view.treeConfigs.currentItem()
         if item is None:
             QMessageBox.warning(
-                view, "Ошибка",
-                "Не выбран конфигурационный файл."
+                view, t("dialog.error_title"),
+                t("main.error.no_selection"),
             )
             return
 
@@ -257,24 +262,29 @@ class MainPresenter(BasePresenter):
             return
 
         fmt, ok = QInputDialog.getItem(
-            view, "Формат экспорта",
-            "Выберите формат:",
-            ["Зашифрованный (для игры)",
-             "Plain-текст (для чтения)"],
+            view,
+            t("main.dialog.export.format"),
+            t("main.dialog.export.label"),
+            [
+                t("main.dialog.export.encrypted"),
+                t("main.dialog.export.plain"),
+            ],
             0, False,
         )
         if not ok:
             return
 
-        encrypted = fmt.startswith("Зашифрованный")
+        encrypted = fmt == t("main.dialog.export.encrypted")
         try:
             self.service.export_to_file(config_id, path, encrypted)
         except (OSError, ValueError) as exc:
-            QMessageBox.critical(view, "Ошибка записи", str(exc))
+            QMessageBox.critical(
+                view, t("main.error.write"), str(exc)
+            )
             return
-
         QMessageBox.information(
-            view, "Готово", f"Сохранено в {path}"
+            view, t("main.info.done"),
+            t("main.info.exported").format(path=path),
         )
 
     def rename_config(self):
@@ -283,30 +293,29 @@ class MainPresenter(BasePresenter):
         item = view.treeConfigs.currentItem()
         if item is None:
             QMessageBox.warning(
-                view, "Ошибка",
-                "Не выбран конфигурационный файл."
+                view, t("dialog.error_title"),
+                t("main.error.no_selection"),
             )
             return
-
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
         cfg = self.service.repo.get(config_id)
         if not cfg:
             return
-
         new_name, ok = view.ask_name_hint(
-            "Переименовать cfg", "Новое имя",
+            t("main.dialog.rename.title"),
+            t("main.dialog.rename.label"),
             view.MAX_CONFIG_NAME_LEN,
             default=cfg["filename"],
         )
         if not ok:
             return
-
         try:
             self.service.rename(config_id, new_name)
         except ValueError as exc:
-            QMessageBox.warning(view, "Ошибка", str(exc))
+            QMessageBox.warning(
+                view, t("dialog.error_title"), str(exc)
+            )
             return
-
         self.refresh(select_id=config_id)
 
     def delete_config(self):
@@ -315,17 +324,16 @@ class MainPresenter(BasePresenter):
         item = view.treeConfigs.currentItem()
         if item is None:
             QMessageBox.warning(
-                view, "Ошибка",
-                "Не выбран конфигурационный файл."
+                view, t("dialog.error_title"),
+                t("main.error.no_selection"),
             )
             return
-
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
         ans = QMessageBox.question(
-            view, "Удалить",
-            f"Удалить cfg «{item.text(0)}»?",
-            QMessageBox.StandardButton.Yes
-            | QMessageBox.StandardButton.No,
+            view,
+            t("main.dialog.delete.title"),
+            t("main.confirm.delete").format(name=item.text(0)),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if ans == QMessageBox.StandardButton.Yes:
             self.service.delete(config_id)
@@ -338,31 +346,29 @@ class MainPresenter(BasePresenter):
         item = view.treeConfigs.currentItem()
         if item is None:
             return
-
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
         cfg = self.service.repo.get(config_id)
         if not cfg:
             return
-
         base = cfg["filename"]
         if base.endswith(".cfg"):
             base = base[:-4]
-        default = f"{base}_copy.cfg"
-
+        default = f"{base}_{t('main.copy_suffix')}.cfg"
         new_name, ok = view.ask_name_hint(
-            "Дублировать cfg", "Имя нового файла",
+            t("main.dialog.dup.title"),
+            t("main.dialog.dup.label"),
             view.MAX_CONFIG_NAME_LEN,
             default=default,
         )
         if not ok:
             return
-
         try:
             new_id = self.service.duplicate(config_id, new_name)
         except ValueError as exc:
-            QMessageBox.warning(view, "Ошибка", str(exc))
+            QMessageBox.warning(
+                view, t("dialog.error_title"), str(exc)
+            )
             return
-
         self.refresh(select_id=new_id)
 
     def open_selected(self):
@@ -381,29 +387,26 @@ class MainPresenter(BasePresenter):
     def show_logs(self):
         """Открытие диалога истории изменений."""
         from logic.logs_dialog import LogsDialog
-
         view = self.view
         item = view.treeConfigs.currentItem()
         if item is None:
             QMessageBox.warning(
-                view, "Ошибка",
-                "Не выбран конфигурационный файл."
+                view, t("dialog.error_title"),
+                t("main.error.no_selection"),
             )
             return
-
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
         cfg = self.service.repo.get(config_id)
         if not cfg:
             return
-
         logs = self.service.repo.logs(config_id)
         if not logs:
             QMessageBox.information(
-                view, "История",
-                f"Изменений нет для файла «{cfg['filename']}»."
+                view,
+                t("main.dialog.logs.title"),
+                t("main.info.no_logs").format(name=cfg["filename"]),
             )
             return
-
         dialog = LogsDialog(view, logs, filename=cfg["filename"])
         dialog.exec()
 
@@ -423,53 +426,55 @@ class MainPresenter(BasePresenter):
         item = view.treeConfigs.currentItem()
         if item is None:
             QMessageBox.warning(
-                view, "Ошибка",
-                "Не выбран конфигурационный файл."
+                view, t("dialog.error_title"),
+                t("main.error.no_selection"),
             )
             return
-
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
         text = view.editPreview.toPlainText()
 
         if not text.strip():
             ans = QMessageBox.question(
-                view, "Очистить cfg?",
-                "Вы уверены, что хотите удалить всё содержимое cfg?",
-                QMessageBox.StandardButton.Yes
-                | QMessageBox.StandardButton.No,
+                view,
+                t("main.dialog.clear.title"),  # ключ надо добавить
+                t("main.confirm.clear"),
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
             if ans != QMessageBox.StandardButton.Yes:
                 return
 
         try:
-            unknown, duplicates = self.service.save_content(
-                config_id, text
-            )
+            unknown, duplicates = self.service.save_content(config_id, text)
         except ValueError as exc:
-            QMessageBox.warning(view, "Ошибка", str(exc))
+            QMessageBox.warning(
+                view, t("dialog.error_title"), str(exc)
+            )
             return
 
-        # формируем сообщение
         msgs = []
         if unknown:
             msgs.append(
-                f"Неизвестных команд (нет в БД): {unknown}"
+                t("main.info.unknown_commands").format(n=unknown)
             )
         if duplicates:
             msgs.append(
-                f"Дубликатов удалено: {duplicates}"
+                t("main.info.duplicates").format(n=duplicates)
             )
 
         if msgs:
             QMessageBox.information(
-                view, "Сохранено",
-                "Конфигурация сохранена.\n\n" + "\n".join(msgs)
+                view,
+                t("main.info.saved"),
+                t("main.info.saved_with_details").format(
+                    details="\n".join(msgs)
+                ),
             )
         else:
             QMessageBox.information(
-                view, "Готово", "Конфигурация сохранена."
+                view,
+                t("main.info.done"),
+                t("main.info.saved"),
             )
-
         self.refresh(select_id=config_id)
 
     def revert_preview(self):

@@ -10,6 +10,7 @@ from logic.constants import MAX_CONFIG_NAME_LEN
 from parsers.cfg_crypto import (
     decrypt, encrypt, looks_like_encrypted,
 )
+from logic.i18n import t
 
 
 # Регулярка для строк cfg вида: key = "value"  или  key = value
@@ -118,7 +119,7 @@ class ConfigService:
         """
         cfg = self.repo.get(config_id)
         if not cfg:
-            raise ValueError("Конфиг не найден.")
+            raise ValueError(t("config.error.not_found"))
 
         content = cfg["content"] or ""
         try:
@@ -311,10 +312,12 @@ class ConfigService:
     def _validate_name(self, name: str) -> str:
         name = name.strip()
         if not name:
-            raise ValueError("Имя файла не может быть пустым.")
+            raise ValueError(t("config.error.empty_name"))
         if len(name) > MAX_CONFIG_NAME_LEN:
             raise ValueError(
-                f"Имя слишком длинное (макс. {MAX_CONFIG_NAME_LEN})."
+                t("config.error.too_long_name").format(
+                    n=MAX_CONFIG_NAME_LEN
+                )
             )
         return name
 

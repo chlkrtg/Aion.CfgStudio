@@ -131,6 +131,11 @@ STRINGS = {
         "main.info.duplicates":         "Дубликатов удалено: {n}",
         "main.info.no_logs":            "Изменений нет для файла «{name}».",
         "main.copy_suffix":             "(копия)",
+        "main.dialog.clear.title":      "Очистить cfg?",
+
+        "config.error.empty_name":      "Имя файла не может быть пустым.",
+        "config.error.too_long_name":   "Имя слишком длинное (макс. {n}).",
+        "config.error.not_found":       "Конфиг не найден.",
 
         # ============ РЕДАКТОР КОМАНД ============
         "editor.window_title":   "Aion.CfgStudio — Редактор конфигурации",
@@ -155,6 +160,10 @@ STRINGS = {
         "editor.btn_reset_all":  "Сбросить всё к стандартным",
         "editor.btn_cancel":     "Отмена",
         "editor.btn_apply":      "Применить",
+
+        "editor.dialog.unsaved.title": "Несохранённые изменения",
+        "editor.dialog.unsaved.text":  "В превью есть несохранённые правки.\n"
+                                       "Сохранить перед выходом?",
 
         # ============ РЕДАКТОР ХОТКЕЕВ ============
         "shortcuts.window_title":    "Горячие клавиши",
@@ -344,6 +353,11 @@ STRINGS = {
         "main.info.duplicates":         "Duplicates removed: {n}",
         "main.info.no_logs":            "No changes for file «{name}».",
         "main.copy_suffix":             "(copy)",
+        "main.dialog.clear.title":      "Clear cfg?",
+
+        "config.error.empty_name":      "File name cannot be empty.",
+        "config.error.too_long_name":   "Name is too long (max {n}).",
+        "config.error.not_found":       "Config not found.",
 
         # ============ EDITOR ============
         "editor.window_title":   "Aion.CfgStudio — Config editor",
@@ -368,6 +382,10 @@ STRINGS = {
         "editor.btn_reset_all":  "Reset all to defaults",
         "editor.btn_cancel":     "Cancel",
         "editor.btn_apply":      "Apply",
+
+        "editor.dialog.unsaved.title": "Unsaved changes",
+        "editor.dialog.unsaved.text":  "Preview has unsaved changes.\n"
+                                       "Save before leaving?",
 
         # ============ SHORTCUTS EDITOR ============
         "shortcuts.window_title":    "Hotkeys",
