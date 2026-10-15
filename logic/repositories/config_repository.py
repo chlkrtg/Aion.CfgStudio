@@ -60,6 +60,10 @@ class ConfigRepository:
         """Запись в историю изменений."""
         self.db.log_change(config_id, key, old, new)
 
+    def log_change_bulk(self, config_id: int, rows: list):
+        """Пакетная запись истории. rows: [(key, old, new), ...]"""
+        self.db.log_change_bulk(config_id, rows)
+
     def clear_values(self, config_id: int):
         """Удаляет все ConfigValues для cfg."""
         self.db.clear_config_values(config_id)

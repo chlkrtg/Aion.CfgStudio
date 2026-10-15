@@ -72,40 +72,16 @@ class ConfigService:
 
     # =========== парсинг cfg -> ConfigValues ===========
 
-    def populate_values_from_content(self, config_id: int,
-                                     content: str):
-        """Парсит content и заполняет ConfigValues найденными значениями.
+    def populate_values_from_content(self, config_id: int, content: str):
+        """Публичный метод: используется при импорте.
 
-        Работает после импорта, чтобы редактор открывался
-        с уже отмеченными командами и подставленными значениями.
+        Загружает команды заново — не критично, импорт редкий.
         """
         if self.command_repo is None:
             return
-
-        parsed: dict[str, str] = {}
-        for line in content.splitlines():
-            line = line.strip()
-            if not line or line.startswith(("--", "//", "#")):
-                continue
-            m = _CFG_KV_RE.match(line)
-            if m:
-                parsed[m.group(1)] = m.group(2)
-
-        if not parsed:
-            return
-
-        # карта key_name -> command_id
         all_commands = self.command_repo.all("debug")
         key_to_id = {c["key_name"]: c["id"] for c in all_commands}
-
-        rows = []
-        for key, value in parsed.items():
-            cmd_id = key_to_id.get(key)
-            if cmd_id is not None:
-                rows.append((cmd_id, 1, value))
-
-        if rows:
-            self.repo.save_values_bulk(config_id, rows)
+        self._populate_values_from_content(config_id, content, key_to_id)
 
     # =========== экспорт ===========
 
@@ -152,34 +128,75 @@ class ConfigService:
         """Сохраняет текст cfg + пишет историю изменений.
 
         Возвращает (отсечено_неизвестных, удалено_дубликатов).
-
-        Логика:
-          - старое состояние ConfigValues читается ДО сохранения
-          - ConfigValues полностью очищаются, потом заполняются заново
-            (это синхронизирует их с текстом cfg)
-          - история пишется только для реально изменившихся значений
         """
-        cleaned, unknown, duplicates = self._filter_known_commands(text)
+        # 1. Загружаем команды ОДИН раз — кэш
+        all_commands = (
+            self.command_repo.all("debug")
+            if self.command_repo is not None
+            else []
+        )
+        key_to_id = {c["key_name"]: c["id"] for c in all_commands}
+        id_to_key = {c["id"]: c["key_name"] for c in all_commands}
+        known = set(key_to_id.keys())
 
-        # 1. старое состояние ДО сохранения
+        # 2. Фильтрация (передаём known)
+        cleaned, unknown, duplicates = self._filter_known_commands(
+            text, known
+        )
+
+        # 3. Старое состояние ДО сохранения
         old_values = {
             row["command_id"]: row["custom_value"]
             for row in self.repo.values(config_id)
         }
 
-        # 2. сохраняем текст
+        # 4. Сохраняем текст + очищаем ConfigValues
         self.repo.update(config_id, cleaned)
-
-        # 3. очищаем ConfigValues (синхронизация с новым текстом)
         self.repo.clear_values(config_id)
 
-        # 4. заполняем заново из очищенного текста
-        self.populate_values_from_content(config_id, cleaned)
+        # 5. Заполняем ConfigValues заново (передаём key_to_id)
+        self._populate_values_from_content(
+            config_id, cleaned, key_to_id
+        )
 
-        # 5. логи: сравниваем старое и новое
-        self._write_content_logs(config_id, old_values, cleaned)
+        # 6. Логи — bulk + готовые словари
+        self._write_content_logs(
+            config_id, old_values, cleaned, key_to_id, id_to_key
+        )
 
         return unknown, duplicates
+
+    def _populate_values_from_content(
+            self, config_id: int, content: str, key_to_id: dict
+    ):
+        """Парсит content и заполняет ConfigValues.
+
+        key_to_id: {key_name: command_id} — готовый словарь,
+        чтобы не звать command_repo.all() заново.
+        """
+        if not key_to_id:
+            return
+
+        parsed: dict[str, str] = {}
+        for line in content.splitlines():
+            line = line.strip()
+            if not line or line.startswith(("--", "//", "#")):
+                continue
+            m = _CFG_KV_RE.match(line)
+            if m:
+                parsed[m.group(1)] = m.group(2)
+
+        if not parsed:
+            return
+
+        rows = []
+        for key, value in parsed.items():
+            cmd_id = key_to_id.get(key)
+            if cmd_id is not None:
+                rows.append((cmd_id, 1, value))
+
+        if rows:
+            self.repo.save_values_bulk(config_id, rows)
 
     def _parse_content(self, text: str) -> dict[str, str]:
         """Парсит текст cfg в {key_name: value}."""
@@ -193,22 +210,18 @@ class ConfigService:
                 parsed[m.group(1)] = m.group(2)
         return parsed
 
-    def _write_content_logs(self, config_id: int,
-                            old_values: dict, cleaned_text: str):
-        """Пишет историю изменений.
+    def _write_content_logs(
+            self, config_id: int, old_values: dict,
+            cleaned_text: str, key_to_id: dict, id_to_key: dict,
+    ):
+        """Пишет историю изменений — bulk.
 
-        old_values: {cmd_id: value | None} — что было в ConfigValues
-        cleaned_text: текст cfg после очистки
+        old_values: {cmd_id: value | None}
+        key_to_id / id_to_key: готовые словари.
         """
-        if self.command_repo is None:
+        if not key_to_id:
             return
 
-        # карты
-        all_commands = self.command_repo.all("debug")
-        key_to_id = {c["key_name"]: c["id"] for c in all_commands}
-        id_to_key = {c["id"]: c["key_name"] for c in all_commands}
-
-        # новое состояние: {cmd_id: value}
         parsed = self._parse_content(cleaned_text)
         new_values = {}
         for key, value in parsed.items():
@@ -216,7 +229,6 @@ class ConfigService:
             if cmd_id is not None:
                 new_values[cmd_id] = value
 
-        # сравниваем
         all_ids = set(old_values) | set(new_values)
         changes = []
 
@@ -224,12 +236,8 @@ class ConfigService:
             old_val = old_values.get(cmd_id)
             new_val = new_values.get(cmd_id)
 
-            old_norm = (
-                None if old_val is None else str(old_val).strip()
-            )
-            new_norm = (
-                None if new_val is None else str(new_val).strip()
-            )
+            old_norm = None if old_val is None else str(old_val).strip()
+            new_norm = None if new_val is None else str(new_val).strip()
 
             if old_norm == new_norm:
                 continue
@@ -238,12 +246,8 @@ class ConfigService:
             if key is None:
                 continue
 
-            old_display = (
-                old_norm if old_norm is not None else "(выключено)"
-            )
-            new_display = (
-                new_norm if new_norm is not None else "(выключено)"
-            )
+            old_display = old_norm if old_norm is not None else "(выключено)"
+            new_display = new_norm if new_norm is not None else "(выключено)"
 
             changes.append((key, old_display, new_display))
 
@@ -251,29 +255,21 @@ class ConfigService:
             return
 
         try:
-            for key, old, new in changes:
-                self.repo.log_change(config_id, key, old, new)
+            self.repo.log_change_bulk(config_id, changes)
         except Exception as exc:
             print(f"[ConfigService] write_logs failed: {exc}")
 
-    def _filter_known_commands(self, text: str) -> tuple[str, int, int]:
+    def _filter_known_commands(
+            self, text: str, known: set
+    ) -> tuple[str, int, int]:
         """Убирает из текста неизвестные команды и дубликаты.
 
-        Возвращает (очищенный текст, отсечено_неизвестных, удалено_дубликатов).
-
-        Логика:
-          - пустые строки и комментарии (--, //, #) — оставляем
-          - команды: оставляем ТОЛЬКО первое вхождение каждого ключа,
-            значение берём из ПОСЛЕДНЕГО вхождения
-          - неизвестные команды — отсекаем (unknown)
-          - повторные вхождения известных — схлопываем (duplicates)
+        known: готовое множество key_name — не зовём command_repo.all().
         """
-        if self.command_repo is None:
+        if not known:
             return text, 0, 0
 
-        known = {c["key_name"] for c in self.command_repo.all("debug")}
-
-        # проход 1: последнее вхождение для каждой команды
+        # Проход 1: последнее вхождение для каждой команды
         last_value: dict[str, str] = {}
         for line in text.splitlines():
             stripped = line.strip()
@@ -283,7 +279,7 @@ class ConfigService:
             if m and m.group(1) in known:
                 last_value[m.group(1)] = line
 
-        # проход 2
+        # Проход 2
         result = []
         seen = set()
         unknown = 0
@@ -291,11 +287,9 @@ class ConfigService:
 
         for line in text.splitlines():
             stripped = line.strip()
-
             if not stripped or stripped.startswith(("--", "//", "#")):
                 result.append(line)
                 continue
-
             m = _CFG_KV_RE.match(stripped)
             if m and m.group(1) in known:
                 key = m.group(1)

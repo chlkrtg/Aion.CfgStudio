@@ -86,9 +86,10 @@ class EditorService:
     # =========== логи ===========
 
     def write_logs(self, config_id: int, changes: list):
-        """Пишет изменившиеся значения в историю.
+        """Пишет изменившиеся значения в историю — bulk.
 
         changes: [(key_name, old_value, new_value), ...]
         """
-        for key, old, new in changes:
-            self.config_repo.log_change(config_id, key, old, new)
+        if not changes:
+            return
+        self.config_repo.log_change_bulk(config_id, changes)

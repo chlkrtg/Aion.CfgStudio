@@ -326,6 +326,16 @@ class DBManager:
                 (config_id, key, old, new),
             )
 
+    def log_change_bulk(self, config_id: int, rows: list):
+        if not rows:
+            return
+        with self._conn() as conn:
+            conn.executemany(
+                "INSERT INTO Logs (config_id, key_name, old_value, new_value) "
+                "VALUES (?, ?, ?, ?)",
+                [(config_id, k, o, n) for k, o, n in rows],
+            )
+
     def list_logs(self, config_id: int):
         with self._conn() as conn:
             return conn.execute(
