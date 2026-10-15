@@ -32,6 +32,21 @@ STRINGS = {
         "profile.btn_enter":     "Войти",
         "profile.btn_video":     "Видео-руководство",
         "profile.btn_cancel":    "Выход",
+        "profile.dialog.new.title":      "Новый профиль",
+        "profile.dialog.new.label":      "Имя профиля",
+        "profile.dialog.rename.title":   "Переименовать профиль",
+        "profile.dialog.rename.label":   "Новое имя",
+        "profile.dialog.dup.title":      "Дублировать профиль",
+        "profile.dialog.dup.label":      "Имя нового профиля",
+        "profile.dialog.delete.title":   "Удалить",
+        "profile.confirm.delete":        "Удалить профиль «{name}» со всем содержимым?\n\n"
+                                         "Будет удалено: серверов — {s}, конфигураций — {c}.",
+        "profile.error.empty":           "Имя не может быть пустым.",
+        "profile.error.too_long":        "Имя слишком длинное (макс. {n}).",
+        "profile.error.exists":          "Профиль «{name}» уже существует.",
+        "profile.error.not_found":       "Профиль не найден.",
+        "profile.error.save_desc":       "Не удалось сохранить описание профиля:\n{exc}",
+        "profile.copy_suffix": "(копия)",
 
         # ============ СЕРВЕР ============
         "server.window_title":   "Aion.CfgStudio — Выбор сервера",
@@ -186,6 +201,21 @@ STRINGS = {
         "profile.btn_enter":     "Enter",
         "profile.btn_video":     "Video guide",
         "profile.btn_cancel":    "Exit",
+        "profile.dialog.new.title":      "New profile",
+        "profile.dialog.new.label":      "Profile name",
+        "profile.dialog.rename.title":   "Rename profile",
+        "profile.dialog.rename.label":   "New name",
+        "profile.dialog.dup.title":      "Duplicate profile",
+        "profile.dialog.dup.label":      "New profile name",
+        "profile.dialog.delete.title":   "Delete",
+        "profile.confirm.delete":        "Delete profile «{name}» with all content?\n\n"
+                                         "Will be deleted: servers — {s}, configs — {c}.",
+        "profile.error.empty":           "Name cannot be empty.",
+        "profile.error.too_long":        "Name is too long (max {n}).",
+        "profile.error.exists":          "Profile «{name}» already exists.",
+        "profile.error.not_found":       "Profile not found.",
+        "profile.error.save_desc":       "Failed to save profile description:\n{exc}",
+        "profile.copy_suffix": "(copy)",
 
         # ============ SERVER ============
         "server.window_title":   "Aion.CfgStudio — Server selection",

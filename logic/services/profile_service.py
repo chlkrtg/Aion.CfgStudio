@@ -7,6 +7,7 @@ from logic.constants import (
     MAX_PROFILE_NAME_LEN,
     MAX_DESCRIPTION_LEN,
 )
+from logic.i18n import t
 
 
 class ProfileService:
@@ -25,7 +26,7 @@ class ProfileService:
         """
         name = self._validate_name(name)
         if any(p["name"] == name for p in self.repo.all()):
-            raise ValueError(f"Профиль «{name}» уже существует.")
+            raise ValueError(t("profile.error.exists").format(name=name))
         return self.repo.create(name)
 
     # =========== переименование ===========
@@ -37,20 +38,14 @@ class ProfileService:
             ValueError: профиль не найден или имя занято.
         """
         new_name = self._validate_name(new_name)
-
         profile = self.repo.get(profile_id)
         if not profile:
-            raise ValueError("Профиль не найден.")
-
+            raise ValueError(t("profile.error.not_found"))
         if profile["name"] == new_name:
-            return  # ничего не меняем
-
-        if any(
-            p["name"] == new_name and p["id"] != profile_id
-            for p in self.repo.all()
-        ):
-            raise ValueError(f"Профиль «{new_name}» уже существует.")
-
+            return
+        if any(p["name"] == new_name and p["id"] != profile_id
+               for p in self.repo.all()):
+            raise ValueError(t("profile.error.exists").format(name=new_name))
         self.repo.rename(profile_id, new_name)
 
     # =========== удаление ===========
@@ -77,7 +72,7 @@ class ProfileService:
         """
         new_name = self._validate_name(new_name)
         if any(p["name"] == new_name for p in self.repo.all()):
-            raise ValueError(f"Профиль «{new_name}» уже существует.")
+            raise ValueError(t("profile.error.exists").format(name=new_name))
         return self.repo.duplicate(profile_id, new_name)
 
     # =========== вспомогательное ===========
@@ -86,9 +81,9 @@ class ProfileService:
         """Проверяет и нормализует имя профиля."""
         name = name.strip()
         if not name:
-            raise ValueError("Имя не может быть пустым.")
+            raise ValueError(t("profile.error.empty"))
         if len(name) > MAX_PROFILE_NAME_LEN:
             raise ValueError(
-                f"Имя слишком длинное (макс. {MAX_PROFILE_NAME_LEN})."
+                t("profile.error.too_long").format(n=MAX_PROFILE_NAME_LEN)
             )
         return name

@@ -7,6 +7,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
 
 from logic.presenters.base_presenter import BasePresenter
+from logic.i18n import t
 
 
 class ProfilePresenter(BasePresenter):
@@ -124,8 +125,9 @@ class ProfilePresenter(BasePresenter):
             self.service.update_description(pid, text)
         except Exception as exc:
             QMessageBox.warning(
-                self.view, "Ошибка",
-                f"Не удалось сохранить описание профиля:\n{exc}"
+                self.view,
+                t("dialog.error_title"),
+                t("profile.error.save_desc").format(exc=exc),
             )
 
     # ============ действия ============
@@ -134,18 +136,17 @@ class ProfilePresenter(BasePresenter):
         """Создаёт профиль."""
         view = self.view
         name, ok = view.ask_name_hint(
-            "Новый профиль", "Имя профиля",
+            t("profile.dialog.new.title"),
+            t("profile.dialog.new.label"),
             view.MAX_PROFILE_NAME_LEN,
         )
         if not ok:
             return
-
         try:
             new_id = self.service.create(name)
         except ValueError as exc:
-            QMessageBox.warning(view, "Ошибка", str(exc))
+            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
             return
-
         self.refresh(select_id=new_id)
 
     def rename(self):
@@ -154,8 +155,8 @@ class ProfilePresenter(BasePresenter):
         item = view.listProfiles.currentItem()
         if item is None:
             QMessageBox.information(
-                view, "Переименование",
-                "Не выбран профиль для переименования."
+                view, t("profile.dialog.rename.title"),
+                t("profile.error.not_found"),
             )
             return
 
@@ -163,7 +164,8 @@ class ProfilePresenter(BasePresenter):
         old_name = item.text()
 
         new_name, ok = view.ask_name_hint(
-            "Переименовать профиль", "Новое имя",
+            t("profile.dialog.rename.title"),
+            t("profile.dialog.rename.label"),
             view.MAX_PROFILE_NAME_LEN,
             default=old_name,
         )
@@ -173,9 +175,8 @@ class ProfilePresenter(BasePresenter):
         try:
             self.service.rename(pid, new_name)
         except ValueError as exc:
-            QMessageBox.warning(view, "Ошибка", str(exc))
+            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
             return
-
         self.refresh(select_id=pid)
 
     def delete(self):
@@ -183,10 +184,6 @@ class ProfilePresenter(BasePresenter):
         view = self.view
         item = view.listProfiles.currentItem()
         if item is None:
-            QMessageBox.information(
-                view, "Удаление",
-                "Не выбран профиль для удаления."
-            )
             return
 
         pid = item.data(Qt.ItemDataRole.UserRole)
@@ -194,12 +191,12 @@ class ProfilePresenter(BasePresenter):
         configs = self.reference.count_configs_in_profile(pid)
 
         ans = QMessageBox.question(
-            view, "Удалить",
-            f"Удалить профиль «{item.text()}» со всем содержимым?\n\n"
-            f"Будет удалено: серверов - {servers}, "
-            f"конфигураций - {configs}.",
-            QMessageBox.StandardButton.Yes
-            | QMessageBox.StandardButton.No,
+            view,
+            t("profile.dialog.delete.title"),
+            t("profile.confirm.delete").format(
+                name=item.text(), s=servers, c=configs
+            ),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if ans == QMessageBox.StandardButton.Yes:
             self.service.delete(pid)
@@ -210,10 +207,6 @@ class ProfilePresenter(BasePresenter):
         view = self.view
         item = view.listProfiles.currentItem()
         if item is None:
-            QMessageBox.information(
-                view, "Дублирование",
-                "Не выбран профиль для дублирования."
-            )
             return
 
         pid = item.data(Qt.ItemDataRole.UserRole)
@@ -222,19 +215,18 @@ class ProfilePresenter(BasePresenter):
             return
 
         new_name, ok = view.ask_name_hint(
-            "Дублировать профиль", "Имя нового профиля",
+            t("profile.dialog.dup.title"),
+            t("profile.dialog.dup.label"),
             view.MAX_PROFILE_NAME_LEN,
-            default=f"{profile['name']} (копия)",
+            default=f"{profile['name']} {t('profile.copy_suffix')}",
         )
         if not ok:
             return
-
         try:
             new_id = self.service.duplicate(pid, new_name)
         except ValueError as exc:
-            QMessageBox.warning(view, "Ошибка", str(exc))
+            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
             return
-
         self.refresh(select_id=new_id)
 
     def enter(self):
@@ -243,8 +235,8 @@ class ProfilePresenter(BasePresenter):
         item = view.listProfiles.currentItem()
         if item is None:
             QMessageBox.information(
-                view, "Вход",
-                "Не выбран профиль для входа."
+                view, t("profile.dialog.enter.title"),
+                t("profile.error.not_found"),
             )
             return
         profile_id = item.data(Qt.ItemDataRole.UserRole)
