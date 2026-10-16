@@ -14,7 +14,7 @@ from logic.widgets.shortcuts import bind_actions
 from logic.widgets.value_delegate import ValueDelegate
 from logic.widgets.shortcut_labels import with_hotkey
 from logic.presenters import EditorPresenter
-from logic.core.i18n import t
+from logic.core.i18n import t, plural_ru
 from ui.command_editor import Ui_CommandEditorDialog
 
 
@@ -126,10 +126,10 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         """Обновляет подписи кнопок с актуальными хоткеями."""
         svc = self.window().shortcut_service
 
+        # счётчик обновится в apply_filters
+
         self.setWindowTitle(t("editor.window_title"))
         self.editSearch.setPlaceholderText(t("editor.search_placeholder"))
-        self.btnExpandAll.setText(t("editor.btn_expand"))
-        self.btnCollapseAll.setText(t("editor.btn_collapse"))
 
         self.lblPrefixesTitle.setText(t("editor.lbl_prefixes_title"))
         self.lblPrefixInfo.setText(t("editor.lbl_prefix_info"))
@@ -155,6 +155,18 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
             self.presenter._commands = None
             self.presenter._prefixes = None
             self.presenter.refresh()
+
+    def set_command_count(self, n: int):
+        """Обновляет счётчик видимых команд."""
+        from logic.core.i18n import t
+        from logic.core import i18n
+
+        if i18n.get_language() == "ru":
+            text = plural_ru(n, "команда", "команды", "команд")
+        else:
+            text = "command" if n == 1 else "commands"
+
+        self.lblCommandCount.setText(f"{n} {text}")
 
     # ============== контекст ==============
 

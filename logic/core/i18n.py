@@ -192,6 +192,10 @@ STRINGS = {
         "editor.make_defaults.done":     "Готово. Стандартными стали значения "
                                          "{n} команд.",
 
+        "editor.count.command.one":   "команда",
+        "editor.count.command.few":   "команды",
+        "editor.count.command.many":  "команд",
+
         # ============ РЕДАКТОР ХОТКЕЕВ ============
         "shortcuts.window_title":    "Горячие клавиши",
         "shortcuts.lbl_hint":        "Двойной клик по строке или кнопка «Изменить...» — назначить клавишу. Конфликты запрещены: сначала освободите занятую клавишу.",
@@ -439,6 +443,9 @@ STRINGS = {
                                          "This will affect all future cfgs. Continue?",
         "editor.make_defaults.done":     "Done. {n} commands are now default.",
 
+        "editor.count.command.one":   "command",
+        "editor.count.command.many":  "commands",
+
         # ============ SHORTCUTS EDITOR ============
         "shortcuts.window_title":    "Hotkeys",
         "shortcuts.lbl_hint":        "Double-click a row or use «Change...» to assign a key. Conflicts are forbidden: release the key first.",
@@ -526,3 +533,13 @@ def t(key: str) -> str:
     какой строки не хватает).
     """
     return STRINGS.get(CURRENT, {}).get(key, key)
+
+def plural_ru(n: int, one: str, few: str, many: str) -> str:
+    """Русские склонения: 1 команда, 2 команды, 5 команд."""
+    n10 = n % 10
+    n100 = n % 100
+    if n10 == 1 and n100 != 11:
+        return one
+    if 2 <= n10 <= 4 and not (12 <= n100 <= 14):
+        return few
+    return many

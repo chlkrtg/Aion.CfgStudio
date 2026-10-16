@@ -275,6 +275,10 @@ class EditorPresenter(BasePresenter):
 
             visible.append((cmd, pcode))
 
+        # обновить счётчик ПОСЛЕ фильтрации
+        self.view.set_command_count(len(visible))
+
+        # построить таблицу ОДИН раз
         self._rebuild_table(visible)
 
     def _rebuild_table(self, visible_commands):
