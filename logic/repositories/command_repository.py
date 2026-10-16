@@ -2,6 +2,7 @@
 
 Единая точка доступа к справочникам.
 """
+from logic.core import i18n
 
 
 class CommandRepository:
@@ -18,11 +19,13 @@ class CommandRepository:
             "advanced" - simple + advanced
             "debug" - все команды
         """
-        return self.db.list_commands(mode)
+        lang = i18n.get_language()
+        return self.db.list_commands(mode, lang=lang)
 
     def prefixes(self):
         """Все префиксы (категории команд)."""
-        return self.db.list_prefixes()
+        lang = i18n.get_language()
+        return self.db.list_prefixes(lang=lang)
 
     def video_chapters(self):
         """Все главы видео-руководства."""

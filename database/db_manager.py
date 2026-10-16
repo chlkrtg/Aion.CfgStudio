@@ -50,6 +50,7 @@ class DBManager:
             "seed_commands.sql",
             "seed_updates.sql",
             "seed_modes.sql",
+            "seed_translations.sql",
         ]
 
         for name in seed_files:
@@ -199,25 +200,42 @@ class DBManager:
 
     # ==================== ПРЕФИКСЫ ====================
 
-    def list_prefixes(self):
+    def list_prefixes(self, lang: str = "ru"):
         with self._conn() as conn:
             return conn.execute(
-                "SELECT * FROM Prefixes ORDER BY display_order, code"
+                """
+                SELECT p.id, p.code,
+                       COALESCE(pt.name, p.name) AS name,
+                       COALESCE(pt.description, p.description) AS description,
+                       p.display_order
+                FROM Prefixes p
+                LEFT JOIN PrefixTranslations pt
+                  ON pt.prefix_id = p.id AND pt.lang = ?
+                ORDER BY p.display_order, p.code
+                """,
+                (lang,),
             ).fetchall()
 
     # ==================== КОМАНДЫ ====================
 
-    def list_commands(self, mode: str = "advanced"):
-        """mode: simple / advanced / debug."""
+    def list_commands(self, mode: str = "advanced", lang: str = "ru"):
         filter_sql = {
-            "simple": "WHERE mode = 'simple'",
-            "advanced": "WHERE mode IN ('simple','advanced')",
+            "simple": "WHERE c.mode = 'simple'",
+            "advanced": "WHERE c.mode IN ('simple','advanced')",
             "debug": "",
         }.get(mode, "")
         with self._conn() as conn:
             return conn.execute(
-                f"SELECT * FROM Commands {filter_sql} "
-                f"ORDER BY prefix_id, key_name"
+                f"""
+                SELECT c.*,
+                       COALESCE(ct.description, c.description) AS description
+                FROM Commands c
+                LEFT JOIN CommandTranslations ct
+                  ON ct.command_id = c.id AND ct.lang = ?
+                {filter_sql}
+                ORDER BY c.prefix_id, c.key_name
+                """,
+                (lang,),
             ).fetchall()
 
     def get_command(self, command_id: int):

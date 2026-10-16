@@ -46,6 +46,8 @@ class EditorPresenter(BasePresenter):
     # ============ жизненный цикл ============
 
     def on_enter(self):
+        self._commands = None
+        self._prefixes = None
         self.refresh()
 
     def on_leave(self) -> bool:
@@ -263,8 +265,10 @@ class EditorPresenter(BasePresenter):
         view = self.view
         prefix_item = view.listPrefixes.currentItem()
         prefix_code = None
-        if prefix_item and not prefix_item.text().startswith("Все"):
-            prefix_code = prefix_item.text().split(" ")[0]
+        if prefix_item is not None:
+            marker = prefix_item.data(Qt.ItemDataRole.UserRole)
+            if marker != "__ALL__":
+                prefix_code = prefix_item.text().split(" ")[0]
 
         search = view.editSearch.text().lower().strip()
 

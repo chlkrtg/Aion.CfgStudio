@@ -7,9 +7,17 @@
 Содержит: все команды Aion с описаниями (гибрид: конкретные + по префиксу).
 """
 import os
+from seed_translations_en import (
+    KNOWN_DESCRIPTIONS_EN,
+    PREFIX_NAMES_EN,
+    PREFIX_DESCRIPTIONS_EN,
+)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_PATH = os.path.join(BASE_DIR, "database", "seed_commands.sql")
+OUT_TRANSLATIONS = os.path.join(
+    BASE_DIR, "database", "seed_translations.sql"
+)
 
 
 # ==================== СПИСОК КОМАНД ====================
@@ -1185,5 +1193,76 @@ def main():
             print(f"  {code:8s} {cnt}")
 
 
+def generate_translations():
+    """Генерирует seed_translations.sql — батчами по 50."""
+    lines = [
+        "-- Aion.CfgStudio — переводы описаний команд и префиксов",
+        "-- Автогенерация: scripts/generate_seed.py",
+        "",
+    ]
+
+    # === Префиксы (18 штук, можно не батчить) ===
+    lines.append("-- ==================== PrefixTranslations ====================")
+
+    for code in PREFIX_DESCRIPTIONS:
+        name_ru = PREFIX_DESCRIPTIONS[code]
+        name_en = PREFIX_NAMES_EN.get(code, name_ru)
+        desc_ru = name_ru
+        desc_en = PREFIX_DESCRIPTIONS_EN.get(code, name_en)
+
+        lines.append(
+            "INSERT OR IGNORE INTO PrefixTranslations "
+            "(prefix_id, lang, name, description) "
+            f"SELECT id, 'ru', '{escape_sql(name_ru)}', "
+            f"'{escape_sql(desc_ru)}' FROM Prefixes WHERE code='{code}';"
+        )
+        lines.append(
+            "INSERT OR IGNORE INTO PrefixTranslations "
+            "(prefix_id, lang, name, description) "
+            f"SELECT id, 'en', '{escape_sql(name_en)}', "
+            f"'{escape_sql(desc_en)}' FROM Prefixes WHERE code='{code}';"
+        )
+    lines.append("")
+
+    # === Команды — батчами по 50 ===
+    lines.append("-- ==================== CommandTranslations ====================")
+
+    BATCH = 50
+
+    for lang in ("ru", "en"):
+        for i in range(0, len(ALL_COMMANDS), BATCH):
+            batch = ALL_COMMANDS[i:i + BATCH]
+
+            rows = []
+            for key in batch:
+                code = detect_prefix(key)
+
+                if lang == "ru":
+                    desc = KNOWN_DESCRIPTIONS.get(key, "")
+                    if not desc:
+                        desc = PREFIX_DESCRIPTIONS.get(code, "Параметр")
+                else:
+                    desc = KNOWN_DESCRIPTIONS_EN.get(key, "")
+                    if not desc:
+                        desc = PREFIX_DESCRIPTIONS_EN.get(code, "Parameter")
+
+                rows.append(
+                    f"SELECT id, '{lang}', '{escape_sql(desc)}' "
+                    f"FROM Commands WHERE key_name='{escape_sql(key)}'"
+                )
+
+            lines.append(
+                "INSERT OR IGNORE INTO CommandTranslations "
+                "(command_id, lang, description)\n"
+                + "\nUNION ALL\n".join(rows)
+                + ";"
+            )
+
+    with open(OUT_TRANSLATIONS, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+
+    print(f"Сгенерировано: {OUT_TRANSLATIONS}")
+
 if __name__ == "__main__":
     main()
+    generate_translations()

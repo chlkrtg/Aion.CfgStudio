@@ -127,23 +127,18 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         svc = self.window().shortcut_service
 
         self.setWindowTitle(t("editor.window_title"))
-
-        # top
         self.lblMode.setText(t("editor.lbl_mode"))
         self.editSearch.setPlaceholderText(t("editor.search_placeholder"))
         self.btnExpandAll.setText(t("editor.btn_expand"))
         self.btnCollapseAll.setText(t("editor.btn_collapse"))
 
-        # comboMode — НЕ менять порядок item'ов, только текст
         self.comboMode.setItemText(0, t("editor.mode.simple"))
         self.comboMode.setItemText(1, t("editor.mode.advanced"))
         self.comboMode.setItemText(2, t("editor.mode.all"))
 
-        # left
         self.lblPrefixesTitle.setText(t("editor.lbl_prefixes_title"))
         self.lblPrefixInfo.setText(t("editor.lbl_prefix_info"))
 
-        # table headers
         self.tableCommands.setHorizontalHeaderLabels([
             t("editor.col_use"),
             t("editor.col_command"),
@@ -152,21 +147,18 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
             t("editor.col_description"),
         ])
 
-        # bottom
         self.btnResetAll.setText(t("editor.btn_reset_all"))
         self.btnCancel.setText(
             with_hotkey(t("editor.btn_cancel"), svc, "editor.cancel")
         )
         self.btnApply.setText(t("editor.btn_apply"))
 
-        # «Все команды» в списке префиксов — первый item
-        if self.listPrefixes.count() > 0:
-            item = self.listPrefixes.item(0)
-            if item.data(Qt.ItemDataRole.UserRole) == "__ALL__":
-                item.setText(t("editor.prefix_all"))
-
-        # имя файла — через презентер
-        self.presenter._update_file_label()
+        # === ДОБАВИТЬ ЭТО ===
+        # сбросить кэш команд и префиксов, перезагрузить данные
+        if self.presenter._commands is not None:
+            self.presenter._commands = None
+            self.presenter._prefixes = None
+            self.presenter.refresh()
 
     # ============== контекст ==============
 

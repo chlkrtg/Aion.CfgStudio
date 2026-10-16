@@ -40,6 +40,23 @@ CREATE TABLE IF NOT EXISTS Commands (
     FOREIGN KEY (prefix_id) REFERENCES Prefixes(id)
 );
 
+CREATE TABLE IF NOT EXISTS CommandTranslations (
+    command_id  INTEGER NOT NULL,
+    lang        TEXT    NOT NULL,
+    description TEXT    NOT NULL,
+    PRIMARY KEY (command_id, lang),
+    FOREIGN KEY (command_id) REFERENCES Commands(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS PrefixTranslations (
+    prefix_id   INTEGER NOT NULL,
+    lang        TEXT    NOT NULL,
+    name        TEXT    NOT NULL,
+    description TEXT    NOT NULL DEFAULT '',
+    PRIMARY KEY (prefix_id, lang),
+    FOREIGN KEY (prefix_id) REFERENCES Prefixes(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS ConfigFiles (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     server_id   INTEGER NOT NULL,
