@@ -196,6 +196,24 @@ STRINGS = {
         "editor.count.command.few":   "команды",
         "editor.count.command.many":  "команд",
 
+        "editor.reset_dialog.title":      "Сбросить к стандартным",
+        "editor.reset_dialog.text":       "Будут затронуты <b>{n}</b> команд:<br>"
+                                  "• видимые сейчас (префикс + поиск)<br>"
+                                  "• у которых есть стандартное значение"
+                                  "<br><br>"
+                                  "Что сбросить?<br>"
+                                  "• <b>Только значения</b> — оставить выбор, "
+                                  "подставить стандартные значения<br>"
+                                  "• <b>Значения и выбор</b> — отметить "
+                                  "команды со стандартным значением и "
+                                  "подставить дефолты",
+
+        "editor.reset_dialog.btn_values": "Только значения",
+        "editor.reset_dialog.btn_all":    "Значения и выбор",
+        "editor.reset_dialog.nothing":    "Нет видимых команд со стандартным "
+                                          "значением.",
+        "editor.reset_dialog.done":       "Готово. Сброшено команд: {n}.",
+
         # ============ РЕДАКТОР ХОТКЕЕВ ============
         "shortcuts.window_title":    "Горячие клавиши",
         "shortcuts.lbl_hint":        "Двойной клик по строке или кнопка «Изменить...» — назначить клавишу. Конфликты запрещены: сначала освободите занятую клавишу.",
@@ -445,6 +463,23 @@ STRINGS = {
 
         "editor.count.command.one":   "command",
         "editor.count.command.many":  "commands",
+
+        "editor.reset_dialog.title":      "Reset to defaults",
+        "editor.reset_dialog.text":       "<b>{n}</b> commands will be affected:<br>"
+                                  "• currently visible (filter + search)<br>"
+                                  "• with a default value"
+                                  "<br><br>"
+                                  "What to reset?<br>"
+                                  "• <b>Values only</b> — keep selection, "
+                                  "restore default values<br>"
+                                  "• <b>Values and selection</b> — check "
+                                  "commands with defaults and restore "
+                                  "their values",
+
+        "editor.reset_dialog.btn_values": "Values only",
+        "editor.reset_dialog.btn_all":    "Values and selection",
+        "editor.reset_dialog.nothing":    "No visible commands with a default value.",
+        "editor.reset_dialog.done":       "Done. Commands reset: {n}.",
 
         # ============ SHORTCUTS EDITOR ============
         "shortcuts.window_title":    "Hotkeys",

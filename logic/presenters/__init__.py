@@ -8,7 +8,6 @@ from logic.presenters.profile_presenter import ProfilePresenter
 from logic.presenters.server_presenter import ServerPresenter
 from logic.presenters.main_presenter import MainPresenter
 from logic.presenters.editor_presenter import EditorPresenter
-from logic.presenters.video_presenter import VideoPresenter
 from logic.presenters.shortcut_presenter import ShortcutPresenter
 
 __all__ = [
@@ -17,6 +16,5 @@ __all__ = [
     "ServerPresenter",
     "MainPresenter",
     "EditorPresenter",
-    "VideoPresenter",
     "ShortcutPresenter",
 ]

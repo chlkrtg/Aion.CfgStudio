@@ -23,7 +23,6 @@ class Scope(Enum):
     SERVER  = "server"
     MAIN    = "main"
     EDITOR  = "editor"
-    VIDEO   = "video"   # заложено на будущее (плеер отложен)
 
 
 # ==================== Действие ====================

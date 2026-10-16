@@ -371,14 +371,6 @@ class DBManager:
                 (config_id,),
             ).fetchall()
 
-    # ==================== ВИДЕО ====================
-
-    def list_video_chapters(self):
-        with self._conn() as conn:
-            return conn.execute(
-                "SELECT * FROM VideoChapters ORDER BY timestamp_ms"
-            ).fetchall()
-
     # ==================== ХОТКЕИ ====================
 
     def list_shortcuts(self):

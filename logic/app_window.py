@@ -21,7 +21,6 @@ from logic.page_profile import PageProfile
 from logic.page_server import PageServer
 from logic.page_main import PageMain
 from logic.page_editor import PageEditor
-# from logic.page_video import PageVideo # <- раскомментировать при возвращении плеера
 
 VIDEO_URL = "https://www.youtube.com/watch?v=TK2jVAArRhM"
 
@@ -101,12 +100,9 @@ class AppWindow(QMainWindow):
             self, self.config_service, self.reference_service
         )
         self.page_editor = PageEditor(self, self.editor_service)
-        # self.page_video = PageVideo(self, self.command_repo) <- раскомментировать при возвращении плеера
 
         for page in (self.page_profile, self.page_server,
-                     self.page_main, self.page_editor
-                         #, self.page_video # <- раскомментировать при возвращении плеера
-                ):
+                     self.page_main, self.page_editor):
             self.stack.addWidget(page)
 
         self.go_profile()
@@ -211,22 +207,8 @@ class AppWindow(QMainWindow):
                 page.retranslate()
 
     def go_video(self):
-        # self._previous_page = self.stack.currentWidget() <- раскомментировать при возвращении плеера
-        # self._switch(self.page_video) <- раскомментировать при возвращении плеера
         webbrowser.open(VIDEO_URL)
 
-    def go_back_from_video(self):
-        """Возвращает на предыдущую страницу.
-
-        Сейчас не используется (страница видео скрыта).
-        Оставлено на случай, если вернёшь плеер.
-        """
-        prev = getattr(self, "_previous_page", None)
-        if prev is not None:
-            self._switch(prev)
-            self._previous_page = None
-        else:
-            self.go_profile()
 
     def closeEvent(self, event):
         page = self.stack.currentWidget()

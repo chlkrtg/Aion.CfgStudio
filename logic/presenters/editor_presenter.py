@@ -599,19 +599,113 @@ class EditorPresenter(BasePresenter):
         )
 
     def reset_all(self):
-        t = self.view.tableCommands
-        t.blockSignals(True)
+        """Сброс к стандартным с диалогом.
+
+        Спрашивает: только значения / значения + выбор / отмена.
+        Затрагивает только видимые команды с default_value.
+        """
+        t_table = self.view.tableCommands
+
+        # собрать видимые команды с дефолтом
+        rows_with_default = []
         for row, info in self._cmd_by_row.items():
-            chk_item = t.item(row, 0)
-            val_item = t.item(row, 2)
-            if chk_item is not None:
-                chk_item.setCheckState(Qt.CheckState.Unchecked)
-            default_value = info["command"]["default_value"]
-            if val_item is not None and default_value is not None:
-                val_item.setText(str(default_value))
-            self.view.set_value_enabled(row, False)
-        t.blockSignals(False)
+            cmd = info["command"]
+            default_value = cmd["default_value"]
+            if default_value is None or str(default_value).strip() == "":
+                continue
+            rows_with_default.append((row, cmd, default_value))
+
+        if not rows_with_default:
+            QMessageBox.information(
+                self.view,
+                t("editor.reset_dialog.title"),
+                t("editor.reset_dialog.nothing"),
+            )
+            return
+
+        # диалог с тремя кнопками
+        msg = QMessageBox(self.view)
+        msg.setWindowTitle(t("editor.reset_dialog.title"))
+        msg.setText(
+            t("editor.reset_dialog.text").format(n=len(rows_with_default))
+        )
+        msg.setIcon(QMessageBox.Icon.Question)
+
+        btn_values = msg.addButton(
+            t("editor.reset_dialog.btn_values"),
+            QMessageBox.ButtonRole.AcceptRole,
+        )
+        btn_all = msg.addButton(
+            t("editor.reset_dialog.btn_all"),
+            QMessageBox.ButtonRole.AcceptRole,
+        )
+        msg.addButton(
+            t("editor.btn_cancel"),
+            QMessageBox.ButtonRole.RejectRole,
+        )
+
+        msg.exec()
+        clicked = msg.clickedButton()
+
+        if clicked == btn_values:
+            reset_selection = False
+        elif clicked == btn_all:
+            reset_selection = True
+        else:
+            return  # отмена
+
+            # применить
+        t_table.blockSignals(True)
+
+        if reset_selection:
+            # Вариант A: с дефолтом — checked + дефолт, без дефолта — unchecked + пусто
+            for row, info in self._cmd_by_row.items():
+                cmd = info["command"]
+                default_value = cmd["default_value"]
+
+                has_default = (
+                        default_value is not None
+                        and str(default_value).strip() != ""
+                )
+
+                chk_item = t_table.item(row, 0)
+                val_item = t_table.item(row, 2)
+                if chk_item is None or val_item is None:
+                    continue
+
+                if has_default:
+                    chk_item.setCheckState(Qt.CheckState.Checked)
+                    val_item.setText(str(default_value))
+                    self.view.set_value_enabled(row, True)
+                else:
+                    chk_item.setCheckState(Qt.CheckState.Unchecked)
+                    val_item.setText("")
+                    self.view.set_value_enabled(row, False)
+        else:
+            # Только значения: галочки не трогаем, значения = дефолт
+            # (только у тех, у кого дефолт есть)
+            for row, cmd, default_value in rows_with_default:
+                val_item = t_table.item(row, 2)
+                if val_item is not None:
+                    val_item.setText(str(default_value))
+
+                # синхронизировать editable с текущим состоянием галки
+                chk_item = t_table.item(row, 0)
+                if chk_item is not None:
+                    checked = (chk_item.checkState() == Qt.CheckState.Checked)
+                    self.view.set_value_enabled(row, checked)
+
+        t_table.blockSignals(False)
+
         self._update_group_checks()
+
+        QMessageBox.information(
+            self.view,
+            t("editor.info.done"),
+            t("editor.reset_dialog.done").format(
+                n=len(rows_with_default)
+            ),
+        )
 
     def cancel(self):
         win = self.view.window()
