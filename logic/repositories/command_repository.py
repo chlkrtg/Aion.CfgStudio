@@ -30,3 +30,7 @@ class CommandRepository:
     def video_chapters(self):
         """Все главы видео-руководства."""
         return self.db.list_video_chapters()
+
+    def update_defaults(self, updates: list):
+        """updates: [(command_id, new_default_value), ...]"""
+        self.db.update_command_defaults(updates)

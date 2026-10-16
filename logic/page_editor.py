@@ -85,14 +85,14 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
     # ============== сигналы ==============
 
     def _connect_signals(self):
-        self.comboMode.currentIndexChanged.connect(
-            lambda _i: self.presenter.apply_filters()
-        )
         self.editSearch.textChanged.connect(
             lambda _t: self.presenter.apply_filters()
         )
         self.listPrefixes.currentItemChanged.connect(
             lambda _c, _p: self.presenter.apply_filters()
+        )
+        self.btnMakeDefaults.clicked.connect(
+            self.presenter.on_make_defaults
         )
         self.btnResetAll.clicked.connect(self.presenter.reset_all)
         self.btnCancel.clicked.connect(self.presenter.cancel)
@@ -127,14 +127,9 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         svc = self.window().shortcut_service
 
         self.setWindowTitle(t("editor.window_title"))
-        self.lblMode.setText(t("editor.lbl_mode"))
         self.editSearch.setPlaceholderText(t("editor.search_placeholder"))
         self.btnExpandAll.setText(t("editor.btn_expand"))
         self.btnCollapseAll.setText(t("editor.btn_collapse"))
-
-        self.comboMode.setItemText(0, t("editor.mode.simple"))
-        self.comboMode.setItemText(1, t("editor.mode.advanced"))
-        self.comboMode.setItemText(2, t("editor.mode.all"))
 
         self.lblPrefixesTitle.setText(t("editor.lbl_prefixes_title"))
         self.lblPrefixInfo.setText(t("editor.lbl_prefix_info"))
@@ -148,6 +143,7 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         ])
 
         self.btnResetAll.setText(t("editor.btn_reset_all"))
+        self.btnMakeDefaults.setText(t("editor.btn_make_defaults"))
         self.btnCancel.setText(
             with_hotkey(t("editor.btn_cancel"), svc, "editor.cancel")
         )

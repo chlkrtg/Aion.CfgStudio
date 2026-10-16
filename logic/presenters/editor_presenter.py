@@ -11,8 +11,7 @@ from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
 
 
-MODE_SIMPLE = {"simple"}
-MODE_ADVANCED = {"simple", "advanced"}
+# Отображаем все команды (simple + advanced), фильтр по mode убран.
 
 
 class EditorPresenter(BasePresenter):
@@ -243,11 +242,6 @@ class EditorPresenter(BasePresenter):
                 self._state[cmd_id] = (0, None)
 
     # ============ фильтры ============
-
-    def _current_mode(self) -> str:
-        idx = self.view.comboMode.currentIndex()
-        return {0: "simple", 1: "advanced"}.get(idx, "advanced")
-
     def apply_filters(self, sync=True):
         """Определяет видимые команды и перестраивает таблицу.
 
@@ -256,11 +250,6 @@ class EditorPresenter(BasePresenter):
         """
         if sync:
             self._sync_state_from_table()
-
-        mode_allowed = {
-            "simple": MODE_SIMPLE,
-            "advanced": MODE_ADVANCED,
-        }[self._current_mode()]
 
         view = self.view
         prefix_item = view.listPrefixes.currentItem()
@@ -279,8 +268,6 @@ class EditorPresenter(BasePresenter):
                 continue
             pcode = self._prefixes[pid]["code"]
 
-            if cmd["mode"] not in mode_allowed:
-                continue
             if prefix_code is not None and pcode != prefix_code:
                 continue
             if search and search not in cmd["key_name"].lower():
@@ -548,6 +535,64 @@ class EditorPresenter(BasePresenter):
             self.view.set_value_enabled(row, checked)
             self._update_group_checks()
             return
+
+    def on_make_defaults(self):
+        """Сохраняет значения отмеченных команд как новые дефолты.
+
+        Берёт только команды с непустым значением.
+        """
+        self._sync_state_from_table()
+
+        updates = []
+        for cmd in self._commands:
+            use, val = self._state.get(cmd["id"], (0, None))
+            if not use:
+                continue
+            if val is None:
+                continue
+            val_str = str(val).strip()
+            if not val_str:
+                continue
+            updates.append((cmd["id"], val_str))
+
+        if not updates:
+            QMessageBox.warning(
+                self.view,
+                t("editor.info.nothing"),
+                t("editor.info.nothing.text"),
+            )
+            return
+
+        ans = QMessageBox.question(
+            self.view,
+            t("editor.make_defaults.title"),
+            t("editor.make_defaults.text").format(n=len(updates)),
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+        )
+        if ans != QMessageBox.StandardButton.Yes:
+            return
+
+        try:
+            self.service.make_defaults(updates)
+        except Exception as exc:
+            QMessageBox.critical(
+                self.view,
+                t("editor.error.save"),
+                str(exc),
+            )
+            return
+
+        # перечитать _commands — дефолты изменились в БД
+        self._commands = None
+        self._load_commands_cache()
+        self.apply_filters(sync=False)
+
+        QMessageBox.information(
+            self.view,
+            t("editor.info.done"),
+            t("editor.make_defaults.done").format(n=len(updates)),
+        )
 
     def reset_all(self):
         t = self.view.tableCommands

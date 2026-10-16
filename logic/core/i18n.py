@@ -183,6 +183,15 @@ STRINGS = {
         "editor.error.no_config_service": "EditorService: config_service не задан, "
                                           "нельзя создать новый cfg.",
 
+        "editor.btn_make_defaults":      "Сделать стандартными",
+        "editor.make_defaults.title":    "Сделать стандартными?",
+        "editor.make_defaults.text":     "Сделать значения {n} отмеченных команд "
+                                         "стандартными?\n\n"
+                                         "Это затронет все будущие cfg. "
+                                         "Продолжить?",
+        "editor.make_defaults.done":     "Готово. Стандартными стали значения "
+                                         "{n} команд.",
+
         # ============ РЕДАКТОР ХОТКЕЕВ ============
         "shortcuts.window_title":    "Горячие клавиши",
         "shortcuts.lbl_hint":        "Двойной клик по строке или кнопка «Изменить...» — назначить клавишу. Конфликты запрещены: сначала освободите занятую клавишу.",
@@ -422,6 +431,13 @@ STRINGS = {
         "editor.error.server_required": "server_id is not set for a new cfg.",
         "editor.error.no_config_service": "EditorService: config_service is not set, "
                                           "cannot create a new cfg.",
+
+        "editor.btn_make_defaults":      "Make default",
+        "editor.make_defaults.title":    "Make default?",
+        "editor.make_defaults.text":     "Set values of {n} selected commands as "
+                                         "defaults?\n\n"
+                                         "This will affect all future cfgs. Continue?",
+        "editor.make_defaults.done":     "Done. {n} commands are now default.",
 
         # ============ SHORTCUTS EDITOR ============
         "shortcuts.window_title":    "Hotkeys",

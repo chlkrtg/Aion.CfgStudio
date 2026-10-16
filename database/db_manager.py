@@ -244,6 +244,16 @@ class DBManager:
                 "SELECT * FROM Commands WHERE id = ?", (command_id,)
             ).fetchone()
 
+    def update_command_defaults(self, updates: list):
+        """updates: [(command_id, new_default_value), ...]"""
+        if not updates:
+            return
+        with self._conn() as conn:
+            conn.executemany(
+                "UPDATE Commands SET default_value = ? WHERE id = ?",
+                [(val, cid) for cid, val in updates],
+            )
+
     # ==================== ФАЙЛЫ КОНФИГУРАЦИЙ ====================
 
     def create_config(self, server_id: int, filename: str,

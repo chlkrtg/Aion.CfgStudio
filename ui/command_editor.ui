@@ -42,32 +42,6 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLabel" name="lblMode">
-       <property name="text">
-        <string>Режим:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="comboMode">
-       <item>
-        <property name="text">
-         <string>Простые</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Расширенные</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Все (включая отладку)</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item>
       <widget class="QLineEdit" name="editSearch">
        <property name="placeholderText">
         <string>Поиск команды...</string>
@@ -205,6 +179,13 @@
    <!-- НИЗ: кнопки -->
    <item>
     <layout class="QHBoxLayout" name="bottomLayout">
+     <item>
+      <widget class="QPushButton" name="btnMakeDefaults">
+       <property name="text">
+        <string>Сделать стандартными</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QPushButton" name="btnResetAll">
        <property name="text">

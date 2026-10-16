@@ -93,3 +93,12 @@ class EditorService:
         if not changes:
             return
         self.config_repo.log_change_bulk(config_id, changes)
+
+    def make_defaults(self, updates: list):
+        """Записывает значения как новые дефолты команд.
+
+        updates: [(command_id, value), ...]
+        """
+        if not updates:
+            return
+        self.command_repo.update_defaults(updates)
