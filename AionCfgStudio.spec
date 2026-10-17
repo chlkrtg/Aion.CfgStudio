@@ -11,12 +11,17 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('ui', 'ui'),
-        ('database', 'database'),
-        ('resources', 'resources'),
+        # только SQL (не .py)
+        ('database/schema.sql',              'database'),
+        ('database/seed_commands.sql',       'database'),
+        ('database/seed_updates.sql',        'database'),
+        ('database/seed_modes.sql',          'database'),
+        ('database/seed_translations.sql',   'database'),
+        # иконки
+        ('resources/icons', 'resources/icons'),
     ],
     hiddenimports=[
-        'sqlite3',   # ← ЯВНО, чтобы PyInstaller точно включил
+        'sqlite3',
     ],
     hookspath=[],
     hooksconfig={},
@@ -26,9 +31,8 @@ a = Analysis(
         'tkinter', 'matplotlib', 'numpy', 'scipy', 'pandas',
         'unittest', 'pydoc', 'pdb', 'doctest', 'test',
         'distutils', 'setuptools', 'pip', 'wheel',
-        # НЕ исключать: sqlite3, os, sys, pathlib
 
-        # PyQt6 — визуальные модули
+        # PyQt6 — WebEngine
         'PyQt6.QtWebEngineCore',
         'PyQt6.QtWebEngineWidgets',
         'PyQt6.QtWebEngineQuick',
@@ -39,7 +43,7 @@ a = Analysis(
         'PyQt6.QtQuickWidgets',
         'PyQt6.QtQml',
 
-        # PyQt6 — 3D и графики
+        # PyQt6 — 3D, графики
         'PyQt6.Qt3DCore',
         'PyQt6.Qt3DRender',
         'PyQt6.Qt3DInput',
@@ -58,6 +62,10 @@ a = Analysis(
         'PyQt6.QtSensors',
         'PyQt6.QtSerialPort',
 
+        # PyQt6 — медиа (плеер убран)
+        'PyQt6.QtMultimedia',
+        'PyQt6.QtMultimediaWidgets',
+
         # PyQt6 — прочее
         'PyQt6.QtSql',
         'PyQt6.QtTest',
@@ -72,7 +80,6 @@ a = Analysis(
         'PyQt6.QtTextToSpeech',
         'PyQt6.QtOpenGL',
         'PyQt6.QtOpenGLWidgets',
-        # НЕ исключать PyQt6.QtSvg, если иконки .svg
     ],
     noarchive=False,
 )

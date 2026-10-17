@@ -233,10 +233,13 @@ class PageMain(BasePage, Ui_MainWindow):
 
     def _show_about(self):
         from PyQt6.QtWidgets import QMessageBox
+        from logic.core.i18n import t
+        from logic.core.constants import APP_VERSION
+
         QMessageBox.about(
             self,
             t("dialog.about_title"),
-            t("dialog.about_text"),
+            t("dialog.about_text").format(version=APP_VERSION),
         )
 
     # ============== контекстное меню ==============

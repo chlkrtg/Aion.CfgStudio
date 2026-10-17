@@ -1,6 +1,6 @@
 ; AionCfgStudio.iss — установщик Aion.CfgStudio
 #define MyAppName "Aion.CfgStudio"
-#define MyAppVersion "1.1"
+#define MyAppVersion "1.2"
 #define MyAppPublisher "chealkrtengghnle"
 #define MyAppExeName "AionCfgStudio.exe"
 

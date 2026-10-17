@@ -239,7 +239,7 @@ STRINGS = {
         "dialog.reset_all_title":    "Сбросить все хоткеи?",
         "dialog.reset_all_text":     "Все переназначенные клавиши вернутся к значениям по умолчанию. Продолжить?",
         "dialog.about_title":        "О программе",
-        "dialog.about_text":         "Aion.CfgStudio v1.0  by @chealkrtengghnle\n\n"
+        "dialog.about_text":         "Aion.CfgStudio v{version}  by @chealkrtengghnle\n\n"
                                      "Редактор конфигурационного файла system.cfg для Aion.",
 
         # ============ КОНТЕКСТНЫЕ МЕНЮ ============
@@ -276,6 +276,9 @@ STRINGS = {
         # ================= ДИАЛОГИ ==============
         "dialog.input_hint":   "{label} (макс. {n}):",
         "dialog.error_title":  "Ошибка",
+
+        #============= SPLASH =================
+        "splash.loading": "Загрузка компонентов...",
     },
 
     "en": {
@@ -507,7 +510,7 @@ STRINGS = {
         "dialog.reset_all_title":    "Reset all hotkeys?",
         "dialog.reset_all_text":     "All reassigned keys will return to defaults. Continue?",
         "dialog.about_title":        "About",
-        "dialog.about_text":         "Aion.CfgStudio v1.0  by @chealkrtengghnle\n\n"
+        "dialog.about_text":         "Aion.CfgStudio v{version}  by @chealkrtengghnle\n\n"
                                      "Aion system.cfg editor.",
 
         # ============ CONTEXT MENUS ============
@@ -545,6 +548,9 @@ STRINGS = {
         # ============ DIALOGS ================
         "dialog.input_hint":   "{label} (max {n}):",
         "dialog.error_title":  "Error",
+
+        #============= SPLASH =================
+        "splash.loading": "Components loading...",
     },
 }
 

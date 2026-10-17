@@ -9,4 +9,4 @@ MAX_NOTE_LEN = 256
 
 # =================== Приложение ===================
 APP_NAME = "Aion.CfgStudio"
-APP_VERSION = "1.0"
+APP_VERSION = "1.2"

@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QMessageBox, QInputDialog, QFileDialog, QDialog,
 )
 from PyQt6.QtGui import QColor, QPixmap, QIcon
+from logic.core.i18n import t
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
@@ -99,7 +100,7 @@ def _make_splash() -> QSplashScreen:
         }
     """)
 
-    status = QLabel("Загрузка компонентов...", splash)
+    status = QLabel(t("splash.loading"), splash)
     status.setGeometry(0, 175, W, 22)
     status.setAlignment(Qt.AlignmentFlag.AlignCenter)
     status.setStyleSheet(
