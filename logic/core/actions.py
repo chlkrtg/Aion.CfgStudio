@@ -261,7 +261,7 @@ _register(
 _register(
     Action(
         id="editor.cancel",
-        title="Отменить и выйти",
+        title="action.main.cancelandquit",
         scope=Scope.EDITOR,
         default_key="Ctrl+Q",
         context="window",

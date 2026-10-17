@@ -270,6 +270,7 @@ STRINGS = {
         "action.main.delete":          "Удалить cfg",
         "action.main.save":            "Сохранить изменения (предпросмотр)",
         "action.main.quit":            "Назад к серверам",
+        "action.main.cancelandquit":   "Отменить и выйти",
         "shortcut.conflict": "Клавиша «{key}» уже занята действием «{title}».",
 
         # ================= ДИАЛОГИ ==============
@@ -537,6 +538,7 @@ STRINGS = {
         "action.main.delete":          "Delete cfg",
         "action.main.save":            "Save changes (preview)",
         "action.main.quit":            "Back to servers",
+        "action.main.cancelandquit":   "Cancel and quit",
         "action.editor.cancel":        "Cancel and exit",
         "shortcut.conflict": "Key «{key}» is already used by «{title}».",
 

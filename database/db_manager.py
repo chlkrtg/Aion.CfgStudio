@@ -218,7 +218,7 @@ class DBManager:
 
     # ==================== КОМАНДЫ ====================
 
-    def list_commands(self, mode: str = "advanced", lang: str = "ru"):
+    def list_commands(self, mode="advanced", lang="ru"):
         filter_sql = {
             "simple": "WHERE c.mode = 'simple'",
             "advanced": "WHERE c.mode IN ('simple','advanced')",
@@ -227,7 +227,9 @@ class DBManager:
         with self._conn() as conn:
             return conn.execute(
                 f"""
-                SELECT c.*,
+                SELECT c.id, c.key_name, c.prefix_id, c.value_type,
+                       c.default_value, c.possible_values,
+                       c.min_value, c.max_value, c.mode,
                        COALESCE(ct.description, c.description) AS description
                 FROM Commands c
                 LEFT JOIN CommandTranslations ct
