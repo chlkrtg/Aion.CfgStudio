@@ -33,10 +33,6 @@ class LanguageService:
     # ============ запись ============
 
     def set(self, lang: str) -> bool:
-        """Меняет язык. Возвращает True, если что-то изменилось.
-
-        Игнорирует неподдерживаемые коды.
-        """
         if lang not in i18n.AVAILABLE_LANGUAGES:
             return False
         if lang == self._lang:

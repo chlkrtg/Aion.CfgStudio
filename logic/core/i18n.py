@@ -291,8 +291,14 @@ STRINGS = {
         "dialog.input_hint":   "{label} (макс. {n}):",
         "dialog.error_title":  "Ошибка",
 
-        #============= SPLASH =================
+        # ============= SPLASH =================
         "splash.loading": "Загрузка компонентов...",
+
+        # ============== ДИАЛОГИ ================
+        "dialog.yes":     "Да",
+        "dialog.no":      "Нет",
+        "dialog.cancel":  "Отмена",
+        "dialog.ok":      "ОК",
     },
 
     "en": {
@@ -577,8 +583,14 @@ STRINGS = {
         "dialog.input_hint":   "{label} (max {n}):",
         "dialog.error_title":  "Error",
 
-        #============= SPLASH =================
+        # ============= SPLASH =================
         "splash.loading": "Components loading...",
+
+        # ============== ДИАЛОГИ ================
+        "dialog.yes":     "Yes",
+        "dialog.no":      "No",
+        "dialog.cancel":  "Cancel",
+        "dialog.ok":      "OK",
     },
 }
 

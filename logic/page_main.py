@@ -165,7 +165,14 @@ class PageMain(BasePage, Ui_MainWindow):
         self.actionAbout.setText(t("main.action_about"))
 
         # переприменить текущее состояние
-        self.presenter.on_selection()
+        item = self.treeConfigs.currentItem()
+        if item is not None:
+            config_id = item.data(0, Qt.ItemDataRole.UserRole)
+            cfg = self.presenter.service.repo.get(config_id)
+            if cfg:
+                self.lblPreviewName.setText(cfg["filename"])
+            else:
+                self.clear_preview()
 
     # ============== контекст ==============
 

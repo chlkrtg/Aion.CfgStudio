@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
 
 from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
+from logic.widgets.dialogs import ask_yes_no
 
 
 class ServerPresenter(BasePresenter):
@@ -185,15 +186,14 @@ class ServerPresenter(BasePresenter):
             return
         sid = item.data(Qt.ItemDataRole.UserRole)
         configs = self.reference.count_configs_in_server(sid)
-        ans = QMessageBox.question(
+        ans = ask_yes_no(
             view,
             t("server.dialog.delete.title"),
             t("server.confirm.delete").format(
                 name=item.text(), c=configs
-            ),
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
         )
-        if ans == QMessageBox.StandardButton.Yes:
+        if ans:
             self.service.delete(sid)
             self.refresh()
 

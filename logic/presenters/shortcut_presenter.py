@@ -11,7 +11,7 @@ from logic.core.i18n import t
 
 from logic.core.actions import ACTIONS, Scope, by_scope
 from logic.presenters.base_presenter import BasePresenter
-
+from logic.widgets.dialogs import ask_yes_no
 
 # Отображаемые имена секций (в порядке показа)
 SCOPE_KEYS = [
@@ -131,14 +131,12 @@ class ShortcutPresenter(BasePresenter):
 
     def on_reset_all(self):
         """«Сбросить всё» - с подтверждением."""
-        ans = QMessageBox.question(
+        ans = ask_yes_no(
             self.view,
             t("dialog.reset_all_title"),
-            t("dialog.reset_all_text"),
-            QMessageBox.StandardButton.Yes
-            | QMessageBox.StandardButton.No,
+            t("dialog.reset_all_text")
         )
-        if ans != QMessageBox.StandardButton.Yes:
+        if not ans:
             return
 
         self.service.reset_all()

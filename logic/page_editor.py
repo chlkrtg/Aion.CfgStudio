@@ -149,12 +149,19 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         )
         self.btnApply.setText(t("editor.btn_apply"))
 
-        # === ДОБАВИТЬ ЭТО ===
-        # сбросить кэш команд и префиксов, перезагрузить данные
         if self.presenter._commands is not None:
+            # 1. синхронизировать _state с текущей таблицей
+            self.presenter._sync_state_from_table()
+            saved_state = dict(self.presenter._state)
+
+            # 2. перезагрузить команды / префиксы
             self.presenter._commands = None
             self.presenter._prefixes = None
             self.presenter.refresh()
+
+            # 3. восстановить состояние (галочки / значения)
+            self.presenter._state = saved_state
+            self.presenter.apply_filters(sync=False)
 
     def set_command_count(self, n: int):
         """Обновляет счётчик видимых команд."""

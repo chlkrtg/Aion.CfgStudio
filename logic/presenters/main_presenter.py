@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
 
 from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
+from logic.widgets.dialogs import ask_yes_no, ask_yes_no_cancel
 
 
 class MainPresenter(BasePresenter):
@@ -40,17 +41,14 @@ class MainPresenter(BasePresenter):
 
     def on_leave(self):
         if self._has_unsaved_changes():
-            ans = QMessageBox.question(
+            ans = ask_yes_no_cancel(
                 self.view,
                 t("editor.dialog.unsaved.title"),
-                t("editor.dialog.unsaved.text"),
-                QMessageBox.StandardButton.Yes
-                | QMessageBox.StandardButton.No
-                | QMessageBox.StandardButton.Cancel,
+                t("editor.dialog.unsaved.text")
             )
-            if ans == QMessageBox.StandardButton.Cancel:
+            if ans == "cancel":
                 return False
-            if ans == QMessageBox.StandardButton.Yes:
+            if ans == "yes":
                 self.save_preview()
         self.view.clear_preview()
         self.view.treeConfigs.clearSelection()
@@ -331,13 +329,12 @@ class MainPresenter(BasePresenter):
             )
             return
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
-        ans = QMessageBox.question(
+        ans = ask_yes_no(
             view,
             t("main.dialog.delete.title"),
             t("main.confirm.delete").format(name=item.text(0)),
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
-        if ans == QMessageBox.StandardButton.Yes:
+        if ans:
             self.service.delete(config_id)
             view.treeConfigs.clearSelection()
             self.refresh()
@@ -436,13 +433,12 @@ class MainPresenter(BasePresenter):
         text = view.editPreview.toPlainText()
 
         if not text.strip():
-            ans = QMessageBox.question(
+            ans = ask_yes_no(
                 view,
                 t("main.dialog.clear.title"),  # ключ надо добавить
-                t("main.confirm.clear"),
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                t("main.confirm.clear")
             )
-            if ans != QMessageBox.StandardButton.Yes:
+            if not ans:
                 return
 
         try:

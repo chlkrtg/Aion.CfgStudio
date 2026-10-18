@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import QMessageBox, QListWidgetItem
 
 from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
+from logic.widgets.dialogs import ask_yes_no_cancel, ask_yes_no
 
 
 # Отображаем все команды (simple + advanced), фильтр по mode убран.
@@ -68,32 +69,26 @@ class EditorPresenter(BasePresenter):
         """
         if self.config_id is None:
             if self._has_checked_commands():
-                ans = QMessageBox.question(
+                ans = ask_yes_no_cancel(
                     self.view,
                     t("editor.dialog.new.title"),
-                    t("editor.dialog.new.text"),
-                    QMessageBox.StandardButton.Yes
-                    | QMessageBox.StandardButton.No
-                    | QMessageBox.StandardButton.Cancel,
+                    t("editor.dialog.new.text")
                 )
-                if ans == QMessageBox.StandardButton.Cancel:
+                if ans == "cancel":
                     return False
-                if ans == QMessageBox.StandardButton.Yes:
+                if ans == "yes":
                     self.apply_silent()
             return True
 
         if self._has_unsaved_changes():
-            ans = QMessageBox.question(
+            ans = ask_yes_no_cancel(
                 self.view,
                 t("editor.dialog.unsaved.title"),
-                t("editor.dialog.unsaved.text"),
-                QMessageBox.StandardButton.Yes
-                | QMessageBox.StandardButton.No
-                | QMessageBox.StandardButton.Cancel,
+                t("editor.dialog.unsaved.text")
             )
-            if ans == QMessageBox.StandardButton.Cancel:
+            if ans == "cancel":
                 return False
-            if ans == QMessageBox.StandardButton.Yes:
+            if ans == "yes":
                 self._save_current_state()
         return True
 
@@ -576,14 +571,12 @@ class EditorPresenter(BasePresenter):
             )
             return
 
-        ans = QMessageBox.question(
+        ans = ask_yes_no(
             self.view,
             t("editor.make_defaults.title"),
-            t("editor.make_defaults.text").format(n=len(updates)),
-            QMessageBox.StandardButton.Yes
-            | QMessageBox.StandardButton.No,
+            t("editor.make_defaults.text").format(n=len(updates))
         )
-        if ans != QMessageBox.StandardButton.Yes:
+        if not ans:
             return
 
         try:

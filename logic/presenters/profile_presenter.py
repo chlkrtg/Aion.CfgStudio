@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
 
 from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
+from logic.widgets.dialogs import ask_yes_no
 
 
 class ProfilePresenter(BasePresenter):
@@ -190,15 +191,14 @@ class ProfilePresenter(BasePresenter):
         servers = self.reference.count_servers(pid)
         configs = self.reference.count_configs_in_profile(pid)
 
-        ans = QMessageBox.question(
+        ans = ask_yes_no(
             view,
             t("profile.dialog.delete.title"),
             t("profile.confirm.delete").format(
                 name=item.text(), s=servers, c=configs
-            ),
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
         )
-        if ans == QMessageBox.StandardButton.Yes:
+        if ans:
             self.service.delete(pid)
             self.refresh()
 

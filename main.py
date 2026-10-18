@@ -128,6 +128,7 @@ def _make_splash() -> QSplashScreen:
 
 def main() -> int:
     app = QApplication(sys.argv)
+
     app.setWindowIcon(QIcon(resource_path("resources/icons/aion.cfgstudio.ico")))
     _filter = _DarkDialogsFilter()
     app.installEventFilter(_filter)
@@ -139,12 +140,22 @@ def main() -> int:
         custom_colors={"primary": "#d4a95a"},
         corner_shape="sharp",
         additional_qss="""
-            QWidget { font-size: 12pt; }
+            QWidget {
+                font-family: 'Segoe UI';
+                font-size: 12pt;
+            }
             QTableWidget { font-size: 12pt; }
-            QHeaderView::section { font-size: 12pt; }
+            QHeaderView::section {
+                font-size: 10pt;
+                font-weight: 600;
+                padding: 6px 8px;
+            }
             QComboBox { font-size: 12pt; }
             QPushButton { font-size: 12pt; }
-            QLabel { font-size: 12pt; }
+            QLabel[heading="true"] {
+                font-size: 14pt;
+                font-weight: 700;
+            }
             QListWidget { font-size: 12pt; }
             QLineEdit { font-size: 12pt; }
         
@@ -165,6 +176,65 @@ def main() -> int:
             QPlainTextEdit:focus,
             QTextEdit:focus {
                 border: 1px solid #d4a95a;
+            }
+            
+            /* ============ Скролл бары ============ */
+            QScrollBar:vertical {
+                background: transparent;
+                width: 10px;
+                margin: 0;
+                border: none;
+            }
+            QScrollBar::handle:vertical {
+                background: #3a3a4a;
+                border-radius: 5px;
+                min-height: 30px;
+                margin: 2px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #d4a95a;
+            }
+            QScrollBar::handle:vertical:pressed {
+                background: #b8904a;
+            }
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical {
+                height: 0;
+                background: none;
+                border: none;
+            }
+            QScrollBar::add-page:vertical,
+            QScrollBar::sub-page:vertical {
+                background: transparent;
+            }
+        
+            QScrollBar:horizontal {
+                background: transparent;
+                height: 10px;
+                margin: 0;
+                border: none;
+            }
+            QScrollBar::handle:horizontal {
+                background: #3a3a4a;
+                border-radius: 5px;
+                min-width: 30px;
+                margin: 2px;
+            }
+            QScrollBar::handle:horizontal:hover {
+                background: #d4a95a;
+            }
+            QScrollBar::handle:horizontal:pressed {
+                background: #b8904a;
+            }
+            QScrollBar::add-line:horizontal,
+            QScrollBar::sub-line:horizontal {
+                width: 0;
+                background: none;
+                border: none;
+            }
+            QScrollBar::add-page:horizontal,
+            QScrollBar::sub-page:horizontal {
+                background: transparent;
             }
         """,
     )
