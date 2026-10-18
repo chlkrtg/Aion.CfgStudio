@@ -3,7 +3,7 @@
 Вся логика - в EditorPresenter.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QColor
 from PyQt6.QtWidgets import (
     QTableWidgetItem, QHeaderView, QAbstractItemView
 )
@@ -16,6 +16,7 @@ from logic.widgets.shortcut_labels import with_hotkey
 from logic.presenters import EditorPresenter
 from logic.core.i18n import t, plural_ru
 from ui.command_editor import Ui_CommandEditorDialog
+from logic.widgets.checkbox_delegate import CheckboxDelegate
 
 
 class PageEditor(BasePage, Ui_CommandEditorDialog):
@@ -80,8 +81,11 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         tbl.setColumnWidth(2, 140)
         tbl.setColumnWidth(3, 100)
 
-        # ← делегат для колонки значений
+        # делегат для колонки значений
         tbl.setItemDelegateForColumn(2, ValueDelegate(tbl))
+
+        # делегат для чекбокса
+        tbl.setItemDelegateForColumn(0, CheckboxDelegate(tbl))
 
         self.listPrefixes.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAsNeeded
@@ -209,15 +213,18 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
 
     # ============== UI-хелперы (зовёт презентер) ==============
 
-    def make_group_header(self, row: int, code: str, name: str):
-        """Рисует заголовок группы в строке row."""
+    def make_group_header(self, row, code, name,
+                          visible_count=0, total_count=0):
         t = self.tableCommands
 
         font = QFont()
         font.setBold(True)
         font.setPointSize(font.pointSize() + 1)
 
-        # чекбокс через item (не виджет)
+        accent = QColor("#d4a95a")
+        bg = QColor("#23252e")  # слегка светлее обычного
+
+        # 0. чекбокс — обычный фон
         chk_item = QTableWidgetItem()
         chk_item.setFlags(
             Qt.ItemFlag.ItemIsEnabled
@@ -225,16 +232,25 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         )
         chk_item.setCheckState(Qt.CheckState.Unchecked)
         chk_item.setData(Qt.ItemDataRole.UserRole, f"GROUP:{code}")
+        chk_item.setBackground(bg)
         t.setItem(row, 0, chk_item)
 
-        header = QTableWidgetItem(f"{code} — {name}")
+        # 1. заголовок — accent текст
+        label = f"{code} — {name}"
+        if visible_count and visible_count < total_count:
+            label += f"   ({visible_count} из {total_count})"
+
+        header = QTableWidgetItem(label)
         header.setData(Qt.ItemDataRole.FontRole, font)
         header.setFlags(Qt.ItemFlag.ItemIsEnabled)
+        header.setForeground(accent)
+        header.setBackground(bg)
         t.setItem(row, 1, header)
 
         for col in (2, 3, 4):
             empty = QTableWidgetItem("")
             empty.setFlags(Qt.ItemFlag.ItemIsEnabled)
+            empty.setBackground(bg)
             t.setItem(row, col, empty)
 
         t.setRowHeight(row, 36)

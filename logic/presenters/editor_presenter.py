@@ -11,8 +11,11 @@ from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
 from logic.widgets.dialogs import ask_yes_no_cancel, ask_yes_no
 
-
-# Отображаем все команды (simple + advanced), фильтр по mode убран.
+def _state_val(item) -> int:
+    state = item.checkState()
+    if hasattr(state, "value"):
+        return state.value
+    return int(state)
 
 
 class EditorPresenter(BasePresenter):
@@ -72,7 +75,7 @@ class EditorPresenter(BasePresenter):
                 ans = ask_yes_no_cancel(
                     self.view,
                     t("editor.dialog.new.title"),
-                    t("editor.dialog.new.text")
+                    t("editor.dialog.new.text"),
                 )
                 if ans == "cancel":
                     return False
@@ -80,7 +83,9 @@ class EditorPresenter(BasePresenter):
                     self.apply_silent()
             return True
 
-        if self._has_unsaved_changes():
+        has_changes = self._has_unsaved_changes()
+
+        if has_changes:
             ans = ask_yes_no_cancel(
                 self.view,
                 t("editor.dialog.unsaved.title"),
@@ -102,11 +107,9 @@ class EditorPresenter(BasePresenter):
         if self.config_id is None:
             return False
 
-        # текущее состояние из таблицы
         self._sync_state_from_table()
-        current_state = dict(self._state)
 
-        # сохранённое в БД
+        current_state = dict(self._state)
         saved = self.service.saved_values(self.config_id)
 
         # нормализуем и сравниваем
@@ -282,7 +285,6 @@ class EditorPresenter(BasePresenter):
         # обновить счётчик ПОСЛЕ фильтрации
         self.view.set_command_count(len(visible))
 
-        # построить таблицу ОДИН раз
         self._rebuild_table(visible)
 
     def _rebuild_table(self, visible_commands):
@@ -293,35 +295,52 @@ class EditorPresenter(BasePresenter):
         self._group_rows.clear()
         self._group_header_row.clear()
 
-        t.blockSignals(True)  # блокируем сигналы
-        t.setUpdatesEnabled(False)
-        t.setRowCount(0)
+        # посчитать финальный размер
+        rows_total = 0
+        current_prefix = None
+        for cmd, pcode in visible_commands:
+            if pcode != current_prefix:
+                rows_total += 1
+                current_prefix = pcode
+            rows_total += 1
+
+        # посчитать видимые/всего по каждой группе
+        group_visible = {}
+        group_total = {}
+        for cmd, pcode in visible_commands:
+            group_visible[pcode] = group_visible.get(pcode, 0) + 1
+
+        for cmd in self._commands:
+            pid = cmd["prefix_id"]
+            if pid is None or pid not in self._prefixes:
+                continue
+            pcode = self._prefixes[pid]["code"]
+            group_total[pcode] = group_total.get(pcode, 0) + 1
+
+        t.blockSignals(True)
+        t.clearContents()
+        t.setRowCount(rows_total)
 
         current_prefix = None
         row = 0
-
         for cmd, pcode in visible_commands:
             prefix = self._prefixes[cmd["prefix_id"]]
-
             if pcode != current_prefix:
-                t.insertRow(row)
-                view.make_group_header(row, pcode, prefix["name"])
-
+                # ← ВОТ ЗДЕСЬ: передаём счётчики
+                view.make_group_header(
+                    row, pcode, prefix["name"],
+                    visible_count=group_visible.get(pcode, 0),
+                    total_count=group_total.get(pcode, 0),
+                )
                 self._group_header_row[pcode] = row
                 self._group_rows[pcode] = []
-
                 current_prefix = pcode
                 row += 1
 
-            t.insertRow(row)
             view.fill_command_row(row, cmd)
-            self._cmd_by_row[row] = {
-                "command": cmd,
-                "group_code": pcode,
-            }
+            self._cmd_by_row[row] = {"command": cmd, "group_code": pcode}
             self._group_rows[pcode].append(row)
 
-            # применить сохранённое состояние
             use, val = self._state.get(cmd["id"], (0, None))
             chk_item = t.item(row, 0)
             val_item = t.item(row, 2)
@@ -332,18 +351,14 @@ class EditorPresenter(BasePresenter):
             else:
                 chk_item.setCheckState(Qt.CheckState.Unchecked)
                 view.set_value_enabled(row, False)
-
             row += 1
 
-        t.setUpdatesEnabled(True)
-        t.blockSignals(False)  # ← разблокируем
-
+        t.blockSignals(False)
         self._update_group_checks()
 
     # ============ синхронизация состояния ============
 
     def _sync_state_from_table(self):
-        """Обновляет self._state тем, что сейчас в таблице."""
         t = self.view.tableCommands
         for row, info in self._cmd_by_row.items():
             cmd_id = info["command"]["id"]
@@ -351,9 +366,8 @@ class EditorPresenter(BasePresenter):
             val_item = t.item(row, 2)
             if chk_item is None or val_item is None:
                 continue
-
-            checked = (chk_item.checkState() == Qt.CheckState.Checked)
-            if checked:
+            state_val = _state_val(chk_item)
+            if state_val == 2:
                 val = val_item.text().strip()
                 self._state[cmd_id] = (1, val)
             else:
@@ -371,7 +385,8 @@ class EditorPresenter(BasePresenter):
                 chk_item = t.item(r, 0)
                 if chk_item is not None:
                     total += 1
-                    if chk_item.checkState() == Qt.CheckState.Checked:
+                    state_val = _state_val(chk_item)
+                    if state_val == 2:
                         checked += 1
 
             if total == 0 or checked == 0:
@@ -501,7 +516,6 @@ class EditorPresenter(BasePresenter):
 
         t = self.view.tableCommands
         marker = item.data(Qt.ItemDataRole.UserRole)
-
         if marker is None:
             return
 
@@ -509,29 +523,30 @@ class EditorPresenter(BasePresenter):
         if isinstance(marker, str) and marker.startswith("GROUP:"):
             code = marker[6:]
             state = item.checkState()
+            state_val = state.value if hasattr(state, "value") else int(state)
+
+            rows = self._group_rows.get(code, [])
 
             t.blockSignals(True)
-            rows = self._group_rows.get(code, [])
-            target_checked = (state == Qt.CheckState.Checked)
-            target_unchecked = (state == Qt.CheckState.Unchecked)
+            try:
+                for r in rows:
+                    chk_item = t.item(r, 0)
+                    if chk_item is None:
+                        continue
+                    if state_val == 2:
+                        chk_item.setCheckState(Qt.CheckState.Checked)
+                    elif state_val == 0:
+                        chk_item.setCheckState(Qt.CheckState.Unchecked)
+            finally:
+                t.blockSignals(False)
 
+            # активировать / деактивировать value
             for r in rows:
                 chk_item = t.item(r, 0)
                 if chk_item is None:
                     continue
-                if target_checked:
-                    chk_item.setCheckState(Qt.CheckState.Checked)
-                elif target_unchecked:
-                    chk_item.setCheckState(Qt.CheckState.Unchecked)
-            t.blockSignals(False)
-
-            # активировать / деактивировать ячейки значений
-            for r in rows:
-                chk_item = t.item(r, 0)
-                if chk_item is None:
-                    continue
-                checked = (chk_item.checkState() == Qt.CheckState.Checked)
-                self.view.set_value_enabled(r, checked)
+                state_val = _state_val(chk_item)
+                self.view.set_value_enabled(r, state_val == 2)
 
             self._update_group_checks()
             return
@@ -539,7 +554,9 @@ class EditorPresenter(BasePresenter):
         # 2. чекбокс команды
         if isinstance(marker, str) and marker.startswith("CMD:"):
             row = t.row(item)
-            checked = (item.checkState() == Qt.CheckState.Checked)
+            state = item.checkState()
+            state_val = state.value if hasattr(state, "value") else int(state)
+            checked = (state_val == 2)
             self.view.set_value_enabled(row, checked)
             self._update_group_checks()
             return
@@ -694,7 +711,9 @@ class EditorPresenter(BasePresenter):
                 # синхронизировать editable с текущим состоянием галки
                 chk_item = t_table.item(row, 0)
                 if chk_item is not None:
-                    checked = (chk_item.checkState() == Qt.CheckState.Checked)
+                    state = chk_item.checkState()
+                    state_val = state.value if hasattr(state, "value") else int(state)
+                    checked = (state_val == 2)
                     self.view.set_value_enabled(row, checked)
 
         t_table.blockSignals(False)
