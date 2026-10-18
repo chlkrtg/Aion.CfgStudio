@@ -129,7 +129,7 @@ class ConfigService:
 
         Возвращает (отсечено_неизвестных, удалено_дубликатов).
         """
-        # 1. Загружаем команды ОДИН раз — кэш
+        # 1. Загружаем команды ОДИН раз
         all_commands = (
             self.command_repo.all("debug")
             if self.command_repo is not None
@@ -139,9 +139,9 @@ class ConfigService:
         id_to_key = {c["id"]: c["key_name"] for c in all_commands}
         known = set(key_to_id.keys())
 
-        # 2. Фильтрация (передаём known)
-        cleaned, unknown, duplicates = self._filter_known_commands(
-            text, known
+        # 2. Фильтрация (возвращает списки)
+        cleaned, unknown_list, duplicates_list = (
+            self._filter_known_commands(text, known)
         )
 
         # 3. Старое состояние ДО сохранения
@@ -154,17 +154,52 @@ class ConfigService:
         self.repo.update(config_id, cleaned)
         self.repo.clear_values(config_id)
 
-        # 5. Заполняем ConfigValues заново (передаём key_to_id)
+        # 5. Заполняем ConfigValues заново
         self._populate_values_from_content(
             config_id, cleaned, key_to_id
         )
 
-        # 6. Логи — bulk + готовые словари
+        # 6. Логи — value changes
         self._write_content_logs(
             config_id, old_values, cleaned, key_to_id, id_to_key
         )
 
-        return unknown, duplicates
+        # 7. Логи — удалённые дубли и неизвестные
+        self._write_filter_logs(
+            config_id, unknown_list, duplicates_list
+        )
+
+        return len(unknown_list), len(duplicates_list)
+
+    def _write_filter_logs(
+            self, config_id: int,
+            unknown_list: list, duplicates_list: list,
+    ):
+        """Пишет в лог удалённые дубли и неизвестные команды."""
+        if not unknown_list and not duplicates_list:
+            return
+
+        changes = []
+        for key, value in unknown_list:
+            changes.append((
+                f"{key} {t('logs.type.unknown')}",
+                str(value)[:200] if value else "",
+                t("logs.value.removed"),
+            ))
+        for key, value in duplicates_list:
+            changes.append((
+                f"{key} {t('logs.type.duplicate')}",
+                str(value)[:200] if value else "",
+                t("logs.value.dup_removed"),
+            ))
+
+        if not changes:
+            return
+
+        try:
+            self.repo.log_change_bulk(config_id, changes)
+        except Exception as exc:
+            print(f"[ConfigService] write_filter_logs failed: {exc}")
 
     def _populate_values_from_content(
             self, config_id: int, content: str, key_to_id: dict
@@ -261,13 +296,18 @@ class ConfigService:
 
     def _filter_known_commands(
             self, text: str, known: set
-    ) -> tuple[str, int, int]:
+    ) -> tuple[str, list, list]:
         """Убирает из текста неизвестные команды и дубликаты.
 
         known: готовое множество key_name — не зовём command_repo.all().
+
+        Возвращает:
+            cleaned_text: очищенный текст
+            unknown_list: [(key, value), ...] — неизвестные
+            duplicates_list: [(key, value), ...] — дубли
         """
         if not known:
-            return text, 0, 0
+            return text, [], []
 
         # Проход 1: последнее вхождение для каждой команды
         last_value: dict[str, str] = {}
@@ -282,8 +322,8 @@ class ConfigService:
         # Проход 2
         result = []
         seen = set()
-        unknown = 0
-        duplicates = 0
+        unknown_list = []
+        duplicates_list = []
 
         for line in text.splitlines():
             stripped = line.strip()
@@ -294,14 +334,17 @@ class ConfigService:
             if m and m.group(1) in known:
                 key = m.group(1)
                 if key in seen:
-                    duplicates += 1
+                    duplicates_list.append((key, m.group(2)))
                     continue
                 seen.add(key)
                 result.append(last_value[key])
             else:
-                unknown += 1
+                if m:
+                    unknown_list.append((m.group(1), m.group(2)))
+                else:
+                    unknown_list.append((stripped, ""))
 
-        return "\n".join(result), unknown, duplicates
+        return "\n".join(result), unknown_list, duplicates_list
 
     def _validate_name(self, name: str) -> str:
         name = name.strip()

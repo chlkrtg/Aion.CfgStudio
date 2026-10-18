@@ -139,6 +139,20 @@ STRINGS = {
         "config.error.too_long_name":   "Имя слишком длинное (макс. {n}).",
         "config.error.not_found":       "Конфиг не найден.",
 
+        # ================= ЛОГИ ===================
+        "logs.type.unknown":     "(неизвестная)",
+        "logs.type.duplicate":   "(дубль)",
+        "logs.value.removed":    "(удалено)",
+        "logs.value.dup_removed": "(удалён)",
+        "logs.window_title":       "История изменений — {name}",
+        "logs.window_title_short": "История изменений",
+        "logs.search_placeholder": "Поиск по команде или дате...",
+        "logs.col_date":           "Дата",
+        "logs.col_command":        "Команда",
+        "logs.col_old":            "Было",
+        "logs.col_new":            "Стало",
+        "logs.btn_close":          "Закрыть",
+
         # ============ РЕДАКТОР КОМАНД ============
         "editor.window_title":   "Aion.CfgStudio — Редактор конфигурации",
         "editor.lbl_file":       "Файл: {name}",
@@ -413,6 +427,20 @@ STRINGS = {
         "config.error.empty_name":      "File name cannot be empty.",
         "config.error.too_long_name":   "Name is too long (max {n}).",
         "config.error.not_found":       "Config not found.",
+
+        # ============ LOGS ============
+        "logs.type.unknown":     "(unknown)",
+        "logs.type.duplicate":   "(duplicate)",
+        "logs.value.removed":    "(removed)",
+        "logs.value.dup_removed": "(removed)",
+        "logs.window_title":       "Change history — {name}",
+        "logs.window_title_short": "Change history",
+        "logs.search_placeholder": "Search by command or date...",
+        "logs.col_date":           "Date",
+        "logs.col_command":        "Command",
+        "logs.col_old":            "Old",
+        "logs.col_new":            "New",
+        "logs.btn_close":          "Close",
 
         # ============ EDITOR ============
         "editor.window_title":   "Aion.CfgStudio — Config editor",

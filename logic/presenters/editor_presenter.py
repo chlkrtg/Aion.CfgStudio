@@ -47,6 +47,15 @@ class EditorPresenter(BasePresenter):
     def on_enter(self):
         self._commands = None
         self._prefixes = None
+
+        self.view.editSearch.blockSignals(True)
+        self.view.editSearch.clear()
+        self.view.editSearch.blockSignals(False)
+
+        self.view.listPrefixes.blockSignals(True)
+        self.view.listPrefixes.setCurrentRow(0)
+        self.view.listPrefixes.blockSignals(False)
+
         self.refresh()
 
     def on_leave(self) -> bool:

@@ -13,6 +13,21 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QColor, QPixmap, QIcon
 from logic.core.i18n import t
 
+import ctypes
+from ctypes import wintypes
+
+WM_NCACTIVATE = 0x0086
+
+def _force_titlebar_redraw(hwnd: int):
+    """Форсирует перерисовку non-client area (заголовка) без ресайза."""
+    try:
+        user32 = ctypes.windll.user32
+        # False → True: заставляет Windows перерисовать заголовок
+        user32.SendMessageW(hwnd, WM_NCACTIVATE, 0, 0)
+        user32.SendMessageW(hwnd, WM_NCACTIVATE, 1, 0)
+    except Exception:
+        pass
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
@@ -36,9 +51,7 @@ def _style_window(window):
             ctypes.sizeof(ctypes.c_int),
         )
 
-        rect = window.geometry()
-        window.resize(rect.width() + 1, rect.height())
-        QTimer.singleShot(10, lambda: window.resize(rect.width(), rect.height()))
+        _force_titlebar_redraw(hwnd)
     except Exception:
         pass
 

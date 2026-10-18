@@ -5,33 +5,40 @@ from PyQt6.QtWidgets import (
     QHeaderView, QPushButton, QAbstractItemView, QLineEdit,
 )
 
+from logic.core.i18n import t
+
 
 class LogsDialog(QDialog):
     """Показывает историю изменений в таблице с прокруткой и поиском."""
 
     def __init__(self, parent, logs: list, filename: str = ""):
         super().__init__(parent)
-        title = "История изменений"
+
         if filename:
-            title += f" — {filename}"
+            title = t("logs.window_title").format(name=filename)
+        else:
+            title = t("logs.window_title_short")
+
         self.setWindowTitle(title)
         self.resize(900, 500)
-
         self.setFixedSize(900, 500)
 
         layout = QVBoxLayout(self)
 
         # ======= поле поиска =======
         self.edit_search = QLineEdit()
-        self.edit_search.setPlaceholderText("Поиск по команде или дате...")
+        self.edit_search.setPlaceholderText(t("logs.search_placeholder"))
         layout.addWidget(self.edit_search)
 
         # ======= таблица =======
         self.table = QTableWidget()
         self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(
-            ["Дата", "Команда", "Было", "Стало"]
-        )
+        self.table.setHorizontalHeaderLabels([
+            t("logs.col_date"),
+            t("logs.col_command"),
+            t("logs.col_old"),
+            t("logs.col_new"),
+        ])
         self.table.setRowCount(len(logs))
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
@@ -52,20 +59,17 @@ class LogsDialog(QDialog):
             self.table.setItem(i, 2, QTableWidgetItem(str(row["old_value"])))
             self.table.setItem(i, 3, QTableWidgetItem(str(row["new_value"])))
 
-        # сортируем по дате, новые сверху
         self.table.sortItems(0, Qt.SortOrder.DescendingOrder)
-
         layout.addWidget(self.table)
 
         # ======= кнопки =======
         buttons = QHBoxLayout()
         buttons.addStretch()
-        btn_close = QPushButton("Закрыть")
+        btn_close = QPushButton(t("logs.btn_close"))
         btn_close.clicked.connect(self.accept)
         buttons.addWidget(btn_close)
         layout.addLayout(buttons)
 
-        # ======= фильтр =======
         self.edit_search.textChanged.connect(self._filter)
 
     def _filter(self, text: str):
@@ -76,6 +80,5 @@ class LogsDialog(QDialog):
             key_item = self.table.item(i, 1)
             date_text = date_item.text().lower() if date_item else ""
             key_text = key_item.text().lower() if key_item else ""
-
             match = (text in key_text) or (text in date_text)
             self.table.setRowHidden(i, bool(text) and not match)
