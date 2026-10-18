@@ -60,6 +60,11 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
         self.rebind_shortcuts()
         self.retranslate()
 
+        self.lblTitle.setStyleSheet(
+            "font-size: 14pt; font-weight: 700; color: #d4a95a; "
+            "background: transparent;"
+        )
+
     # ============== сигналы ==============
 
     def _connect_signals(self):

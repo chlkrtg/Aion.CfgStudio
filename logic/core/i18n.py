@@ -299,6 +299,11 @@ STRINGS = {
         "dialog.no":      "Нет",
         "dialog.cancel":  "Отмена",
         "dialog.ok":      "ОК",
+
+        # ============== ХЕЛПЕРЫ ================
+        "profile.empty":  "Нет профилей.\nНажмите «Новый», чтобы создать.",
+        "server.empty":   "Нет серверов.\nНажмите «Новый», чтобы создать.",
+        "main.empty":     "Нет конфигураций.\nНажмите «Новый CFG», чтобы создать.",
     },
 
     "en": {
@@ -591,6 +596,11 @@ STRINGS = {
         "dialog.no":      "No",
         "dialog.cancel":  "Cancel",
         "dialog.ok":      "OK",
+
+        # ============== HELPERS ================
+        "profile.empty":  "No profiles.\nClick «New» to create one.",
+        "server.empty":   "No servers.\nClick «New» to create one.",
+        "main.empty":     "No configs.\nClick «New CFG» to create one.",
     },
 }
 

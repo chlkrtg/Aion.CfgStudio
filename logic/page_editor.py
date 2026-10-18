@@ -38,6 +38,15 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         self.rebind_shortcuts()
         self.retranslate()
 
+        self.lblFileName.setStyleSheet(
+            "font-size: 13pt; font-weight: 600; color: #d4a95a; "
+            "background: transparent;"
+        )
+        self.lblPrefixesTitle.setStyleSheet(
+            "font-size: 11pt; font-weight: 700; color: #b0b0c0; "
+            "background: transparent;"
+        )
+
     # ============== настройка таблицы ==============
 
     def _setup_table(self):

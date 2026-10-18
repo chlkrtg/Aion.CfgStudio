@@ -16,7 +16,10 @@ from logic.core.i18n import t
 
 class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
-    # константы доступны презентеру через view.MAX_*
+    # константы доступны презентеру через view.MAX_*self.lblTitle.setStyleSheet(
+    #     "font-size: 16pt; font-weight: 700; color: #d4a95a; "
+    #     "background: transparent;"
+    # )
     MAX_PROFILE_NAME_LEN = MAX_PROFILE_NAME_LEN
     MAX_DESCRIPTION_LEN = MAX_DESCRIPTION_LEN
 
@@ -54,6 +57,11 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
         self._shortcut_handles: dict[str, list] = {}
         self.rebind_shortcuts()
         self.retranslate()
+
+        self.lblTitle.setStyleSheet(
+            "font-size: 16pt; font-weight: 700; color: #d4a95a; "
+            "background: transparent;"
+        )
 
     # ============== сигналы ==============
 

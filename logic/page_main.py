@@ -44,6 +44,15 @@ class PageMain(BasePage, Ui_MainWindow):
         self.rebind_shortcuts()
         self.retranslate()
 
+        self.lblTreeTitle.setStyleSheet(
+            "font-size: 12pt; font-weight: 700; color: #b0b0c0; "
+            "background: transparent;"
+        )
+        self.lblPreviewTitle.setStyleSheet(
+            "font-size: 12pt; font-weight: 700; color: #b0b0c0; "
+            "background: transparent;"
+        )
+
     # ============== сигналы ==============
 
     def _connect_signals(self):
