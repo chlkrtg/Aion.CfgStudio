@@ -7,6 +7,7 @@ from PyQt6.QtGui import QColor
 
 from logic.widgets.base_page import BasePage
 from logic.widgets.context_menu import build_context_menu
+from logic.widgets.hover_helpers import set_button_variant
 from logic.widgets.shortcuts import bind_actions
 from logic.core.constants import MAX_CONFIG_NAME_LEN
 from logic.widgets.shortcut_labels import with_hotkey
@@ -201,6 +202,9 @@ class PageMain(BasePage, Ui_MainWindow):
             add_empty_node(self.treeConfigs, _t("empty.configs"))
             self.treeConfigs.setCurrentItem(None)
             self.treeConfigs.blockSignals(False)
+
+        set_button_variant(self.btnOpenEditor, "primary")
+        set_button_variant(self.btnDeleteConfig, "danger")
 
     # ============== контекст ==============
 

@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
 
 from logic.widgets.base_page import BasePage
 from logic.core.constants import MAX_CONFIG_NAME_LEN
+from logic.widgets.hover_helpers import set_button_variant
 from logic.widgets.shortcuts import bind_actions
 from logic.widgets.value_delegate import ValueDelegate
 from logic.widgets.shortcut_labels import with_hotkey
@@ -175,6 +176,10 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
             # 3. восстановить состояние (галочки / значения)
             self.presenter._state = saved_state
             self.presenter.apply_filters(sync=False)
+
+        set_button_variant(self.btnApply, "primary")
+        set_button_variant(self.btnCancel, "ghost")
+        set_button_variant(self.btnResetAll, "ghost")
 
     def set_command_count(self, n: int):
         """Обновляет счётчик видимых команд."""

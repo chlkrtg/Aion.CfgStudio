@@ -12,6 +12,7 @@ from logic.core.constants import MAX_PROFILE_NAME_LEN, MAX_DESCRIPTION_LEN
 from logic.presenters import ProfilePresenter
 from ui.profile_select import Ui_ProfileSelectDialog
 from logic.core.i18n import t, t as _t
+from logic.widgets.hover_helpers import set_button_variant
 
 
 class PageProfile(BasePage, Ui_ProfileSelectDialog):
@@ -60,6 +61,15 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
 
         self.lblTitle.setStyleSheet(
             "font-size: 16pt; font-weight: 700; color: #d4a95a; "
+            "background: transparent;"
+        )
+
+        self.lblProfilesTitle.setStyleSheet(
+            "font-size: 12pt; font-weight: 700; color: #b0b0c0; "
+            "background: transparent;"
+        )
+        self.lblDetailsTitle.setStyleSheet(
+            "font-size: 12pt; font-weight: 700; color: #b0b0c0; "
             "background: transparent;"
         )
 
@@ -159,6 +169,10 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
             add_empty_item(self.listProfiles, _t("empty.profiles"))
             self.listProfiles.setCurrentItem(None)
             self.listProfiles.blockSignals(False)
+
+        set_button_variant(self.btnEnter, "primary")
+        set_button_variant(self.btnCancel, "ghost")
+        set_button_variant(self.btnDelete, "danger")
 
     # ============== жизненный цикл ==============
 

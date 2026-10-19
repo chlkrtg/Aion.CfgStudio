@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
 )
 
 from logic.presenters import ShortcutPresenter
+from logic.widgets.hover_helpers import set_button_variant
 from ui.shortcuts_editor import Ui_ShortcutsEditorDialog
 from logic.core.i18n import t
 
@@ -283,6 +284,11 @@ class ShortcutsEditorDialog(QDialog, Ui_ShortcutsEditorDialog):
         self.treeShortcuts.itemDoubleClicked.connect(
             lambda _item, _col: self.presenter.on_change()
         )
+
+        set_button_variant(self.btnChange, "secondary")
+        set_button_variant(self.btnClose, "primary")
+        set_button_variant(self.btnReset, "ghost")
+        set_button_variant(self.btnResetAll, "ghost")
 
     # ============ View-хелперы (зовёт презентер) ============
 

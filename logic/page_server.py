@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt, QTimer
 
 from logic.widgets.base_page import BasePage
 from logic.widgets.context_menu import build_context_menu
+from logic.widgets.hover_helpers import set_button_variant
 from logic.widgets.shortcuts import bind_actions
 from logic.core.constants import MAX_SERVER_NAME_LEN, MAX_NOTE_LEN
 from logic.widgets.shortcut_labels import with_hotkey
@@ -62,6 +63,15 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
 
         self.lblTitle.setStyleSheet(
             "font-size: 14pt; font-weight: 700; color: #d4a95a; "
+            "background: transparent;"
+        )
+
+        self.lblServersTitle.setStyleSheet(
+            "font-size: 12pt; font-weight: 700; color: #b0b0c0; "
+            "background: transparent;"
+        )
+        self.lblServerDetailsTitle.setStyleSheet(
+            "font-size: 12pt; font-weight: 700; color: #b0b0c0; "
             "background: transparent;"
         )
 
@@ -160,6 +170,10 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
             add_empty_item(self.listServers, _t("empty.servers"))
             self.listServers.setCurrentItem(None)
             self.listServers.blockSignals(False)
+
+        set_button_variant(self.btnEnter, "primary")
+        set_button_variant(self.btnCancel, "ghost")
+        set_button_variant(self.btnDeleteServer, "danger")
 
     # ============== жизненный цикл ==============
 

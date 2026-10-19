@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
 )
 
 from logic.core.i18n import t
+from logic.widgets.hover_helpers import set_button_variant
 
 
 class LogsDialog(QDialog):
@@ -71,6 +72,8 @@ class LogsDialog(QDialog):
         layout.addLayout(buttons)
 
         self.edit_search.textChanged.connect(self._filter)
+
+        set_button_variant(btn_close, "ghost")
 
     def _filter(self, text: str):
         """Скрывает строки, не подходящие под поиск (по команде или дате)."""
