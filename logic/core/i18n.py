@@ -301,9 +301,10 @@ STRINGS = {
         "dialog.ok":      "ОК",
 
         # ============== ХЕЛПЕРЫ ================
-        "profile.empty":  "Нет профилей.\nНажмите «Новый», чтобы создать.",
-        "server.empty":   "Нет серверов.\nНажмите «Новый», чтобы создать.",
-        "main.empty":     "Нет конфигураций.\nНажмите «Новый CFG», чтобы создать.",
+        "empty.profiles":   "Нет профилей.\nНажмите «Новый», чтобы создать.",
+        "empty.servers":    "Нет серверов.\nНажмите «Новый», чтобы создать.",
+        "empty.configs":    "Нет конфигураций.\nНажмите «Новый CFG», чтобы создать.",
+        "empty.preview":    "Выберите конфигурацию для предпросмотра.",
     },
 
     "en": {
@@ -598,9 +599,10 @@ STRINGS = {
         "dialog.ok":      "OK",
 
         # ============== HELPERS ================
-        "profile.empty":  "No profiles.\nClick «New» to create one.",
-        "server.empty":   "No servers.\nClick «New» to create one.",
-        "main.empty":     "No configs.\nClick «New CFG» to create one.",
+        "empty.profiles":   "No profiles.\nClick «New» to create one.",
+        "empty.servers":    "No servers.\nClick «New» to create one.",
+        "empty.configs":    "No configs.\nClick «New CFG» to create one.",
+        "empty.preview":    "Select a configuration to preview.",
     },
 }
 

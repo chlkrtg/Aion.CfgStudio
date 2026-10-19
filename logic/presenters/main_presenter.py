@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
 from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
 from logic.widgets.dialogs import ask_yes_no, ask_yes_no_cancel
+from logic.widgets.empty_state import add_empty_node
 
 
 class MainPresenter(BasePresenter):
@@ -104,6 +105,23 @@ class MainPresenter(BasePresenter):
             view.set_controls_enabled(False)
             return
 
+        # прочитать cfg из БД
+        cfgs = self.service.repo.all_for_server(self.server_id)
+        if not cfgs:
+            view.treeConfigs.blockSignals(True)
+            add_empty_node(view.treeConfigs, t("empty.configs"))
+            view.treeConfigs.setCurrentItem(None)
+            view.treeConfigs.blockSignals(False)
+            view.editFilter.blockSignals(True)
+            view.editFilter.clear()
+            view.editFilter.blockSignals(False)
+            view.editFilter.setEnabled(False)
+            view.clear_preview()
+            view.set_controls_enabled(False)
+            return
+
+        view.editFilter.setEnabled(True)
+
         # заполнить дерево
         for cfg in self.service.repo.all_for_server(self.server_id):
             node = QTreeWidgetItem([
@@ -129,9 +147,6 @@ class MainPresenter(BasePresenter):
                 view.treeConfigs.topLevelItem(0)
             )
             selected = True
-
-        if not selected:
-            view.clear_preview()
 
         view.set_controls_enabled(selected)
         self.apply_filter(view.editFilter.text())
@@ -381,6 +396,8 @@ class MainPresenter(BasePresenter):
             )
             return
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
+        if config_id is None:  # плейсхолдер
+            return
         view.window().go_editor(config_id)
 
     def show_logs(self):

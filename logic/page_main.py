@@ -3,6 +3,7 @@
 Вся логика - в MainPresenter.
 """
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QColor
 
 from logic.widgets.base_page import BasePage
 from logic.widgets.context_menu import build_context_menu
@@ -11,7 +12,7 @@ from logic.core.constants import MAX_CONFIG_NAME_LEN
 from logic.widgets.shortcut_labels import with_hotkey
 from logic.presenters import MainPresenter
 from ui.main_window import Ui_MainWindow
-from logic.core.i18n import t
+from logic.core.i18n import t, t as _t
 
 
 class PageMain(BasePage, Ui_MainWindow):
@@ -52,6 +53,8 @@ class PageMain(BasePage, Ui_MainWindow):
             "font-size: 12pt; font-weight: 700; color: #b0b0c0; "
             "background: transparent;"
         )
+
+        self.treeConfigs.setWordWrap(True)
 
     # ============== сигналы ==============
 
@@ -127,6 +130,7 @@ class PageMain(BasePage, Ui_MainWindow):
         # заголовки
         self.lblTreeTitle.setText(t("main.lbl_tree_title"))
         self.lblPreviewTitle.setText(t("main.lbl_preview_title"))
+        self.editPreview.setPlaceholderText(t("empty.preview"))
 
         # колонки дерева
         self.treeConfigs.setHeaderLabels([
@@ -182,6 +186,21 @@ class PageMain(BasePage, Ui_MainWindow):
                 self.lblPreviewName.setText(cfg["filename"])
             else:
                 self.clear_preview()
+        else:
+            self.lblPreviewName.setText(t("main.lbl_preview_none"))
+
+        # обновить плейсхолдер (если список пуст)
+        if self.treeConfigs.topLevelItemCount() == 0 or (
+                self.treeConfigs.topLevelItemCount() == 1
+                and self.treeConfigs.topLevelItem(0).data(
+            0, Qt.ItemDataRole.UserRole) is None
+        ):
+            self.treeConfigs.clear()
+            from logic.widgets.empty_state import add_empty_node
+            self.treeConfigs.blockSignals(True)
+            add_empty_node(self.treeConfigs, _t("empty.configs"))
+            self.treeConfigs.setCurrentItem(None)
+            self.treeConfigs.blockSignals(False)
 
     # ============== контекст ==============
 
@@ -192,6 +211,9 @@ class PageMain(BasePage, Ui_MainWindow):
     # ============== жизненный цикл ==============
 
     def on_enter(self):
+        self.editFilter.blockSignals(True)
+        self.editFilter.clear()
+        self.editFilter.blockSignals(False)
         self.presenter.on_enter()
 
     def on_leave(self) -> bool:
@@ -206,7 +228,8 @@ class PageMain(BasePage, Ui_MainWindow):
     def clear_preview(self):
         """Сбрасывает панель предпросмотра."""
         self.lblPreviewName.setText(t("main.lbl_preview_none"))
-        self.editPreview.clear()
+        self.editPreview.setPlainText("")
+        self.editPreview.setPlaceholderText(t("empty.preview"))
 
     def set_controls_enabled(self, enabled: bool):
         """Включает/выключает контролы, требующие выбранного cfg."""
@@ -264,7 +287,8 @@ class PageMain(BasePage, Ui_MainWindow):
         item = self.treeConfigs.itemAt(pos)
         if item is None:
             return
-
+        if item.data(0, Qt.ItemDataRole.UserRole) is None:
+            return
         self.treeConfigs.setCurrentItem(item)
         svc = self.window().shortcut_service
 

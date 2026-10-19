@@ -11,7 +11,7 @@ from logic.widgets.shortcut_labels import with_hotkey
 from logic.core.constants import MAX_PROFILE_NAME_LEN, MAX_DESCRIPTION_LEN
 from logic.presenters import ProfilePresenter
 from ui.profile_select import Ui_ProfileSelectDialog
-from logic.core.i18n import t
+from logic.core.i18n import t, t as _t
 
 
 class PageProfile(BasePage, Ui_ProfileSelectDialog):
@@ -147,6 +147,19 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
             self.listProfiles.currentItem(), None
         )
 
+        # обновить плейсхолдер (если список пуст)
+        if self.listProfiles.count() == 0 or (
+                self.listProfiles.count() == 1
+                and self.listProfiles.item(0).data(
+            Qt.ItemDataRole.UserRole) is None
+        ):
+            self.listProfiles.clear()
+            from logic.widgets.empty_state import add_empty_item
+            self.listProfiles.blockSignals(True)
+            add_empty_item(self.listProfiles, _t("empty.profiles"))
+            self.listProfiles.setCurrentItem(None)
+            self.listProfiles.blockSignals(False)
+
     # ============== жизненный цикл ==============
 
     def on_enter(self):
@@ -206,6 +219,9 @@ class PageProfile(BasePage, Ui_ProfileSelectDialog):
     def _show_context_menu(self, pos):
         item = self.listProfiles.itemAt(pos)
         if item is None:
+            return
+
+        if item.data(Qt.ItemDataRole.UserRole) is None:
             return
 
         self.listProfiles.setCurrentItem(item)

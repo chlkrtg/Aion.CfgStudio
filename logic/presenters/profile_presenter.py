@@ -59,6 +59,11 @@ class ProfilePresenter(BasePresenter):
         view.listProfiles.blockSignals(False)
 
         if not view.listProfiles.count():
+            from logic.widgets.empty_state import add_empty_item
+            view.listProfiles.blockSignals(True)
+            view.listProfiles.clear()
+            add_empty_item(view.listProfiles, t("empty.profiles"))
+            view.listProfiles.blockSignals(False)
             view.clear_details()
             view.set_controls_enabled(False)
             return
@@ -240,4 +245,6 @@ class ProfilePresenter(BasePresenter):
             )
             return
         profile_id = item.data(Qt.ItemDataRole.UserRole)
+        if profile_id is None:  # плейсхолдер
+            return
         view.window().go_server(profile_id)

@@ -70,6 +70,11 @@ class ServerPresenter(BasePresenter):
         view.listServers.blockSignals(False)
 
         if not view.listServers.count():
+            from logic.widgets.empty_state import add_empty_item
+            view.listServers.blockSignals(True)
+            view.listServers.clear()
+            add_empty_item(view.listServers, t("empty.servers"))
+            view.listServers.blockSignals(False)
             view.clear_details()
             view.set_controls_enabled(False)
             return
@@ -234,4 +239,6 @@ class ServerPresenter(BasePresenter):
             )
             return
         server_id = item.data(Qt.ItemDataRole.UserRole)
+        if server_id is None:  # плейсхолдер
+            return
         view.window().go_main(server_id)

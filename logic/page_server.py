@@ -11,7 +11,7 @@ from logic.core.constants import MAX_SERVER_NAME_LEN, MAX_NOTE_LEN
 from logic.widgets.shortcut_labels import with_hotkey
 from logic.presenters import ServerPresenter
 from ui.server_select import Ui_ServerSelectDialog
-from logic.core.i18n import t
+from logic.core.i18n import t, t as _t
 
 
 class PageServer(BasePage, Ui_ServerSelectDialog):
@@ -148,6 +148,19 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
             self.listServers.currentItem(), None
         )
 
+        # обновить плейсхолдер (если список пуст)
+        if self.listServers.count() == 0 or (
+                self.listServers.count() == 1
+                and self.listServers.item(0).data(
+            Qt.ItemDataRole.UserRole) is None
+        ):
+            self.listServers.clear()
+            from logic.widgets.empty_state import add_empty_item
+            self.listServers.blockSignals(True)
+            add_empty_item(self.listServers, _t("empty.servers"))
+            self.listServers.setCurrentItem(None)
+            self.listServers.blockSignals(False)
+
     # ============== жизненный цикл ==============
 
     def set_profile(self, profile_id: int):
@@ -209,6 +222,9 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
     def _show_context_menu(self, pos):
         item = self.listServers.itemAt(pos)
         if item is None:
+            return
+
+        if item.data(Qt.ItemDataRole.UserRole) is None:
             return
 
         self.listServers.setCurrentItem(item)
