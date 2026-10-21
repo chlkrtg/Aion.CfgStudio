@@ -377,6 +377,23 @@ class PageMain(BasePage, Ui_MainWindow):
 
     def toggle_search(self):
         """Показать/скрыть панель поиска."""
+        # Проверяем, есть ли реальные конфиги
+        count = self.treeConfigs.topLevelItemCount()
+
+        has_configs = False
+        if count > 0:
+            # Если элемент один, проверяем, не плейсхолдер ли это
+            if count == 1:
+                item = self.treeConfigs.topLevelItem(0)
+                if item.data(0, Qt.ItemDataRole.UserRole) is not None:
+                    has_configs = True
+            else:
+                has_configs = True
+
+        # Если конфигов нет — ничего не делаем
+        if not has_configs:
+            return
+
         if self.search_panel.isVisible():
             self.search_panel.hide_panel()
         else:
