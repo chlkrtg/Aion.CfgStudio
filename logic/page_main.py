@@ -3,7 +3,6 @@
 Вся логика - в MainPresenter.
 """
 from PyQt6.QtCore import Qt
-from logic.widgets.cfg_highlighter import CfgHighlighter
 from logic.widgets.base_page import BasePage
 from logic.widgets.context_menu import build_context_menu
 from logic.widgets.hover_helpers import set_button_variant
@@ -14,6 +13,9 @@ from logic.presenters import MainPresenter
 from ui.main_window import Ui_MainWindow
 from logic.core.i18n import t, t as _t
 from logic.widgets.cfg_highlighter import CfgHighlighter
+from logic.widgets.line_numbers import CodeEditor
+from logic.widgets.search_panel import SearchPanel
+from PyQt6.QtGui import QShortcut, QKeySequence
 
 
 class PageMain(BasePage, Ui_MainWindow):
@@ -25,6 +27,21 @@ class PageMain(BasePage, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
 
+        # Заменяем стандартный QPlainTextEdit на наш CodeEditor
+        old_editor = self.editPreview
+        new_editor = CodeEditor(self.gbPreview)
+
+        # Копируем настройки (если нужно)
+        new_editor.setReadOnly(old_editor.isReadOnly())
+
+        # Заменяем в layout
+        layout = old_editor.parentWidget().layout()
+        layout.replaceWidget(old_editor, new_editor)
+        old_editor.deleteLater()
+
+        # Переназначаем переменную
+        self.editPreview = new_editor
+
         # ============ подсветка синтаксиса ==============
         known_keys = set()
         if hasattr(service, 'command_repo') and service.command_repo:
@@ -34,9 +51,15 @@ class PageMain(BasePage, Ui_MainWindow):
 
         self._highlighter = CfgHighlighter(self.editPreview.document(), known_keys)
 
+        # --- Панель поиска ---
+        self.search_panel = SearchPanel(self.editPreview, self.gbPreview)
+        preview_layout = self.gbPreview.layout()
+        index = preview_layout.indexOf(self.editPreview)
+        preview_layout.insertWidget(index, self.search_panel)
+        self.search_panel.hide()  # Скрываем по умолчанию
+
         # Включаем подсветку текущей строки
         self.editPreview.setCursorWidth(2)  # Чуть шире курсор для удобства
-        self._highlight_current_line()
 
         # =============== презентер ===============
         self.presenter = MainPresenter(self, service, reference)
@@ -70,24 +93,6 @@ class PageMain(BasePage, Ui_MainWindow):
 
         self.treeConfigs.setWordWrap(True)
 
-    def _highlight_current_line(self):
-        """Подсвечивает строку, в которой находится курсор."""
-        from PyQt6.QtGui import QColor, QTextFormat
-        from PyQt6.QtWidgets import QTextEdit
-
-        selection = QTextEdit.ExtraSelection()
-
-        # Цвет фона для текущей строки (очень лёгкий, чтобы не мешать подсветке синтаксиса)
-        line_color = QColor("#2a2a3a")
-        line_color.setAlpha(100)  # Полупрозрачный
-
-        selection.format.setBackground(line_color)
-        selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
-        selection.cursor = self.editPreview.textCursor()
-        selection.cursor.clearSelection()
-
-        self.editPreview.setExtraSelections([selection])
-
     # ============== сигналы ==============
 
     def _connect_signals(self):
@@ -104,7 +109,7 @@ class PageMain(BasePage, Ui_MainWindow):
         self.btnRevertPreview.clicked.connect(self.presenter.revert_preview)
 
         self.treeConfigs.itemSelectionChanged.connect(
-            self.presenter.on_selection
+            self._on_selection_changed
         )
         self.editFilter.textChanged.connect(self.apply_filter)
 
@@ -128,7 +133,6 @@ class PageMain(BasePage, Ui_MainWindow):
         self.actionNewConfig.triggered.connect(
             lambda: self.window().go_editor(None)
         )
-        self.editPreview.cursorPositionChanged.connect(self._highlight_current_line)
 
     def _bindings(self) -> dict:
         return {
@@ -141,6 +145,7 @@ class PageMain(BasePage, Ui_MainWindow):
             "main.delete":  self.presenter.delete_config,
             "main.save":    self.presenter.save_preview,
             "main.quit":    self.presenter.change_server,
+            "main.find":    self.toggle_search,
         }
 
     def rebind_shortcuts(self):
@@ -159,6 +164,10 @@ class PageMain(BasePage, Ui_MainWindow):
     def retranslate(self):
         """Обновляет подписи кнопок с актуальными хоткеями."""
         svc = self.window().shortcut_service
+
+        # Поиск
+        self.search_panel.lbl.setText(t("main.search"))
+        self.search_panel.edit.setPlaceholderText(t("main.search.placeholder"))
 
         # заголовки
         self.lblTreeTitle.setText(t("main.lbl_tree_title"))
@@ -255,6 +264,24 @@ class PageMain(BasePage, Ui_MainWindow):
     def on_leave(self) -> bool:
         return self.presenter.on_leave()
 
+    def _on_selection_changed(self):
+        """Слот выбора файла: сбрасывает поиск и обновляет превью."""
+        item = self.treeConfigs.currentItem()
+        config_id = item.data(0, Qt.ItemDataRole.UserRole) if item else None
+
+        # Инициализируем _last_config_id при первом вызове
+        if not hasattr(self, '_last_config_id'):
+            self._last_config_id = None
+
+        # Если файл реально сменился — закрываем поиск
+        if config_id != self._last_config_id:
+            self._last_config_id = config_id
+            if self.search_panel.isVisible():
+                self.search_panel.hide_panel()
+
+        # Презентер обновляет сам текст превью
+        self.presenter.on_selection()
+
     # ============== UI-хелперы (зовёт презентер) ==============
 
     def apply_filter(self, text: str):
@@ -266,6 +293,9 @@ class PageMain(BasePage, Ui_MainWindow):
         self.lblPreviewName.setText(t("main.lbl_preview_none"))
         self.editPreview.setPlainText("")
         self.editPreview.setPlaceholderText(t("empty.preview"))
+
+        if hasattr(self, 'search_panel') and self.search_panel.isVisible():
+            self.search_panel.hide_panel()
 
     def set_controls_enabled(self, enabled: bool):
         """Включает/выключает контролы, требующие выбранного cfg."""
@@ -344,3 +374,10 @@ class PageMain(BasePage, Ui_MainWindow):
              self.presenter.delete_config),
         ])
         menu.exec(self.treeConfigs.mapToGlobal(pos))
+
+    def toggle_search(self):
+        """Показать/скрыть панель поиска."""
+        if self.search_panel.isVisible():
+            self.search_panel.hide_panel()
+        else:
+            self.search_panel.show_panel()

@@ -251,6 +251,13 @@ _register(
         default_key="Ctrl+Q",
         context="window",
     ),
+    Action(
+        id="main.find",
+        title="action.main.find",
+        scope=Scope.MAIN,
+        default_key="Ctrl+F",
+        context="window",
+    ),
 )
 
 

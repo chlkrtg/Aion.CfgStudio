@@ -135,6 +135,9 @@ STRINGS = {
         "main.copy_suffix":             "(копия)",
         "main.dialog.clear.title":      "Очистить cfg?",
 
+        "main.search": "Поиск:",
+        "main.search.placeholder": "Введите текст...",
+
         "config.error.empty_name":      "Имя файла не может быть пустым.",
         "config.error.too_long_name":   "Имя слишком длинное (макс. {n}).",
         "config.error.not_found":       "Конфиг не найден.",
@@ -285,6 +288,7 @@ STRINGS = {
         "action.main.save":            "Сохранить изменения (предпросмотр)",
         "action.main.quit":            "Назад к серверам",
         "action.main.cancelandquit":   "Отменить и выйти",
+        "action.main.find":            "Поиск в превью",
         "shortcut.conflict": "Клавиша «{key}» уже занята действием «{title}».",
 
         # ================= ДИАЛОГИ ==============
@@ -436,6 +440,9 @@ STRINGS = {
         "main.copy_suffix":             "(copy)",
         "main.dialog.clear.title":      "Clear cfg?",
 
+        "main.search": "Search:",
+        "main.search.placeholder": "Input text...",
+
         "config.error.empty_name":      "File name cannot be empty.",
         "config.error.too_long_name":   "Name is too long (max {n}).",
         "config.error.not_found":       "Config not found.",
@@ -582,6 +589,7 @@ STRINGS = {
         "action.main.save":            "Save changes (preview)",
         "action.main.quit":            "Back to servers",
         "action.main.cancelandquit":   "Cancel and quit",
+        "action.main.find":            "Search in preview",
         "action.editor.cancel":        "Cancel and exit",
         "shortcut.conflict": "Key «{key}» is already used by «{title}».",
 
