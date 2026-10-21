@@ -3,6 +3,7 @@
 Вся логика - в MainPresenter.
 """
 from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QHBoxLayout, QWidget, QLabel, QPushButton
 from logic.widgets.base_page import BasePage
 from logic.widgets.context_menu import build_context_menu
 from logic.widgets.hover_helpers import set_button_variant
@@ -10,12 +11,13 @@ from logic.widgets.shortcuts import bind_actions
 from logic.core.constants import MAX_CONFIG_NAME_LEN
 from logic.widgets.shortcut_labels import with_hotkey
 from logic.presenters import MainPresenter
+from logic.widgets.theme import ACCENT
 from ui.main_window import Ui_MainWindow
 from logic.core.i18n import t, t as _t
 from logic.widgets.cfg_highlighter import CfgHighlighter
 from logic.widgets.line_numbers import CodeEditor
 from logic.widgets.search_panel import SearchPanel
-from PyQt6.QtGui import QShortcut, QKeySequence
+from logic.widgets.legend_dialog import LegendDialog
 
 
 class PageMain(BasePage, Ui_MainWindow):
@@ -41,6 +43,33 @@ class PageMain(BasePage, Ui_MainWindow):
 
         # Переназначаем переменную
         self.editPreview = new_editor
+
+        # Кнопка вызова справки
+        self.btn_help = QPushButton("?")
+        self.btn_help.setFixedSize(28, 28)
+        self.btn_help.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        self.btn_help.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: transparent;
+                        color: #b0b0c0;
+                        border: 1px solid #555555;
+                        border-radius: 14px;
+                        padding: 0px;
+                        font-weight: bold;
+                        font-size: 12px;
+                    }}
+                    QPushButton:hover {{
+                        color: {ACCENT};
+                        border: 1px solid {ACCENT};
+                    }}
+                """)
+
+        # Привязываем открытие диалога
+        self.btn_help.clicked.connect(self._show_legend)
+
+        # Добавляем кнопку в layout, где лежат "Открыть редактор" и "История изменений"
+        self.previewButtons.addWidget(self.btn_help)
 
         # ============ подсветка синтаксиса ==============
         known_keys = set()
@@ -265,22 +294,28 @@ class PageMain(BasePage, Ui_MainWindow):
         return self.presenter.on_leave()
 
     def _on_selection_changed(self):
-        """Слот выбора файла: сбрасывает поиск и обновляет превью."""
+        """Слот выбора файла: сохраняет/восстанавливает состояние."""
         item = self.treeConfigs.currentItem()
         config_id = item.data(0, Qt.ItemDataRole.UserRole) if item else None
 
-        # Инициализируем _last_config_id при первом вызове
         if not hasattr(self, '_last_config_id'):
             self._last_config_id = None
 
-        # Если файл реально сменился — закрываем поиск
+        # Если файл реально сменился
         if config_id != self._last_config_id:
-            self._last_config_id = config_id
-            if self.search_panel.isVisible():
-                self.search_panel.hide_panel()
+            # 1. Сохраняем состояние СТАРОГО файла
+            if self._last_config_id is not None:
+                self.presenter._save_editor_state(self._last_config_id)
 
-        # Презентер обновляет сам текст превью
+            # 2. Обновляем ID текущего
+            self._last_config_id = config_id
+
+        # 3. Презентер обновляет текст
         self.presenter.on_selection()
+
+        # 4. Восстанавливаем состояние НОВОГО файла (включая поиск)
+        if config_id is not None:
+            self.presenter._restore_editor_state(config_id)
 
     # ============== UI-хелперы (зовёт презентер) ==============
 
@@ -346,6 +381,12 @@ class PageMain(BasePage, Ui_MainWindow):
             t("dialog.about_title"),
             t("dialog.about_text").format(version=APP_VERSION),
         )
+
+    def _show_legend(self):
+        """Открывает диалог со справкой по превью."""
+        from logic.widgets.legend_dialog import LegendDialog
+        dialog = LegendDialog(self, self.window().shortcut_service)
+        dialog.exec()
 
     # ============== контекстное меню ==============
 

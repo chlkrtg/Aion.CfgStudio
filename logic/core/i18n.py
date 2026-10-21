@@ -137,6 +137,18 @@ STRINGS = {
 
         "main.search": "Поиск:",
         "main.search.placeholder": "Введите текст...",
+                "legend.title": "Справка по предпросмотру",
+        "legend.header": "Цвета в предпросмотре",
+        "legend.btn_close": "Понятно",
+
+        "legend.color.green": "Зелёный — известные команды",
+        "legend.color.gray": "Серый — неизвестные команды",
+        "legend.color.yellow": "Жёлтый — дубликаты (будут удалены)",
+        "legend.color.red": "Красный — синтаксические ошибки",
+
+        "legend.search.header": "Поиск:",
+        "legend.search.open": "— открыть строку поиска",
+        "legend.search.hint": "Для перехода к следующему совпадению жмите Enter или ↓",
 
         "config.error.empty_name":      "Имя файла не может быть пустым.",
         "config.error.too_long_name":   "Имя слишком длинное (макс. {n}).",
@@ -442,6 +454,18 @@ STRINGS = {
 
         "main.search": "Search:",
         "main.search.placeholder": "Input text...",
+                "legend.title": "Preview Help",
+        "legend.header": "Preview Colors",
+        "legend.btn_close": "Got it",
+
+        "legend.color.green": "Green — known commands",
+        "legend.color.gray": "Gray — unknown commands",
+        "legend.color.yellow": "Yellow — duplicates (will be removed)",
+        "legend.color.red": "Red — syntax errors",
+
+        "legend.search.header": "Search:",
+        "legend.search.open": "— open search bar",
+        "legend.search.hint": "Press Enter or ↓ to find next",
 
         "config.error.empty_name":      "File name cannot be empty.",
         "config.error.too_long_name":   "Name is too long (max {n}).",

@@ -40,21 +40,41 @@ SUCCESS = "#8ec07c"
 INFO = "#7aa2f7"
 
 # подсветка синтаксиса (для cfg_highlighter)
-SYNTAX_COMMENT = "#6a6a7a"
-SYNTAX_KEY = SUCCESS
-SYNTAX_VALUE = SUCCESS
-SYNTAX_SECTION = INFO
-SYNTAX_EQUALS = TEXT_DIM
-SYNTAX_DUP_KEY = ACCENT
-SYNTAX_DUP_VALUE = ACCENT
-SYNTAX_UNKNOWN_KEY = DANGER
-SYNTAX_UNKNOWN_VALUE = DANGER
-SYNTAX_DUP_BG = QColor(80, 30, 30, 40)
+SYNTAX_COMMENT = "#6a6a7a"      # серый
+SYNTAX_SECTION = INFO           # голубой
+SYNTAX_EQUALS = TEXT_DIM        # тёмно-серый
 
+# 1. Валидные (известные) — зелёные
+SYNTAX_KEY = SUCCESS            # "#8ec07c"
+SYNTAX_VALUE = SUCCESS          # "#8ec07c"
+
+# 2. Дубликаты — жёлтые
+SYNTAX_DUP_KEY = "#e5c07b"      # жёлтый
+SYNTAX_DUP_VALUE = "#e5c07b"    # жёлтый
+SYNTAX_DUP_BG = QColor(80, 30, 30, 40) # лёгкий красноватый фон (оставим)
+
+# 3. Неизвестные — серые
+SYNTAX_UNKNOWN_KEY = "#6e6968"  # серый
+SYNTAX_UNKNOWN_VALUE = "#6e6968"
+
+# 4. Ошибки — красные
+SYNTAX_ERROR_KEY = DANGER       # "#e05a5a"
+SYNTAX_ERROR_VALUE = DANGER
 
 # ==================== QSS ====================
 
 ADDITIONAL_QSS = f"""
+    /* ============ Тултипы ============ */
+    QToolTip {{
+        background-color: #1e2026; /* BG_APP */
+        color: #e0e0e0;            /* TEXT */
+        border: 1px solid #b38532; /* ACCENT */
+        border-radius: 3px;
+        padding: 6px;
+        font-family: 'Segoe UI';
+        font-size: 11pt;
+        opacity: 240;              /* Немного прозрачности */
+    }}
     QWidget {{
         font-family: 'Segoe UI';
         font-size: 12pt;

@@ -25,6 +25,10 @@ class MainPresenter(BasePresenter):
         self.profile_id: int | None = None
         self.server_id: int | None = None
 
+        # Хранилище состояний редактора для каждого cfg
+        # {config_id: {"scroll": int, "search": str, "cursor": int}}
+        self._editor_states: dict[int, dict] = {}
+
     # ============= контекст =============
 
     def set_context(self, profile_id: int, server_id: int):
@@ -56,7 +60,7 @@ class MainPresenter(BasePresenter):
         return True
 
     def _has_unsaved_changes(self) -> bool:
-        """Проверяет, отличается ли текст превью от БД."""
+        """Проверяет, отличается ли текст превью от БД (с нормализацией)."""
         view = self.view
         item = view.treeConfigs.currentItem()
         if item is None:
@@ -67,7 +71,17 @@ class MainPresenter(BasePresenter):
         if not cfg:
             return False
 
-        return view.editPreview.toPlainText() != (cfg["content"] or "")
+        # Нормализация: приводим к единому виду
+        def normalize(text: str) -> str:
+            if not text:
+                return ""
+            # Убираем \r (Windows), обрезаем пробелы в конце файла
+            return text.replace("\r\n", "\n").strip()
+
+        current_text = normalize(view.editPreview.toPlainText())
+        saved_text = normalize(cfg["content"] or "")
+
+        return current_text != saved_text
 
     # ============= загрузка =============
 
@@ -351,6 +365,7 @@ class MainPresenter(BasePresenter):
         )
         if ans:
             self.service.delete(config_id)
+            self._editor_states.pop(config_id, None)
             view.treeConfigs.clearSelection()
             self.refresh()
 
@@ -505,3 +520,50 @@ class MainPresenter(BasePresenter):
             return
 
         view.editPreview.setPlainText(cfg["content"] or "")
+
+    def _save_editor_state(self, config_id: int):
+        """Сохраняет позицию скролла, курсора и текст поиска для cfg."""
+        if config_id is None:
+            return
+
+        editor = self.view.editPreview
+        scroll_pos = editor.verticalScrollBar().value()
+        cursor_pos = editor.textCursor().position()
+        search_term = self.view.search_panel.edit.text()
+
+        self._editor_states[config_id] = {
+            "scroll": scroll_pos,
+            "cursor": cursor_pos,
+            "search": search_term,
+        }
+
+    def _restore_editor_state(self, config_id: int):
+        """Восстанавливает состояние при открытии cfg."""
+        editor = self.view.editPreview
+        state = self._editor_states.get(config_id)
+
+        if state is None:
+            # Если состояния нет (первое открытие) — сбрасываем на начало и закрываем поиск
+            editor.verticalScrollBar().setValue(0)
+            editor.moveCursor(editor.textCursor().MoveOperation.Start)
+            if self.view.search_panel.isVisible():
+                self.view.search_panel.hide_panel()
+            return
+
+        # 1. Восстанавливаем скролл (через QTimer, чтобы Qt успел пересчитать размеры)
+        from PyQt6.QtCore import QTimer
+        QTimer.singleShot(10, lambda: editor.verticalScrollBar().setValue(state["scroll"]))
+
+        # 2. Восстанавливаем курсор
+        cursor = editor.textCursor()
+        cursor.setPosition(state["cursor"])
+        editor.setTextCursor(cursor)
+
+        # 3. Восстанавливаем поиск
+        if state["search"]:
+            self.view.search_panel.edit.setText(state["search"])
+            if not self.view.search_panel.isVisible():
+                self.view.search_panel.show_panel()
+        else:
+            if self.view.search_panel.isVisible():
+                self.view.search_panel.hide_panel()
