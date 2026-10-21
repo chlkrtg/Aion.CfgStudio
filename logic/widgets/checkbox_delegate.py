@@ -2,6 +2,10 @@
 from PyQt6.QtCore import QPointF, QRect, QSize, Qt
 from PyQt6.QtGui import QColor, QPainter, QPen
 from PyQt6.QtWidgets import QStyle, QStyledItemDelegate, QStyleOptionViewItem
+from logic.widgets.theme import (
+    ACCENT, BG_APP, BG_INPUT_HOVER,
+    BORDER_HOVER, TEXT_DIM,
+)
 
 
 def _state_val(value) -> int:
@@ -17,12 +21,12 @@ class CheckboxDelegate(QStyledItemDelegate):
     SIZE = 18
     RADIUS = 3
 
-    BG_NORMAL = QColor("#1e2026")
-    BG_HOVER = QColor("#2e2e3e")
-    BORDER = QColor("#555565")
-    BORDER_HOVER = QColor("#d4a95a")
-    BG_CHECKED = QColor("#d4a95a")
-    CHECK_COLOR = QColor("#1e2026")
+    BG_NORMAL = QColor(BG_APP)
+    BG_HOVER = QColor(BG_INPUT_HOVER)
+    BORDER = QColor(TEXT_DIM)
+    BORDER_HOVER = QColor(BORDER_HOVER)
+    BG_CHECKED = QColor(ACCENT)
+    CHECK_COLOR = QColor(BG_APP)
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)

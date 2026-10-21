@@ -281,8 +281,8 @@ class ConfigService:
             if key is None:
                 continue
 
-            old_display = old_norm if old_norm is not None else "(выключено)"
-            new_display = new_norm if new_norm is not None else "(выключено)"
+            old_display = old_norm if old_norm is not None else t("logs.value.removed")
+            new_display = new_norm if new_norm is not None else t("logs.value.removed")
 
             changes.append((key, old_display, new_display))
 

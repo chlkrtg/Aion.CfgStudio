@@ -760,8 +760,8 @@ class EditorPresenter(BasePresenter):
             if key is None:
                 continue
 
-            old_display = old_str if old_str is not None else "(выключено)"
-            new_display = new_str if new_str is not None else "(выключено)"
+            old_display = old_str if old_str is not None else t("logs.value.removed")
+            new_display = new_str if new_str is not None else t("logs.value.removed")
 
             changes.append((key, old_display, new_display))
 

@@ -1,7 +1,6 @@
 import os
 import sys
-import ctypes
-import qdarktheme
+from logic.widgets.theme import setup_theme, BG_APP, ACCENT, TEXT_DIM, BG_INPUT
 
 from database.db_manager import DBManager
 from logic.app_window import AppWindow
@@ -67,21 +66,18 @@ class _DarkDialogsFilter(QObject):
 
 
 def _make_splash() -> QSplashScreen:
-    """Сплэш-скрин в стиле приложения."""
     W, H = 460, 240
 
     pix = QPixmap(W, H)
-    pix.fill(QColor("#1e2026"))
+    pix.fill(QColor(BG_APP))
 
     splash = QSplashScreen(pix)
 
-    # Заголовок
     title = QLabel("Aion.CfgStudio", splash)
     title.setGeometry(0, 50, W, 40)
     title.setAlignment(Qt.AlignmentFlag.AlignCenter)
     title.setStyleSheet(
-        "color: #d4a95a;"
-        "font-family: 'Segoe UI';"
+        f"color: {ACCENT};"
         "font-size: 22pt;"
         "font-weight: bold;"
         "background: transparent;"
@@ -91,8 +87,7 @@ def _make_splash() -> QSplashScreen:
     subtitle.setGeometry(0, 90, W, 22)
     subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
     subtitle.setStyleSheet(
-        "color: #7a7a8a;"
-        "font-family: 'Segoe UI';"
+        f"color: {TEXT_DIM};"
         "font-size: 11pt;"
         "background: transparent;"
     )
@@ -101,24 +96,23 @@ def _make_splash() -> QSplashScreen:
     progress.setGeometry(60, 160, W - 120, 4)
     progress.setRange(0, 0)
     progress.setTextVisible(False)
-    progress.setStyleSheet("""
-        QProgressBar {
-            background: #2a2a3a;
+    progress.setStyleSheet(f"""
+        QProgressBar {{
+            background: {BG_INPUT};
             border: none;
             border-radius: 2px;
-        }
-        QProgressBar::chunk {
-            background: #d4a95a;
+        }}
+        QProgressBar::chunk {{
+            background: {ACCENT};
             border-radius: 2px;
-        }
+        }}
     """)
 
     status = QLabel(t("splash.loading"), splash)
     status.setGeometry(0, 175, W, 22)
     status.setAlignment(Qt.AlignmentFlag.AlignCenter)
     status.setStyleSheet(
-        "color: #7a7a8a;"
-        "font-family: 'Segoe UI';"
+        f"color: {TEXT_DIM};"
         "font-size: 10pt;"
         "background: transparent;"
     )
@@ -135,109 +129,7 @@ def main() -> int:
     app.setApplicationName("Aion.CfgStudio")
     app.setApplicationDisplayName("Aion.CfgStudio")
 
-    qdarktheme.setup_theme(
-        "dark",
-        custom_colors={"primary": "#d4a95a"},
-        corner_shape="sharp",
-        additional_qss="""
-            QWidget {
-                font-family: 'Segoe UI';
-                font-size: 12pt;
-            }
-            QTableWidget { font-size: 12pt; }
-            QHeaderView::section {
-                font-size: 10pt;
-                font-weight: 600;
-                padding: 6px 8px;
-            }
-            QComboBox { font-size: 12pt; }
-            QPushButton { font-size: 12pt; }
-            QLabel[heading="true"] {
-                font-size: 14pt;
-                font-weight: 700;
-            }
-            QListWidget { font-size: 12pt; }
-            QLineEdit { font-size: 12pt; }
-        
-            QPushButton:pressed {
-                background-color: #d4a95a;
-                color: #1e2026;
-            }
-            
-            QComboBox:hover,
-            QLineEdit:hover,
-            QPlainTextEdit:hover,
-            QTextEdit:hover {
-                border: 1px solid #5a5a6a;
-            }
-            
-            QComboBox:focus,
-            QLineEdit:focus,
-            QPlainTextEdit:focus,
-            QTextEdit:focus {
-                border: 1px solid #d4a95a;
-            }
-            
-            /* ============ Скролл бары ============ */
-            QScrollBar:vertical {
-                background: transparent;
-                width: 10px;
-                margin: 0;
-                border: none;
-            }
-            QScrollBar::handle:vertical {
-                background: #3a3a4a;
-                border-radius: 5px;
-                min-height: 30px;
-                margin: 2px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background: #d4a95a;
-            }
-            QScrollBar::handle:vertical:pressed {
-                background: #b8904a;
-            }
-            QScrollBar::add-line:vertical,
-            QScrollBar::sub-line:vertical {
-                height: 0;
-                background: none;
-                border: none;
-            }
-            QScrollBar::add-page:vertical,
-            QScrollBar::sub-page:vertical {
-                background: transparent;
-            }
-        
-            QScrollBar:horizontal {
-                background: transparent;
-                height: 10px;
-                margin: 0;
-                border: none;
-            }
-            QScrollBar::handle:horizontal {
-                background: #3a3a4a;
-                border-radius: 5px;
-                min-width: 30px;
-                margin: 2px;
-            }
-            QScrollBar::handle:horizontal:hover {
-                background: #d4a95a;
-            }
-            QScrollBar::handle:horizontal:pressed {
-                background: #b8904a;
-            }
-            QScrollBar::add-line:horizontal,
-            QScrollBar::sub-line:horizontal {
-                width: 0;
-                background: none;
-                border: none;
-            }
-            QScrollBar::add-page:horizontal,
-            QScrollBar::sub-page:horizontal {
-                background: transparent;
-            }
-        """,
-    )
+    setup_theme(app)
 
     splash = _make_splash()
     splash.show()

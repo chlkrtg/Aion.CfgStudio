@@ -18,6 +18,7 @@ from logic.presenters import EditorPresenter
 from logic.core.i18n import t, plural_ru
 from ui.command_editor import Ui_CommandEditorDialog
 from logic.widgets.checkbox_delegate import CheckboxDelegate
+from logic.widgets.theme import ACCENT, BG_PANEL
 
 
 class PageEditor(BasePage, Ui_CommandEditorDialog):
@@ -226,8 +227,8 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         font.setBold(True)
         font.setPointSize(font.pointSize() + 1)
 
-        accent = QColor("#d4a95a")
-        bg = QColor("#23252e")  # слегка светлее обычного
+        accent = QColor(ACCENT)
+        bg = QColor(BG_PANEL)
 
         # 0. чекбокс — обычный фон
         chk_item = QTableWidgetItem()

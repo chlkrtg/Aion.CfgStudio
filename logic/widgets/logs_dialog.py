@@ -76,12 +76,15 @@ class LogsDialog(QDialog):
         set_button_variant(btn_close, "ghost")
 
     def _filter(self, text: str):
-        """Скрывает строки, не подходящие под поиск (по команде или дате)."""
+        """Скрывает строки, не подходящие под поиск (по всем колонкам)."""
         text = text.lower().strip()
         for i in range(self.table.rowCount()):
-            date_item = self.table.item(i, 0)
-            key_item = self.table.item(i, 1)
-            date_text = date_item.text().lower() if date_item else ""
-            key_text = key_item.text().lower() if key_item else ""
-            match = (text in key_text) or (text in date_text)
+            # Собираем текст из всех 4 колонок в одну строку
+            row_text = ""
+            for col in range(self.table.columnCount()):
+                item = self.table.item(i, col)
+                if item:
+                    row_text += item.text().lower() + " "
+
+            match = text in row_text
             self.table.setRowHidden(i, bool(text) and not match)

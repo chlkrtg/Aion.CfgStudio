@@ -15,47 +15,55 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QPushButton, QWidget
+from logic.widgets.theme import (
+    ACCENT, ACCENT_HOVER,
+    BG_INPUT, BG_INPUT_HOVER, BG_APP,
+    TEXT, TEXT_DISABLED,
+    BORDER,
+    DANGER, DANGER_BG_HOVER,
+)
 
 
-# Цвета для анимации (можно менять)
-BG_NORMAL = QColor("#2a2a3a")
-BG_HOVER = QColor("#3a3a4a")
-BORDER_NORMAL = QColor("#444444")
-BORDER_HOVER = QColor("#d4a95a")
-TEXT_COLOR = "#e0e0e0"
+# Цвета для анимации (алиасы для обратной совместимости)
+BG_NORMAL = QColor(BG_INPUT)
+BG_HOVER = QColor(BG_INPUT_HOVER)
+BORDER_NORMAL = QColor(BORDER)
+BORDER_HOVER = QColor(ACCENT)
+TEXT_COLOR = TEXT
 
-DURATION_MS = 180       # длительность анимации
+DURATION_MS = 180
+
 
 # ==================== Варианты кнопок ====================
 
 VARIANTS = {
     "secondary": {
-        "bg_normal": QColor("#2a2a3a"),
-        "bg_hover": QColor("#3a3a4a"),
-        "border_normal": QColor("#444444"),
-        "border_hover": QColor("#d4a95a"),
-        "text": "#e0e0e0",
+        "bg_normal": QColor(BG_INPUT),
+        "bg_hover": QColor(BG_INPUT_HOVER),
+        "border_normal": QColor(BORDER),
+        "border_hover": QColor(ACCENT),
+        "text": TEXT,
     },
     "primary": {
-        "bg_normal": QColor("#d4a95a"),
-        "bg_hover": QColor("#e8bd6e"),
-        "border_normal": QColor("#d4a95a"),
-        "border_hover": QColor("#e8bd6e"),
-        "text": "#1e2026",
+        "bg_normal": QColor(ACCENT),
+        "bg_hover": QColor(ACCENT_HOVER),
+        "border_normal": QColor(ACCENT),
+        "border_hover": QColor(ACCENT_HOVER),
+        "text": BG_APP,
     },
     "ghost": {
-        "bg_normal": QColor(0, 0, 0, 0),   # прозрачный
-        "bg_hover": QColor("#2a2a3a"),
-        "border_normal": QColor("#2a2a3a"),
-        "border_hover": QColor("#3a3a4a"),
-        "text": "#e0e0e0",
+        "bg_normal": QColor(0, 0, 0, 0),
+        "bg_hover": QColor(BG_INPUT),
+        "border_normal": QColor(BG_INPUT),
+        "border_hover": QColor(BG_INPUT_HOVER),
+        "text": TEXT,
     },
     "danger": {
-        "bg_normal": QColor("#2a2a3a"),
-        "bg_hover": QColor("#3a2020"),
-        "border_normal": QColor("#444444"),
-        "border_hover": QColor("#e05a5a"),
-        "text": "#e05a5a",
+        "bg_normal": QColor(BG_INPUT),
+        "bg_hover": QColor(DANGER_BG_HOVER),
+        "border_normal": QColor(BORDER),
+        "border_hover": QColor(DANGER),
+        "text": DANGER,
     },
 }
 
@@ -145,7 +153,7 @@ class _HoverAnimator(QObject):
             self._button.setStyleSheet(f"""
                 QPushButton {{
                     background-color: {colors['bg_normal'].name(QColor.NameFormat.HexArgb)};
-                    color: #666666;
+                    color: {TEXT_DISABLED};
                     border: 1px solid {colors['border_normal'].name()};
                     border-radius: 3px;
                     padding: 4px 10px;
