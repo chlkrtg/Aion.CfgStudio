@@ -3,8 +3,7 @@
 Вся логика - в MainPresenter.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor
-
+from logic.widgets.cfg_highlighter import CfgHighlighter
 from logic.widgets.base_page import BasePage
 from logic.widgets.context_menu import build_context_menu
 from logic.widgets.hover_helpers import set_button_variant
@@ -14,6 +13,7 @@ from logic.widgets.shortcut_labels import with_hotkey
 from logic.presenters import MainPresenter
 from ui.main_window import Ui_MainWindow
 from logic.core.i18n import t, t as _t
+from logic.widgets.cfg_highlighter import CfgHighlighter
 
 
 class PageMain(BasePage, Ui_MainWindow):
@@ -24,6 +24,19 @@ class PageMain(BasePage, Ui_MainWindow):
     def __init__(self, parent, service, reference):
         super().__init__(parent)
         self.setupUi(self)
+
+        # ============ подсветка синтаксиса ==============
+        known_keys = set()
+        if hasattr(service, 'command_repo') and service.command_repo:
+            # Загружаем все команды из базы
+            commands = service.command_repo.all("debug")
+            known_keys = {cmd["key_name"] for cmd in commands}
+
+        self._highlighter = CfgHighlighter(self.editPreview.document(), known_keys)
+
+        # Включаем подсветку текущей строки
+        self.editPreview.setCursorWidth(2)  # Чуть шире курсор для удобства
+        self._highlight_current_line()
 
         # =============== презентер ===============
         self.presenter = MainPresenter(self, service, reference)
@@ -56,6 +69,24 @@ class PageMain(BasePage, Ui_MainWindow):
         )
 
         self.treeConfigs.setWordWrap(True)
+
+    def _highlight_current_line(self):
+        """Подсвечивает строку, в которой находится курсор."""
+        from PyQt6.QtGui import QColor, QTextFormat
+        from PyQt6.QtWidgets import QTextEdit
+
+        selection = QTextEdit.ExtraSelection()
+
+        # Цвет фона для текущей строки (очень лёгкий, чтобы не мешать подсветке синтаксиса)
+        line_color = QColor("#2a2a3a")
+        line_color.setAlpha(100)  # Полупрозрачный
+
+        selection.format.setBackground(line_color)
+        selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
+        selection.cursor = self.editPreview.textCursor()
+        selection.cursor.clearSelection()
+
+        self.editPreview.setExtraSelections([selection])
 
     # ============== сигналы ==============
 
@@ -97,6 +128,7 @@ class PageMain(BasePage, Ui_MainWindow):
         self.actionNewConfig.triggered.connect(
             lambda: self.window().go_editor(None)
         )
+        self.editPreview.cursorPositionChanged.connect(self._highlight_current_line)
 
     def _bindings(self) -> dict:
         return {

@@ -11,8 +11,8 @@ from PyQt6.QtGui import QColor
 # ==================== Палитра ====================
 
 # accent (золото)
-ACCENT = "#d4a95a"
-ACCENT_HOVER = "#e8bd6e"
+ACCENT = "#b38532"
+ACCENT_HOVER = "#d1a95e"
 ACCENT_PRESSED = "#b8904a"
 ACCENT_DARK = "#a8823e"
 
@@ -41,12 +41,14 @@ INFO = "#7aa2f7"
 
 # подсветка синтаксиса (для cfg_highlighter)
 SYNTAX_COMMENT = "#6a6a7a"
-SYNTAX_KEY = ACCENT
+SYNTAX_KEY = SUCCESS
 SYNTAX_VALUE = SUCCESS
 SYNTAX_SECTION = INFO
 SYNTAX_EQUALS = TEXT_DIM
-SYNTAX_DUP_KEY = DANGER
-SYNTAX_DUP_VALUE = "#c05050"
+SYNTAX_DUP_KEY = ACCENT
+SYNTAX_DUP_VALUE = ACCENT
+SYNTAX_UNKNOWN_KEY = DANGER
+SYNTAX_UNKNOWN_VALUE = DANGER
 SYNTAX_DUP_BG = QColor(80, 30, 30, 40)
 
 
