@@ -4,11 +4,12 @@
 CRUD, обработка выбора. View только рисует.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
+from PyQt6.QtWidgets import QListWidgetItem
 
 from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
 from logic.widgets.dialogs import ask_yes_no
+from logic.widgets.dialogs import warn, info
 
 
 class ProfilePresenter(BasePresenter):
@@ -130,11 +131,7 @@ class ProfilePresenter(BasePresenter):
         try:
             self.service.update_description(pid, text)
         except Exception as exc:
-            QMessageBox.warning(
-                self.view,
-                t("dialog.error_title"),
-                t("profile.error.save_desc").format(exc=exc),
-            )
+            warn(self.view, t("dialog.error_title"), t("profile.error.save_desc").format(exc=exc))
 
     # ============ действия ============
 
@@ -151,7 +148,7 @@ class ProfilePresenter(BasePresenter):
         try:
             new_id = self.service.create(name)
         except ValueError as exc:
-            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
+            warn(view, t("dialog.error_title"), str(exc))
             return
         self.refresh(select_id=new_id)
 
@@ -160,7 +157,7 @@ class ProfilePresenter(BasePresenter):
         view = self.view
         item = view.listProfiles.currentItem()
         if item is None:
-            QMessageBox.information(
+            info(
                 view, t("profile.dialog.rename.title"),
                 t("profile.error.not_found"),
             )
@@ -181,7 +178,7 @@ class ProfilePresenter(BasePresenter):
         try:
             self.service.rename(pid, new_name)
         except ValueError as exc:
-            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
+            warn(view, t("dialog.error_title"), str(exc))
             return
         self.refresh(select_id=pid)
 
@@ -230,7 +227,7 @@ class ProfilePresenter(BasePresenter):
         try:
             new_id = self.service.duplicate(pid, new_name)
         except ValueError as exc:
-            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
+            warn(view, t("dialog.error_title"), str(exc))
             return
         self.refresh(select_id=new_id)
 
@@ -239,7 +236,7 @@ class ProfilePresenter(BasePresenter):
         view = self.view
         item = view.listProfiles.currentItem()
         if item is None:
-            QMessageBox.information(
+            info(
                 view, t("profile.dialog.enter.title"),
                 t("profile.error.not_found"),
             )

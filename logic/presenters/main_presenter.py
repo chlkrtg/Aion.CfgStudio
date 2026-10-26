@@ -6,12 +6,12 @@ import os
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
-    QTreeWidgetItem, QFileDialog, QInputDialog, QMessageBox,
+    QTreeWidgetItem, QFileDialog, QInputDialog,
 )
 
 from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
-from logic.widgets.dialogs import ask_yes_no, ask_yes_no_cancel
+from logic.widgets.dialogs import ask_yes_no, ask_yes_no_cancel, warn, info, error
 from logic.widgets.empty_state import add_empty_node
 
 
@@ -26,7 +26,6 @@ class MainPresenter(BasePresenter):
         self.server_id: int | None = None
 
         # Хранилище состояний редактора для каждого cfg
-        # {config_id: {"scroll": int, "search": str, "cursor": int}}
         self._editor_states: dict[int, dict] = {}
 
     # ============= контекст =============
@@ -253,12 +252,12 @@ class MainPresenter(BasePresenter):
                 path, self.server_id, name
             )
         except OSError as exc:
-            QMessageBox.critical(
+            error(
                 view, t("main.error.read"), str(exc)
             )
             return
         except ValueError as exc:
-            QMessageBox.warning(
+            warn(
                 view, t("dialog.error_title"), str(exc)
             )
             return
@@ -270,7 +269,7 @@ class MainPresenter(BasePresenter):
         view = self.view
         item = view.treeConfigs.currentItem()
         if item is None:
-            QMessageBox.warning(
+            warn(
                 view, t("dialog.error_title"),
                 t("main.error.no_selection"),
             )
@@ -283,9 +282,9 @@ class MainPresenter(BasePresenter):
 
         path, _ = QFileDialog.getSaveFileName(
             view,
-            t("main.dialog.export.filename_title"),  # ← новый ключ
+            t("main.dialog.export.filename_title"),  # новый ключ
             cfg["filename"],
-            "Cfg (*.cfg);;Все файлы (*)",  # ← фильтр не переводим
+            "Cfg (*.cfg);;Все файлы (*)",  # фильтр не переводим
         )
         if not path:
             return
@@ -307,11 +306,11 @@ class MainPresenter(BasePresenter):
         try:
             self.service.export_to_file(config_id, path, encrypted)
         except (OSError, ValueError) as exc:
-            QMessageBox.critical(
+            error(
                 view, t("main.error.write"), str(exc)
             )
             return
-        QMessageBox.information(
+        info(
             view, t("main.info.done"),
             t("main.info.exported").format(path=path),
         )
@@ -321,7 +320,7 @@ class MainPresenter(BasePresenter):
         view = self.view
         item = view.treeConfigs.currentItem()
         if item is None:
-            QMessageBox.warning(
+            warn(
                 view, t("dialog.error_title"),
                 t("main.error.no_selection"),
             )
@@ -341,7 +340,7 @@ class MainPresenter(BasePresenter):
         try:
             self.service.rename(config_id, new_name)
         except ValueError as exc:
-            QMessageBox.warning(
+            warn(
                 view, t("dialog.error_title"), str(exc)
             )
             return
@@ -352,7 +351,7 @@ class MainPresenter(BasePresenter):
         view = self.view
         item = view.treeConfigs.currentItem()
         if item is None:
-            QMessageBox.warning(
+            warn(
                 view, t("dialog.error_title"),
                 t("main.error.no_selection"),
             )
@@ -394,7 +393,7 @@ class MainPresenter(BasePresenter):
         try:
             new_id = self.service.duplicate(config_id, new_name)
         except ValueError as exc:
-            QMessageBox.warning(
+            warn(
                 view, t("dialog.error_title"), str(exc)
             )
             return
@@ -405,10 +404,7 @@ class MainPresenter(BasePresenter):
         view = self.view
         item = view.treeConfigs.currentItem()
         if item is None:
-            QMessageBox.warning(
-                view, "Ошибка",
-                "Не выбран конфигурационный файл."
-            )
+            warn(view, t("dialog.error_title"), t("main.error.no_selection"))
             return
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
         if config_id is None:  # плейсхолдер
@@ -421,7 +417,7 @@ class MainPresenter(BasePresenter):
         view = self.view
         item = view.treeConfigs.currentItem()
         if item is None:
-            QMessageBox.warning(
+            warn(
                 view, t("dialog.error_title"),
                 t("main.error.no_selection"),
             )
@@ -432,7 +428,7 @@ class MainPresenter(BasePresenter):
             return
         logs = self.service.repo.logs(config_id)
         if not logs:
-            QMessageBox.information(
+            info(
                 view,
                 t("main.dialog.logs.title"),
                 t("main.info.no_logs").format(name=cfg["filename"]),
@@ -456,7 +452,7 @@ class MainPresenter(BasePresenter):
         view = self.view
         item = view.treeConfigs.currentItem()
         if item is None:
-            QMessageBox.warning(
+            warn(
                 view, t("dialog.error_title"),
                 t("main.error.no_selection"),
             )
@@ -476,7 +472,7 @@ class MainPresenter(BasePresenter):
         try:
             unknown, duplicates = self.service.save_content(config_id, text)
         except ValueError as exc:
-            QMessageBox.warning(
+            warn(
                 view, t("dialog.error_title"), str(exc)
             )
             return
@@ -492,7 +488,7 @@ class MainPresenter(BasePresenter):
             )
 
         if msgs:
-            QMessageBox.information(
+            info(
                 view,
                 t("main.info.saved"),
                 t("main.info.saved_with_details").format(
@@ -500,7 +496,7 @@ class MainPresenter(BasePresenter):
                 ),
             )
         else:
-            QMessageBox.information(
+            info(
                 view,
                 t("main.info.done"),
                 t("main.info.saved"),
@@ -543,7 +539,7 @@ class MainPresenter(BasePresenter):
         state = self._editor_states.get(config_id)
 
         if state is None:
-            # Если состояния нет (первое открытие) — сбрасываем на начало и закрываем поиск
+            # Если состояния нет (первое открытие), сбрасываем на начало и закрываем поиск
             editor.verticalScrollBar().setValue(0)
             editor.moveCursor(editor.textCursor().MoveOperation.Start)
             if self.view.search_panel.isVisible():

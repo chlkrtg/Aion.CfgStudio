@@ -6,12 +6,12 @@
 Не знает о Qt-виджетах напрямую - только зовёт методы View.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QMessageBox, QTreeWidgetItem
+from PyQt6.QtWidgets import QTreeWidgetItem
 from logic.core.i18n import t
 
 from logic.core.actions import ACTIONS, Scope, by_scope
 from logic.presenters.base_presenter import BasePresenter
-from logic.widgets.dialogs import ask_yes_no
+from logic.widgets.dialogs import ask_yes_no, warn
 
 # Отображаемые имена секций (в порядке показа)
 SCOPE_KEYS = [
@@ -113,7 +113,7 @@ class ShortcutPresenter(BasePresenter):
         try:
             self.service.set_key(action_id, new_key)
         except ValueError as exc:
-            QMessageBox.warning(
+            warn(
                 self.view, t("dialog.conflict_title"), str(exc)
             )
             return

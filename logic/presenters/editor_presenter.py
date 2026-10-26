@@ -5,11 +5,12 @@
 это позволяет сохранять и логировать изменения скрытых команд тоже.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QMessageBox, QListWidgetItem
+from PyQt6.QtWidgets import QListWidgetItem
 
 from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
-from logic.widgets.dialogs import ask_yes_no_cancel, ask_yes_no
+from logic.widgets.dialogs import ask_yes_no_cancel, ask_yes_no, warn, info, error, ask_choice
+
 
 def _state_val(item) -> int:
     state = item.checkState()
@@ -289,7 +290,7 @@ class EditorPresenter(BasePresenter):
 
     def _rebuild_table(self, visible_commands):
         view = self.view
-        t = view.tableCommands
+        table = view.tableCommands  # было t
 
         self._cmd_by_row.clear()
         self._group_rows.clear()
@@ -317,16 +318,15 @@ class EditorPresenter(BasePresenter):
             pcode = self._prefixes[pid]["code"]
             group_total[pcode] = group_total.get(pcode, 0) + 1
 
-        t.blockSignals(True)
-        t.clearContents()
-        t.setRowCount(rows_total)
+        table.blockSignals(True)
+        table.clearContents()
+        table.setRowCount(rows_total)
 
         current_prefix = None
         row = 0
         for cmd, pcode in visible_commands:
             prefix = self._prefixes[cmd["prefix_id"]]
             if pcode != current_prefix:
-                # ← ВОТ ЗДЕСЬ: передаём счётчики
                 view.make_group_header(
                     row, pcode, prefix["name"],
                     visible_count=group_visible.get(pcode, 0),
@@ -342,8 +342,8 @@ class EditorPresenter(BasePresenter):
             self._group_rows[pcode].append(row)
 
             use, val = self._state.get(cmd["id"], (0, None))
-            chk_item = t.item(row, 0)
-            val_item = t.item(row, 2)
+            chk_item = table.item(row, 0)
+            val_item = table.item(row, 2)
             if use and val is not None:
                 chk_item.setCheckState(Qt.CheckState.Checked)
                 val_item.setText(str(val))
@@ -353,17 +353,17 @@ class EditorPresenter(BasePresenter):
                 view.set_value_enabled(row, False)
             row += 1
 
-        t.blockSignals(False)
+        table.blockSignals(False)
         self._update_group_checks()
 
     # ============ синхронизация состояния ============
 
     def _sync_state_from_table(self):
-        t = self.view.tableCommands
-        for row, info in self._cmd_by_row.items():
-            cmd_id = info["command"]["id"]
-            chk_item = t.item(row, 0)
-            val_item = t.item(row, 2)
+        table = self.view.tableCommands
+        for row, row_info in self._cmd_by_row.items():
+            cmd_id = row_info["command"]["id"]
+            chk_item = table.item(row, 0)
+            val_item = table.item(row, 2)
             if chk_item is None or val_item is None:
                 continue
             state_val = _state_val(chk_item)
@@ -376,13 +376,13 @@ class EditorPresenter(BasePresenter):
     # ============ групповые чекбоксы ============
 
     def _update_group_checks(self):
-        t = self.view.tableCommands
+        table = self.view.tableCommands
         for code, chk_row in self._group_header_row.items():
             rows = self._group_rows.get(code, [])
             checked = 0
             total = 0
             for r in rows:
-                chk_item = t.item(r, 0)
+                chk_item = table.item(r, 0)
                 if chk_item is not None:
                     total += 1
                     state_val = _state_val(chk_item)
@@ -396,11 +396,11 @@ class EditorPresenter(BasePresenter):
             else:
                 state = Qt.CheckState.PartiallyChecked
 
-            group_item = t.item(chk_row, 0)
+            group_item = table.item(chk_row, 0)
             if group_item is not None:
-                t.blockSignals(True)
+                table.blockSignals(True)
                 group_item.setCheckState(state)
-                t.blockSignals(False)
+                table.blockSignals(False)
 
     # ============ сохранение ============
 
@@ -480,7 +480,7 @@ class EditorPresenter(BasePresenter):
     def on_apply(self):
         values = self._collect_values()
         if not values:
-            QMessageBox.information(
+            info(
                 self.view,
                 t("editor.info.nothing"),
                 t("editor.info.nothing.text"),
@@ -488,14 +488,14 @@ class EditorPresenter(BasePresenter):
             return
 
         if not self.apply_silent():
-            QMessageBox.critical(
+            error(
                 self.view,
                 t("editor.error.save"),
                 t("editor.error.save.text"),
             )
             return
 
-        QMessageBox.information(
+        info(
             self.view,
             t("editor.info.done"),
             t("editor.dialog.save.text"),
@@ -514,7 +514,7 @@ class EditorPresenter(BasePresenter):
         if item.column() != 0:
             return
 
-        t = self.view.tableCommands
+        table = self.view.tableCommands
         marker = item.data(Qt.ItemDataRole.UserRole)
         if marker is None:
             return
@@ -527,10 +527,10 @@ class EditorPresenter(BasePresenter):
 
             rows = self._group_rows.get(code, [])
 
-            t.blockSignals(True)
+            table.blockSignals(True)
             try:
                 for r in rows:
-                    chk_item = t.item(r, 0)
+                    chk_item = table.item(r, 0)
                     if chk_item is None:
                         continue
                     if state_val == 2:
@@ -538,11 +538,11 @@ class EditorPresenter(BasePresenter):
                     elif state_val == 0:
                         chk_item.setCheckState(Qt.CheckState.Unchecked)
             finally:
-                t.blockSignals(False)
+                table.blockSignals(False)
 
             # активировать / деактивировать value
             for r in rows:
-                chk_item = t.item(r, 0)
+                chk_item = table.item(r, 0)
                 if chk_item is None:
                     continue
                 state_val = _state_val(chk_item)
@@ -553,7 +553,7 @@ class EditorPresenter(BasePresenter):
 
         # 2. чекбокс команды
         if isinstance(marker, str) and marker.startswith("CMD:"):
-            row = t.row(item)
+            row = table.row(item)
             state = item.checkState()
             state_val = state.value if hasattr(state, "value") else int(state)
             checked = (state_val == 2)
@@ -581,7 +581,7 @@ class EditorPresenter(BasePresenter):
             updates.append((cmd["id"], val_str))
 
         if not updates:
-            QMessageBox.warning(
+            warn(
                 self.view,
                 t("editor.info.nothing"),
                 t("editor.info.nothing.text"),
@@ -599,7 +599,7 @@ class EditorPresenter(BasePresenter):
         try:
             self.service.make_defaults(updates)
         except Exception as exc:
-            QMessageBox.critical(
+            error(
                 self.view,
                 t("editor.error.save"),
                 str(exc),
@@ -611,7 +611,7 @@ class EditorPresenter(BasePresenter):
         self._load_commands_cache()
         self.apply_filters(sync=False)
 
-        QMessageBox.information(
+        info(
             self.view,
             t("editor.info.done"),
             t("editor.make_defaults.done").format(n=len(updates)),
@@ -623,63 +623,45 @@ class EditorPresenter(BasePresenter):
         Спрашивает: только значения / значения + выбор / отмена.
         Затрагивает только видимые команды с default_value.
         """
-        t_table = self.view.tableCommands
+        table = self.view.tableCommands
 
         # собрать видимые команды с дефолтом
         rows_with_default = []
-        for row, info in self._cmd_by_row.items():
-            cmd = info["command"]
+        for row, row_info in self._cmd_by_row.items():
+            cmd = row_info["command"]
             default_value = cmd["default_value"]
             if default_value is None or str(default_value).strip() == "":
                 continue
             rows_with_default.append((row, cmd, default_value))
 
         if not rows_with_default:
-            QMessageBox.information(
+            info(
                 self.view,
                 t("editor.reset_dialog.title"),
                 t("editor.reset_dialog.nothing"),
             )
             return
 
-        # диалог с тремя кнопками
-        msg = QMessageBox(self.view)
-        msg.setWindowTitle(t("editor.reset_dialog.title"))
-        msg.setText(
-            t("editor.reset_dialog.text").format(n=len(rows_with_default))
-        )
-        msg.setIcon(QMessageBox.Icon.Question)
-
-        btn_values = msg.addButton(
-            t("editor.reset_dialog.btn_values"),
-            QMessageBox.ButtonRole.AcceptRole,
-        )
-        btn_all = msg.addButton(
-            t("editor.reset_dialog.btn_all"),
-            QMessageBox.ButtonRole.AcceptRole,
-        )
-        msg.addButton(
-            t("editor.btn_cancel"),
-            QMessageBox.ButtonRole.RejectRole,
+        choice = ask_choice(
+            self.view,
+            t("editor.reset_dialog.title"),
+            t("editor.reset_dialog.text").format(n=len(rows_with_default)),
+            [
+                ("values", t("editor.reset_dialog.btn_values")),
+                ("all", t("editor.reset_dialog.btn_all")),
+            ],
         )
 
-        msg.exec()
-        clicked = msg.clickedButton()
+        if choice is None:
+            return
+        reset_selection = (choice == "all")
 
-        if clicked == btn_values:
-            reset_selection = False
-        elif clicked == btn_all:
-            reset_selection = True
-        else:
-            return  # отмена
-
-            # применить
-        t_table.blockSignals(True)
+        # применить
+        table.blockSignals(True)
 
         if reset_selection:
-            # Вариант A: с дефолтом — checked + дефолт, без дефолта — unchecked + пусто
-            for row, info in self._cmd_by_row.items():
-                cmd = info["command"]
+            for row, row_info in self._cmd_by_row.items():
+                cmd = row_info["command"]
                 default_value = cmd["default_value"]
 
                 has_default = (
@@ -687,8 +669,8 @@ class EditorPresenter(BasePresenter):
                         and str(default_value).strip() != ""
                 )
 
-                chk_item = t_table.item(row, 0)
-                val_item = t_table.item(row, 2)
+                chk_item = table.item(row, 0)
+                val_item = table.item(row, 2)
                 if chk_item is None or val_item is None:
                     continue
 
@@ -701,26 +683,23 @@ class EditorPresenter(BasePresenter):
                     val_item.setText("")
                     self.view.set_value_enabled(row, False)
         else:
-            # Только значения: галочки не трогаем, значения = дефолт
-            # (только у тех, у кого дефолт есть)
             for row, cmd, default_value in rows_with_default:
-                val_item = t_table.item(row, 2)
+                val_item = table.item(row, 2)
                 if val_item is not None:
                     val_item.setText(str(default_value))
 
-                # синхронизировать editable с текущим состоянием галки
-                chk_item = t_table.item(row, 0)
+                chk_item = table.item(row, 0)
                 if chk_item is not None:
                     state = chk_item.checkState()
                     state_val = state.value if hasattr(state, "value") else int(state)
                     checked = (state_val == 2)
                     self.view.set_value_enabled(row, checked)
 
-        t_table.blockSignals(False)
+        table.blockSignals(False)
 
         self._update_group_checks()
 
-        QMessageBox.information(
+        info(
             self.view,
             t("editor.info.done"),
             t("editor.reset_dialog.done").format(

@@ -73,7 +73,7 @@ class LogsDialog(QDialog):
 
         self.edit_search.textChanged.connect(self._filter)
 
-        set_button_variant(btn_close, "ghost")
+        set_button_variant(btn_close, "primary")
 
     def _filter(self, text: str):
         """Скрывает строки, не подходящие под поиск (по всем колонкам)."""

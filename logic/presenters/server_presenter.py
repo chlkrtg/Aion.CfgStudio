@@ -3,11 +3,11 @@
 Логика аналогична ProfilePresenter, но с контекстом профиля.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
+from PyQt6.QtWidgets import QListWidgetItem
 
 from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
-from logic.widgets.dialogs import ask_yes_no
+from logic.widgets.dialogs import ask_yes_no, warn, info
 
 
 class ServerPresenter(BasePresenter):
@@ -132,7 +132,7 @@ class ServerPresenter(BasePresenter):
         try:
             self.service.update_note(sid, text)
         except Exception as exc:
-            QMessageBox.warning(
+            warn(
                 self.view,
                 t("dialog.error_title"),
                 t("server.error.save_note").format(exc=exc),
@@ -154,7 +154,7 @@ class ServerPresenter(BasePresenter):
         try:
             new_id = self.service.create(self.profile_id, name)
         except ValueError as exc:
-            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
+            warn(view, t("dialog.error_title"), str(exc))
             return
         self.refresh(select_id=new_id)
 
@@ -162,7 +162,7 @@ class ServerPresenter(BasePresenter):
         view = self.view
         item = view.listServers.currentItem()
         if item is None:
-            QMessageBox.information(
+            info(
                 view, t("server.dialog.rename.title"),
                 t("server.error.not_found"),
             )
@@ -180,7 +180,7 @@ class ServerPresenter(BasePresenter):
         try:
             self.service.rename(sid, new_name, self.profile_id)
         except ValueError as exc:
-            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
+            warn(view, t("dialog.error_title"), str(exc))
             return
         self.refresh(select_id=sid)
 
@@ -224,7 +224,7 @@ class ServerPresenter(BasePresenter):
                 sid, new_name, self.profile_id
             )
         except ValueError as exc:
-            QMessageBox.warning(view, t("dialog.error_title"), str(exc))
+            warn(view, t("dialog.error_title"), str(exc))
             return
         self.refresh(select_id=new_id)
 
@@ -233,7 +233,7 @@ class ServerPresenter(BasePresenter):
         view = self.view
         item = view.listServers.currentItem()
         if item is None:
-            QMessageBox.information(
+            info(
                 view, t("server.dialog.enter.title"),
                 t("server.error.not_found"),
             )
