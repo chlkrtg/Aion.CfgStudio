@@ -4,15 +4,16 @@
 """
 from PyQt6.QtCore import Qt, QTimer
 
+from logic.core.constants import MAX_DESCRIPTION_LEN, MAX_PROFILE_NAME_LEN
+from logic.core.i18n import t
+from logic.core.i18n import t as _t
+from logic.presenters import ProfilePresenter
 from logic.widgets.base_page import BasePage
 from logic.widgets.context_menu import build_context_menu
-from logic.widgets.shortcuts import bind_actions
-from logic.widgets.shortcut_labels import with_hotkey
-from logic.core.constants import MAX_PROFILE_NAME_LEN, MAX_DESCRIPTION_LEN
-from logic.presenters import ProfilePresenter
-from ui.profile_select import Ui_ProfileSelectDialog
-from logic.core.i18n import t, t as _t
 from logic.widgets.hover_helpers import set_button_variant
+from logic.widgets.shortcut_labels import with_hotkey
+from logic.widgets.shortcuts import bind_actions
+from ui.profile_select import Ui_ProfileSelectDialog
 
 
 class PageProfile(BasePage, Ui_ProfileSelectDialog):

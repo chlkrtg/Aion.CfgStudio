@@ -7,9 +7,16 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QListWidgetItem
 
-from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
-from logic.widgets.dialogs import ask_yes_no_cancel, ask_yes_no, warn, info, error, ask_choice
+from logic.presenters.base_presenter import BasePresenter
+from logic.widgets.dialogs import (
+    ask_choice,
+    ask_yes_no,
+    ask_yes_no_cancel,
+    error,
+    info,
+    warn,
+)
 
 
 def _state_val(item) -> int:

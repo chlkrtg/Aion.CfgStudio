@@ -1,9 +1,12 @@
 """Хелперы для локализованных диалогов."""
 import os
 import sys
+
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QMessageBox
+
 from logic.core.i18n import t
-from PyQt6.QtGui import QIcon, QPixmap
+
 
 def info(parent, title: str, text: str):
     msg = _build(parent, title, text, "info")
@@ -30,7 +33,7 @@ def ask_yes_no(parent, title: str, text: str,
         yes_text or t("dialog.yes"),
         QMessageBox.ButtonRole.YesRole,
     )
-    btn_no = msg.addButton(
+    msg.addButton(
         no_text or t("dialog.no"),
         QMessageBox.ButtonRole.NoRole,
     )
@@ -51,7 +54,7 @@ def ask_yes_no_cancel(parent, title: str, text: str,
         no_text or t("dialog.no"),
         QMessageBox.ButtonRole.NoRole,
     )
-    btn_cancel = msg.addButton(
+    msg.addButton(
         cancel_text or t("dialog.cancel"),
         QMessageBox.ButtonRole.RejectRole,
     )

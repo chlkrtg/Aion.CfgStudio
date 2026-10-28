@@ -2,9 +2,13 @@
 from PyQt6.QtCore import QPointF, QRect, QSize, Qt
 from PyQt6.QtGui import QColor, QPainter, QPen
 from PyQt6.QtWidgets import QStyle, QStyledItemDelegate, QStyleOptionViewItem
+
 from logic.widgets.theme import (
-    ACCENT, BG_APP, BG_INPUT_HOVER,
-    BORDER_HOVER, TEXT_DIM,
+    ACCENT,
+    BG_APP,
+    BG_INPUT_HOVER,
+    BORDER_HOVER,
+    TEXT_DIM,
 )
 
 
@@ -34,7 +38,6 @@ class CheckboxDelegate(QStyledItemDelegate):
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index):
         state = index.data(Qt.ItemDataRole.CheckStateRole)
-        marker = index.data(Qt.ItemDataRole.UserRole)
 
         # фон ячейки — стандартный (для selection, striped)
         bg_opt = QStyleOptionViewItem(option)

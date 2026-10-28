@@ -11,18 +11,26 @@
     install_hover_for_all(self)   # все QPushButton внутри виджета
 """
 from PyQt6.QtCore import (
-    QEvent, QEasingCurve, QObject, QVariantAnimation,
+    QEasingCurve,
+    QEvent,
+    QObject,
+    QVariantAnimation,
 )
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QPushButton, QWidget
-from logic.widgets.theme import (
-    ACCENT, ACCENT_HOVER,
-    BG_INPUT, BG_INPUT_HOVER, BG_APP,
-    TEXT, TEXT_DISABLED,
-    BORDER,
-    DANGER, DANGER_BG_HOVER,
-)
 
+from logic.widgets.theme import (
+    ACCENT,
+    ACCENT_HOVER,
+    BG_APP,
+    BG_INPUT,
+    BG_INPUT_HOVER,
+    BORDER,
+    DANGER,
+    DANGER_BG_HOVER,
+    TEXT,
+    TEXT_DISABLED,
+)
 
 # Цвета для анимации (алиасы для обратной совместимости)
 BG_NORMAL = QColor(BG_INPUT)

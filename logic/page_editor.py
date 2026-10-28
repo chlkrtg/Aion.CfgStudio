@@ -3,22 +3,20 @@
 Вся логика - в EditorPresenter.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont, QColor
-from PyQt6.QtWidgets import (
-    QTableWidgetItem, QHeaderView, QAbstractItemView
-)
+from PyQt6.QtGui import QColor, QFont
+from PyQt6.QtWidgets import QAbstractItemView, QHeaderView, QTableWidgetItem
 
-from logic.widgets.base_page import BasePage
 from logic.core.constants import MAX_CONFIG_NAME_LEN
-from logic.widgets.hover_helpers import set_button_variant
-from logic.widgets.shortcuts import bind_actions
-from logic.widgets.value_delegate import ValueDelegate
-from logic.widgets.shortcut_labels import with_hotkey
+from logic.core.i18n import plural_ru, t
 from logic.presenters import EditorPresenter
-from logic.core.i18n import t, plural_ru
-from ui.command_editor import Ui_CommandEditorDialog
+from logic.widgets.base_page import BasePage
 from logic.widgets.checkbox_delegate import CheckboxDelegate
+from logic.widgets.hover_helpers import set_button_variant
+from logic.widgets.shortcut_labels import with_hotkey
+from logic.widgets.shortcuts import bind_actions
 from logic.widgets.theme import ACCENT, BG_PANEL, SYNTAX_OVERRIDDEN_KEY
+from logic.widgets.value_delegate import ValueDelegate
+from ui.command_editor import Ui_CommandEditorDialog
 
 
 class PageEditor(BasePage, Ui_CommandEditorDialog):
@@ -186,7 +184,6 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
 
     def set_command_count(self, n: int):
         """Обновляет счётчик видимых команд."""
-        from logic.core.i18n import t
         from logic.core import i18n
 
         if i18n.get_language() == "ru":

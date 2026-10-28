@@ -8,7 +8,6 @@
 import shutil
 from pathlib import Path
 
-
 DIST = Path("dist/AionCfgStudio/_internal")
 
 

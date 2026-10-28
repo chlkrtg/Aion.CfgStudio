@@ -7,9 +7,9 @@
 """
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QTreeWidgetItem
-from logic.core.i18n import t
 
 from logic.core.actions import ACTIONS, Scope, by_scope
+from logic.core.i18n import t
 from logic.presenters.base_presenter import BasePresenter
 from logic.widgets.dialogs import ask_yes_no, warn
 

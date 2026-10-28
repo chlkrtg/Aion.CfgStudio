@@ -1,19 +1,24 @@
+import ctypes
 import os
 import sys
-from logic.widgets.theme import setup_theme, BG_APP, ACCENT, TEXT_DIM, BG_INPUT
+
+from PyQt6.QtCore import QEvent, QObject, Qt, QTimer
+from PyQt6.QtGui import QColor, QIcon, QPixmap
+from PyQt6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QFileDialog,
+    QInputDialog,
+    QLabel,
+    QMessageBox,
+    QProgressBar,
+    QSplashScreen,
+)
 
 from database.db_manager import DBManager
 from logic.app_window import AppWindow
-from PyQt6.QtCore import Qt, QTimer, QObject, QEvent
-from PyQt6.QtWidgets import (
-    QApplication, QSplashScreen, QLabel, QProgressBar,
-    QMessageBox, QInputDialog, QFileDialog, QDialog,
-)
-from PyQt6.QtGui import QColor, QPixmap, QIcon
 from logic.core.i18n import t
-
-import ctypes
-from ctypes import wintypes
+from logic.widgets.theme import ACCENT, BG_APP, BG_INPUT, TEXT_DIM, setup_theme
 
 WM_NCACTIVATE = 0x0086
 
@@ -59,8 +64,8 @@ class _DarkDialogsFilter(QObject):
     """Применяет единое оформление ко всем диалогам при их показе."""
 
     def eventFilter(self, obj, event):
-        if event.type() == QEvent.Type.Show:
-            if isinstance(obj, (QMessageBox, QInputDialog, QFileDialog, QDialog)):
+        if (event.type() == QEvent.Type.Show
+            and isinstance(obj, (QMessageBox, QInputDialog, QFileDialog, QDialog))):
                 QTimer.singleShot(0, lambda o=obj: _style_window(o))
         return super().eventFilter(obj, event)
 

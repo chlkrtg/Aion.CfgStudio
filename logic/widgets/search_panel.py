@@ -1,13 +1,10 @@
 """Панель поиска для текстового редактора."""
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QKeySequence, QShortcut
-from PyQt6.QtWidgets import (
-    QWidget, QHBoxLayout, QLineEdit, QPushButton, QLabel
-)
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QPushButton, QWidget
 
-from logic.widgets.theme import BORDER, BG_PANEL, TEXT_MUTED
-from logic.widgets.hover_helpers import set_button_variant
 from logic.core.i18n import t
+from logic.widgets.hover_helpers import set_button_variant
+from logic.widgets.theme import BORDER, TEXT_MUTED
 
 
 class SearchPanel(QWidget):

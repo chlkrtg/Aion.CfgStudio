@@ -4,7 +4,6 @@
 """
 from logic.core import i18n
 
-
 SETTING_KEY = "language"
 DEFAULT_LANG = "ru"
 

@@ -6,12 +6,19 @@ import os
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
-    QTreeWidgetItem, QFileDialog, QInputDialog,
+    QFileDialog,
+    QTreeWidgetItem,
 )
 
-from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
-from logic.widgets.dialogs import ask_yes_no, ask_yes_no_cancel, warn, info, error, ask_choice
+from logic.presenters.base_presenter import BasePresenter
+from logic.widgets.dialogs import (
+    ask_yes_no,
+    ask_yes_no_cancel,
+    error,
+    info,
+    warn,
+)
 from logic.widgets.empty_state import add_empty_node
 
 
@@ -371,8 +378,7 @@ class MainPresenter(BasePresenter):
         if not cfg:
             return
         base = cfg["filename"]
-        if base.endswith(".cfg"):
-            base = base[:-4]
+        base = base.removesuffix(".cfg")
         default = f"{base}_{t('main.copy_suffix')}.cfg"
         new_name, ok = view.ask_name_hint(
             t("main.dialog.dup.title"),

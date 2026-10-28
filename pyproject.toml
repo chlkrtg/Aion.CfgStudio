@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=80", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aion.cfgstudio"
+dynamic = ["version"]
+description = "Aion system.cfg editor"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    {name = "chealkrtengghnle", email = "chealkengine@gmail.com"},
+]
+dependencies = [
+    "PyQt6>=6.6",
+    "PyQtDarkTheme-fork>=2.3.6",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["logic*", "ui*", "database*", "parsers*"]
+
+[tool.setuptools_scm]
+
+[project.optional-dependencies]
+dev = [
+    "pyinstaller>=6.3",
+    "ruff>=0.16",
+]

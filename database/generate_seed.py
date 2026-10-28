@@ -7,10 +7,11 @@
 Содержит: все команды Aion с описаниями (гибрид: конкретные + по префиксу).
 """
 import os
+
 from seed_translations_en import (
     KNOWN_DESCRIPTIONS_EN,
-    PREFIX_NAMES_EN,
     PREFIX_DESCRIPTIONS_EN,
+    PREFIX_NAMES_EN,
 )
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

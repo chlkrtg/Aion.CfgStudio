@@ -1,7 +1,6 @@
 import os
-import sys
 import sqlite3
-
+import sys
 from contextlib import contextmanager
 
 
@@ -59,7 +58,8 @@ class DBManager:
                 print(f"[DB] Пропуск (не найден): {name}")
                 continue
 
-            sql = open(path, "r", encoding="utf-8").read()
+            with open(path, "r", encoding="utf-8") as f:
+                sql = f.read()
             with self._conn() as conn:
                 conn.executescript(sql)
             print(f"[DB] Загружен: {name}")

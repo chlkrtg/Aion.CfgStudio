@@ -67,7 +67,7 @@ class ShortcutService:
             )
 
         # 1. Совпадает с дефолтом - просто снимаем override.
-        if key == action.default_key:
+        if key in action.all_default_keys():
             self.repo.delete(action_id)
             self._overrides.pop(action_id, None)
             return
@@ -117,7 +117,14 @@ class ShortcutService:
                 continue
             if not self._scopes_overlap(target.scope, other.scope):
                 continue
-            if self.current_key(other_id) == key:
+
+            # Активная клавиша: override ИЛИ все дефолты (включая extra_keys)
+            if self.has_override(other_id):
+                other_keys = (self.current_key(other_id),)
+            else:
+                other_keys = other.all_default_keys()
+
+            if key in other_keys:
                 return other_id
         return None
 

@@ -1,12 +1,16 @@
 """Диалог с легендой предпросмотра."""
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout
-)
+from PyQt6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
 
-from logic.widgets.theme import BG_PANEL, TEXT, ACCENT, DANGER, SUCCESS, SYNTAX_OVERRIDDEN_KEY
-from logic.widgets.hover_helpers import set_button_variant
 from logic.core.i18n import t
+from logic.widgets.hover_helpers import set_button_variant
+from logic.widgets.theme import (
+    ACCENT,
+    DANGER,
+    SUCCESS,
+    SYNTAX_OVERRIDDEN_KEY,
+    TEXT,
+)
 
 
 class LegendDialog(QDialog):

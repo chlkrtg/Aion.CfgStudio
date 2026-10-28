@@ -1,8 +1,15 @@
 """Диалог истории изменений с прокруткой."""
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
-    QHeaderView, QPushButton, QAbstractItemView, QLineEdit,
+    QAbstractItemView,
+    QDialog,
+    QHBoxLayout,
+    QHeaderView,
+    QLineEdit,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
 )
 
 from logic.core.i18n import t

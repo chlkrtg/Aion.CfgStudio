@@ -1,6 +1,6 @@
 """Базовый класс для всех страниц."""
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QWidget, QMessageBox, QInputDialog, QLineEdit
+from PyQt6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 
 class BasePage(QWidget):

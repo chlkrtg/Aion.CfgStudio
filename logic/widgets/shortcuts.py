@@ -1,9 +1,8 @@
 """Хелперы для работы с QShortcut."""
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QShortcut, QKeySequence
+from PyQt6.QtGui import QKeySequence, QShortcut
 
 from logic.core.actions import ACTIONS
-
 
 # Контексты срабатывания (псевдонимы)
 FOCUSED = Qt.ShortcutContext.WidgetShortcut

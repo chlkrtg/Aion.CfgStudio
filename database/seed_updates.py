@@ -19,7 +19,8 @@ def main() -> int:
 
     # 1. основной seed_updates.sql
     if os.path.isfile(SQL_PATH):
-        sql = open(SQL_PATH, "r", encoding="utf-8").read()
+        with open(SQL_PATH, "r", encoding="utf-8") as f:
+            sql = f.read()
         with db._conn() as conn:
             conn.executescript(sql)
         print(f"Применён: {os.path.basename(SQL_PATH)}")

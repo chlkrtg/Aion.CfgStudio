@@ -1,27 +1,33 @@
 """Единое окно с QStackedWidget. Переключает страницы."""
 import webbrowser
-from logic.core.i18n import t
-from PyQt6.QtGui import QAction, QActionGroup
+
 from PyQt6.QtCore import QSettings
+from PyQt6.QtGui import QAction, QActionGroup
 from PyQt6.QtWidgets import QMainWindow, QStackedWidget
 
 from database.db_manager import DBManager
-from logic.repositories import (
-    ProfileRepository, ServerRepository,
-    ConfigRepository, CommandRepository,
-    ShortcutRepository, SettingsRepository,
-)
-from logic.services import (
-    ProfileService, ServerService,
-    ConfigService, EditorService,
-    ReferenceService, ShortcutService,
-    LanguageService,
-)
-
+from logic.core.i18n import t
+from logic.page_editor import PageEditor
+from logic.page_main import PageMain
 from logic.page_profile import PageProfile
 from logic.page_server import PageServer
-from logic.page_main import PageMain
-from logic.page_editor import PageEditor
+from logic.repositories import (
+    CommandRepository,
+    ConfigRepository,
+    ProfileRepository,
+    ServerRepository,
+    SettingsRepository,
+    ShortcutRepository,
+)
+from logic.services import (
+    ConfigService,
+    EditorService,
+    LanguageService,
+    ProfileService,
+    ReferenceService,
+    ServerService,
+    ShortcutService,
+)
 
 VIDEO_URL = "https://www.youtube.com/watch?v=TK2jVAArRhM"
 

@@ -9,14 +9,16 @@
 """
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
-    QDialog, QLabel, QVBoxLayout, QHeaderView,
+    QDialog,
+    QHeaderView,
+    QLabel,
+    QVBoxLayout,
 )
 
+from logic.core.i18n import t
 from logic.presenters import ShortcutPresenter
 from logic.widgets.hover_helpers import set_button_variant
 from ui.shortcuts_editor import Ui_ShortcutsEditorDialog
-from logic.core.i18n import t
-
 
 # Клавиши, которые нельзя назначать (конфликт с системой / Qt)
 FORBIDDEN_KEYS = {

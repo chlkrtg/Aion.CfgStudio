@@ -5,9 +5,9 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QListWidgetItem
 
-from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
-from logic.widgets.dialogs import ask_yes_no, warn, info
+from logic.presenters.base_presenter import BasePresenter
+from logic.widgets.dialogs import ask_yes_no, info, warn
 
 
 class ServerPresenter(BasePresenter):

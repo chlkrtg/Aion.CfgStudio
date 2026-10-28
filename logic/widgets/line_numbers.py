@@ -3,7 +3,7 @@ from PyQt6.QtCore import QRect, QSize, Qt
 from PyQt6.QtGui import QColor, QPainter, QTextFormat
 from PyQt6.QtWidgets import QPlainTextEdit, QWidget
 
-from logic.widgets.theme import BG_PANEL, TEXT_DIM, BORDER
+from logic.widgets.theme import BG_PANEL, TEXT_DIM
 
 
 class LineNumberArea(QWidget):
@@ -92,9 +92,9 @@ class CodeEditor(QPlainTextEdit):
 
     def _update_extra_selections(self):
         """Собирает все ExtraSelections: текущая строка + поиск."""
-        from PyQt6.QtGui import QTextFormat
         from PyQt6.QtWidgets import QTextEdit
-        from logic.widgets.theme import ACCENT, BG_PANEL
+
+        from logic.widgets.theme import BG_PANEL
 
         selections = []
 
@@ -143,8 +143,8 @@ class CodeEditor(QPlainTextEdit):
 
     def set_completion_words(self, words: list[str]):
         """Устанавливает список слов для автодополнения."""
-        from PyQt6.QtWidgets import QCompleter
         from PyQt6.QtCore import QStringListModel, Qt
+        from PyQt6.QtWidgets import QCompleter
 
         self._completer_model = QStringListModel(words, self)
         self._completer = QCompleter(self._completer_model, self)
@@ -158,12 +158,12 @@ class CodeEditor(QPlainTextEdit):
 
     def keyPressEvent(self, event):
         # Если completer открыт — отдаём ему управление
-        if self._completer and self._completer.popup().isVisible():
-            if event.key() in (
+        if (self._completer and self._completer.popup().isVisible()
+            and event.key() in (
                     Qt.Key.Key_Enter, Qt.Key.Key_Return,
                     Qt.Key.Key_Escape, Qt.Key.Key_Tab,
                     Qt.Key.Key_Backtab,
-            ):
+            )):
                 event.ignore()
                 return
 

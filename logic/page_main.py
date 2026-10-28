@@ -3,21 +3,28 @@
 Вся логика - в MainPresenter.
 """
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QHBoxLayout, QWidget, QLabel, QPushButton
+from PyQt6.QtWidgets import QPushButton
+
+from logic.core.constants import MAX_CONFIG_NAME_LEN
+from logic.core.i18n import t
+from logic.core.i18n import t as _t
+from logic.presenters import MainPresenter
 from logic.widgets.base_page import BasePage
+from logic.widgets.cfg_highlighter import CfgHighlighter
 from logic.widgets.context_menu import build_context_menu
 from logic.widgets.hover_helpers import set_button_variant
-from logic.widgets.shortcuts import bind_actions
-from logic.core.constants import MAX_CONFIG_NAME_LEN
-from logic.widgets.shortcut_labels import with_hotkey
-from logic.presenters import MainPresenter
-from logic.widgets.theme import ACCENT, DANGER, SYNTAX_UNKNOWN_KEY, SYNTAX_OVERRIDDEN_KEY
-from ui.main_window import Ui_MainWindow
-from logic.core.i18n import t, t as _t
-from logic.widgets.cfg_highlighter import CfgHighlighter
+from logic.widgets.legend_dialog import LegendDialog
 from logic.widgets.line_numbers import CodeEditor
 from logic.widgets.search_panel import SearchPanel
-from logic.widgets.legend_dialog import LegendDialog
+from logic.widgets.shortcut_labels import with_hotkey
+from logic.widgets.shortcuts import bind_actions
+from logic.widgets.theme import (
+    ACCENT,
+    DANGER,
+    SYNTAX_OVERRIDDEN_KEY,
+    SYNTAX_UNKNOWN_KEY,
+)
+from ui.main_window import Ui_MainWindow
 
 
 class PageMain(BasePage, Ui_MainWindow):
@@ -387,8 +394,9 @@ class PageMain(BasePage, Ui_MainWindow):
 
     def _show_about(self):
         from PyQt6.QtWidgets import QMessageBox
-        from logic.core.i18n import t
+
         from logic.core.constants import APP_VERSION
+        from logic.core.i18n import t
 
         QMessageBox.about(
             self,
@@ -398,7 +406,6 @@ class PageMain(BasePage, Ui_MainWindow):
 
     def _show_legend(self):
         """Открывает диалог со справкой по превью."""
-        from logic.widgets.legend_dialog import LegendDialog
         dialog = LegendDialog(self, self.window().shortcut_service)
         dialog.exec()
 

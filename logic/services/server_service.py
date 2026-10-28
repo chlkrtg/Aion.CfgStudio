@@ -2,9 +2,10 @@
 
 Все методы бросают ValueError при нарушении правил.
 """
-from logic.core.constants import MAX_SERVER_NAME_LEN, MAX_NOTE_LEN
-from logic.core.i18n import t
 import os
+
+from logic.core.constants import MAX_NOTE_LEN, MAX_SERVER_NAME_LEN
+from logic.core.i18n import t
 
 
 class ServerService:

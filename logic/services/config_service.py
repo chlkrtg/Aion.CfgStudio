@@ -8,11 +8,12 @@ import re
 import stat
 
 from logic.core.constants import MAX_CONFIG_NAME_LEN
-from parsers.cfg_crypto import (
-    decrypt, encrypt, looks_like_encrypted,
-)
 from logic.core.i18n import t
-
+from parsers.cfg_crypto import (
+    decrypt,
+    encrypt,
+    looks_like_encrypted,
+)
 
 # Регулярка для строк cfg вида: key = "value"  или  key = value
 _CFG_KV_RE = re.compile(
@@ -42,11 +43,8 @@ class ConfigService:
             OSError: файл не читается.
             ValueError: имя невалидно.
         """
-        try:
-            with open(path, "rb") as f:
-                raw = f.read()
-        except OSError:
-            raise
+        with open(path, "rb") as f:
+            raw = f.read()
 
         if looks_like_encrypted(raw):
             content = decrypt(raw)
@@ -362,32 +360,31 @@ class ConfigService:
         except Exception as exc:
             print(f"[ConfigService] write_logs failed: {exc}")
 
-    def _filter_known_commands(
-            self, text: str, known: set
-    ) -> tuple[str, list, list]:
-        """Убирает из текста неизвестные команды и дубликаты.
-
-        known: готовое множество key_name — не зовём command_repo.all().
-
-        Возвращает:
-            cleaned_text: очищенный текст
-            unknown_list: [(key, value), ...] — неизвестные
-            duplicates_list: [(key, value), ...] — дубли
-        """
+    def _filter_known_commands(self, text, known):
         if not known:
             return text, [], []
 
-        # Проход 1: последнее вхождение для каждой команды
+        # Проход 1: последнее вхождение и все предыдущие
         last_value: dict[str, str] = {}
+        prev_values: dict[str, list[str]] = {}
+
         for line in text.splitlines():
             stripped = line.strip()
             if not stripped or stripped.startswith(("--", "//", "#")):
                 continue
             m = _CFG_KV_RE.match(stripped)
             if m and m.group(1) in known:
-                last_value[m.group(1)] = line
+                key = m.group(1)
+                if key in last_value:
+                    # предыдущее вхождение — в duplicates
+                    prev_m = _CFG_KV_RE.match(last_value[key].strip())
+                    if prev_m:
+                        prev_values.setdefault(key, []).append(
+                            (key, prev_m.group(2))
+                        )
+                last_value[key] = line
 
-        # Проход 2
+        # Проход 2: собрать результат
         result = []
         seen = set()
         unknown_list = []
@@ -402,10 +399,10 @@ class ConfigService:
             if m and m.group(1) in known:
                 key = m.group(1)
                 if key in seen:
-                    duplicates_list.append((key, m.group(2)))
-                    continue
+                    continue  # уже обработали
                 seen.add(key)
                 result.append(last_value[key])
+                duplicates_list.extend(prev_values.get(key, []))
             else:
                 if m:
                     unknown_list.append((m.group(1), m.group(2)))

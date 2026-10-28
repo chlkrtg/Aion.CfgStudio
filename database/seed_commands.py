@@ -12,7 +12,6 @@ if BASE_DIR not in sys.path:
 
 from database.db_manager import DBManager
 
-
 SEED_PATH = os.path.join(BASE_DIR, "database", "seed_commands.sql")
 
 
@@ -22,7 +21,8 @@ def main() -> int:
         return 1
 
     db = DBManager()
-    sql = open(SEED_PATH, "r", encoding="utf-8").read()
+    with open(SEED_PATH, "r", encoding="utf-8") as f:
+        sql = f.read()
 
     with db._conn() as conn:
         conn.executescript(sql)

@@ -4,15 +4,16 @@
 """
 from PyQt6.QtCore import Qt, QTimer
 
+from logic.core.constants import MAX_NOTE_LEN, MAX_SERVER_NAME_LEN
+from logic.core.i18n import t
+from logic.core.i18n import t as _t
+from logic.presenters import ServerPresenter
 from logic.widgets.base_page import BasePage
 from logic.widgets.context_menu import build_context_menu
 from logic.widgets.hover_helpers import set_button_variant
-from logic.widgets.shortcuts import bind_actions
-from logic.core.constants import MAX_SERVER_NAME_LEN, MAX_NOTE_LEN
 from logic.widgets.shortcut_labels import with_hotkey
-from logic.presenters import ServerPresenter
+from logic.widgets.shortcuts import bind_actions
 from ui.server_select import Ui_ServerSelectDialog
-from logic.core.i18n import t, t as _t
 
 
 class PageServer(BasePage, Ui_ServerSelectDialog):
