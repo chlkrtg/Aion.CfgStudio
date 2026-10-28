@@ -4,6 +4,7 @@
 """
 from logic.core.constants import MAX_SERVER_NAME_LEN, MAX_NOTE_LEN
 from logic.core.i18n import t
+import os
 
 
 class ServerService:
@@ -53,13 +54,26 @@ class ServerService:
             )
         self.repo.rename(server_id, new_name)
 
-    # =========== заметка ===========
+    # =========== заметка + экспорт ===========
 
     def update_note(self, server_id: int, text: str):
         """Сохраняет заметку с обрезкой до MAX_NOTE_LEN."""
         if len(text) > MAX_NOTE_LEN:
             text = text[:MAX_NOTE_LEN]
         self.repo.update_note(server_id, text)
+
+    def update_export_path(self, server_id: int, path: str):
+        """Сохраняет путь к папке сервера (для экспорта по умолчанию).
+
+        Raises:
+            ValueError: папка не существует.
+        """
+        path = path.strip()
+        if path and not os.path.isdir(path):
+            raise ValueError(
+                t("server.error.export_path_invalid").format(path=path)
+            )
+        self.repo.update_export_path(server_id, path)
 
     # =========== удаление / дублирование ===========
 

@@ -29,3 +29,12 @@ class ReferenceService:
 
     def count_configs_in_server(self, server_id: int) -> int:
         return self.server_repo.count_configs(server_id)
+
+    def get_server_export_path(self, server_id: int) -> str:
+        """Возвращает путь экспорта сервера или пустую строку."""
+        if server_id is None:
+            return ""
+        server = self.server_repo.get(server_id)
+        if not server:
+            return ""
+        return server["export_path"] or ""

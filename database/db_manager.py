@@ -190,6 +190,14 @@ class DBManager:
                 (note, server_id),
             )
 
+    def update_server_export_path(self, server_id: int, path: str):
+        """Обновляет путь экспорта по умолчанию для сервера."""
+        with self._conn() as conn:
+            conn.execute(
+                "UPDATE Servers SET export_path = ? WHERE id = ?",
+                (path, server_id),
+            )
+
     def count_configs_in_server(self, server_id: int) -> int:
         with self._conn() as conn:
             row = conn.execute(

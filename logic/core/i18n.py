@@ -80,6 +80,12 @@ STRINGS = {
         "server.error.not_found":       "Сервер не найден.",
         "server.error.save_note":       "Не удалось сохранить заметку:\n{exc}",
         "server.copy_suffix":           "(копия)",
+        "server.lbl_export_path": "Экспорт по умолчанию:",
+        "server.export_path_placeholder": "Путь не задан",
+        "server.btn_browse": "Обзор...",
+        "server.dialog.export_path.title": "Выберите папку сервера",
+        "server.error.export_path_invalid": "Папка не найдена: {path}",
+        "server.btn_clear": "Очистить",
 
         # ============ CFG ============
         "main.lbl_tree_title":   "Конфигурации",
@@ -153,6 +159,11 @@ STRINGS = {
         "config.error.empty_name":      "Имя файла не может быть пустым.",
         "config.error.too_long_name":   "Имя слишком длинное (макс. {n}).",
         "config.error.not_found":       "Конфиг не найден.",
+        "config.error.cannot_unlock": (
+            "Не удалось снять атрибут «Только чтение» с файла:\n{path}\n\n"
+            "Закройте игру (если она запущена) или запустите приложение "
+            "от имени администратора."
+        ),
 
         # ================= ЛОГИ ===================
         "logs.type.unknown":     "(неизвестная)",
@@ -396,7 +407,12 @@ STRINGS = {
         "server.error.not_found":       "Server not found.",
         "server.error.save_note":       "Failed to save note:\n{exc}",
         "server.copy_suffix":           "(copy)",
-
+        "server.lbl_export_path": "Default export:",
+        "server.export_path_placeholder": "Path not set",
+        "server.btn_browse": "Browse...",
+        "server.dialog.export_path.title": "Select server folder",
+        "server.error.export_path_invalid": "Folder not found: {path}",
+        "server.btn_clear": "Clear",
 
         # ============ CFG ============
         "main.lbl_tree_title":   "Configurations",
@@ -470,6 +486,10 @@ STRINGS = {
         "config.error.empty_name":      "File name cannot be empty.",
         "config.error.too_long_name":   "Name is too long (max {n}).",
         "config.error.not_found":       "Config not found.",
+        "config.error.cannot_unlock": (
+            "Failed to remove read-only attribute from:\n{path}\n\n"
+            "Close the game (if running) or run the app as administrator."
+        ),
 
         # ============ LOGS ============
         "logs.type.unknown":     "(unknown)",

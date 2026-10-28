@@ -5,6 +5,7 @@
 """
 import os
 import re
+import stat
 
 from logic.core.constants import MAX_CONFIG_NAME_LEN
 from parsers.cfg_crypto import (
@@ -85,19 +86,29 @@ class ConfigService:
 
     # =========== экспорт ===========
 
-    def export_to_file(self, config_id: int, path: str,
-                       encrypted: bool):
-        """Экспортирует cfg в файл.
-
-        Raises:
-            ValueError: cfg не найден.
-            OSError: файл не записывается.
-        """
+    def export_to_file(self, config_id: int, path: str, encrypted: bool):
         cfg = self.repo.get(config_id)
         if not cfg:
             raise ValueError(t("config.error.not_found"))
 
         content = cfg["content"] or ""
+
+        existed = os.path.exists(path)
+        was_readonly = False
+        if existed:
+            try:
+                was_readonly = not (os.stat(path).st_mode & stat.S_IWRITE)
+            except OSError:
+                was_readonly = False
+
+        if was_readonly:
+            try:
+                os.chmod(path, stat.S_IWRITE | stat.S_IREAD)
+            except OSError as exc:
+                raise OSError(
+                    t("config.error.cannot_unlock").format(path=path)
+                ) from exc
+
         try:
             if encrypted:
                 with open(path, "wb") as f:
@@ -106,8 +117,11 @@ class ConfigService:
                 with open(path, "w", encoding="latin1",
                           errors="replace") as f:
                     f.write(content)
-        except OSError:
-            raise
+        finally:
+            try:
+                os.chmod(path, stat.S_IREAD)
+            except OSError:
+                pass
 
     # =========== CRUD ===========
 

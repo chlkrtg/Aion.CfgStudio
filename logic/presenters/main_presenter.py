@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
 
 from logic.presenters.base_presenter import BasePresenter
 from logic.core.i18n import t
-from logic.widgets.dialogs import ask_yes_no, ask_yes_no_cancel, warn, info, error
+from logic.widgets.dialogs import ask_yes_no, ask_yes_no_cancel, warn, info, error, ask_choice
 from logic.widgets.empty_state import add_empty_node
 
 
@@ -265,14 +265,11 @@ class MainPresenter(BasePresenter):
         self.refresh(select_id=config_id)
 
     def export_config(self):
-        """Экспорт выбранного cfg (зашифрованный или plain)."""
+        """Экспорт выбранного cfg в зашифрованный файл (для игры)."""
         view = self.view
         item = view.treeConfigs.currentItem()
         if item is None:
-            warn(
-                view, t("dialog.error_title"),
-                t("main.error.no_selection"),
-            )
+            warn(view, t("dialog.error_title"), t("main.error.no_selection"))
             return
 
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
@@ -280,38 +277,33 @@ class MainPresenter(BasePresenter):
         if not cfg:
             return
 
+        # Путь по умолчанию: папка сервера (если задана) + имя файла
+        default_dir = self.reference.get_server_export_path(self.server_id)
+        default_file = (
+            os.path.join(default_dir, cfg["filename"])
+            if default_dir else cfg["filename"]
+        )
+
+        # Диалог сохранения
         path, _ = QFileDialog.getSaveFileName(
             view,
-            t("main.dialog.export.filename_title"),  # новый ключ
-            cfg["filename"],
-            "Cfg (*.cfg);;Все файлы (*)",  # фильтр не переводим
+            t("main.dialog.export.filename_title"),
+            default_file,
+            "Cfg (*.cfg);;Все файлы (*)",
         )
         if not path:
             return
 
-        fmt, ok = QInputDialog.getItem(
-            view,
-            t("main.dialog.export.format"),
-            t("main.dialog.export.label"),
-            [
-                t("main.dialog.export.encrypted"),
-                t("main.dialog.export.plain"),
-            ],
-            0, False,
-        )
-        if not ok:
+        # Экспорт всегда зашифрованный
+        try:
+            self.service.export_to_file(config_id, path, encrypted=True)
+        except (OSError, ValueError) as exc:
+            error(view, t("main.error.write"), str(exc))
             return
 
-        encrypted = fmt == t("main.dialog.export.encrypted")
-        try:
-            self.service.export_to_file(config_id, path, encrypted)
-        except (OSError, ValueError) as exc:
-            error(
-                view, t("main.error.write"), str(exc)
-            )
-            return
         info(
-            view, t("main.info.done"),
+            view,
+            t("main.info.done"),
             t("main.info.exported").format(path=path),
         )
 

@@ -37,6 +37,10 @@ class ServerRepository:
         """Обновляет заметку сервера."""
         self.db.update_server_note(server_id, note)
 
+    def update_export_path(self, server_id: int, path: str):
+        """Сохраняет путь экспорта по умолчанию."""
+        self.db.update_server_export_path(server_id, path)
+
     def delete(self, server_id: int):
         """Удаляет сервер со всеми cfg (каскад)."""
         self.db.delete_server(server_id)

@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS Servers (
     profile_id INTEGER NOT NULL,
     name       TEXT    NOT NULL,
     region     TEXT    DEFAULT 'EU',
+    export_path TEXT    DEFAULT '',
     note       TEXT    DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (profile_id) REFERENCES Profiles(id) ON DELETE CASCADE,

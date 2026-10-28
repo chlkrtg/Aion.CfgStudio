@@ -140,3 +140,59 @@ class CodeEditor(QPlainTextEdit):
                 cursor = doc.find(self._search_term, end)
 
         self.setExtraSelections(selections)
+
+    def set_completion_words(self, words: list[str]):
+        """Устанавливает список слов для автодополнения."""
+        from PyQt6.QtWidgets import QCompleter
+        from PyQt6.QtCore import QStringListModel, Qt
+
+        self._completer_model = QStringListModel(words, self)
+        self._completer = QCompleter(self._completer_model, self)
+        self._completer.setWidget(self)
+        self._completer.setCompletionMode(
+            QCompleter.CompletionMode.PopupCompletion
+        )
+        self._completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self._completer.setFilterMode(Qt.MatchFlag.MatchStartsWith)
+        self._completer.activated.connect(self._insert_completion)
+
+    def keyPressEvent(self, event):
+        # Если completer открыт — отдаём ему управление
+        if self._completer and self._completer.popup().isVisible():
+            if event.key() in (
+                    Qt.Key.Key_Enter, Qt.Key.Key_Return,
+                    Qt.Key.Key_Escape, Qt.Key.Key_Tab,
+                    Qt.Key.Key_Backtab,
+            ):
+                event.ignore()
+                return
+
+        super().keyPressEvent(event)
+
+        if not self._completer:
+            return
+
+        # Получаем слово под курсором
+        cursor = self.textCursor()
+        cursor.select(cursor.SelectionType.WordUnderCursor)
+        prefix = cursor.selectedText()
+
+        if len(prefix) >= 2:  # показываем только от 2 символов
+            self._completer.setCompletionPrefix(prefix)
+            if self._completer.completionCount() > 0:
+                rect = self.cursorRect()
+                rect.setWidth(
+                    self._completer.popup().sizeHintForColumn(0)
+                    + self._completer.popup().verticalScrollBar().sizeHint().width()
+                )
+                self._completer.complete(rect)
+            else:
+                self._completer.popup().hide()
+        else:
+            self._completer.popup().hide()
+
+    def _insert_completion(self, completion: str):
+        cursor = self.textCursor()
+        cursor.select(cursor.SelectionType.WordUnderCursor)
+        cursor.insertText(completion)
+        self.setTextCursor(cursor)

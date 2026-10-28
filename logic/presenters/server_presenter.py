@@ -117,7 +117,7 @@ class ServerPresenter(BasePresenter):
         }
         view.fill_details(server, stats)
 
-    # ============ заметка ============
+    # ============ заметка + экспорт ============
 
     def save_note(self):
         """Сохраняет заметку текущего сервера."""
@@ -137,6 +137,20 @@ class ServerPresenter(BasePresenter):
                 t("dialog.error_title"),
                 t("server.error.save_note").format(exc=exc),
             )
+
+    def update_export_path(self, path: str):
+        """Сохраняет путь экспорта для текущего сервера."""
+        view = self.view
+        item = view.listServers.currentItem()
+        if item is None:
+            return
+        sid = item.data(Qt.ItemDataRole.UserRole)
+        try:
+            self.service.update_export_path(sid, path)
+        except ValueError as exc:
+            warn(view, t("dialog.error_title"), str(exc))
+            return
+        view.editExportPath.setText(path)
 
     # ============ действия ============
 

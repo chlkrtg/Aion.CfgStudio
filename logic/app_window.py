@@ -2,6 +2,7 @@
 import webbrowser
 from logic.core.i18n import t
 from PyQt6.QtGui import QAction, QActionGroup
+from PyQt6.QtCore import QSettings
 from PyQt6.QtWidgets import QMainWindow, QStackedWidget
 
 from database.db_manager import DBManager
@@ -30,6 +31,15 @@ class AppWindow(QMainWindow):
         self.db = db
         self.setWindowTitle("Aion.CfgStudio")
         self.resize(700, 700)
+
+        # Восстанавливаем геометрию (если была сохранена)
+        settings = QSettings("Aion", "CfgStudio")
+        geometry = settings.value("window/geometry")
+        if geometry is not None:
+            self.restoreGeometry(geometry)
+        state = settings.value("window/state")
+        if state is not None:
+            self.restoreState(state)
 
         # ============= репозитории  =============
         self.settings_repo = SettingsRepository(db)
@@ -209,7 +219,6 @@ class AppWindow(QMainWindow):
     def go_video(self):
         webbrowser.open(VIDEO_URL)
 
-
     def closeEvent(self, event):
         page = self.stack.currentWidget()
         if page and hasattr(page, "on_leave"):
@@ -217,4 +226,10 @@ class AppWindow(QMainWindow):
             if result is not True:
                 event.ignore()
                 return
+
+        # Сохраняем геометрию окна
+        settings = QSettings("Aion", "CfgStudio")
+        settings.setValue("window/geometry", self.saveGeometry())
+        settings.setValue("window/state", self.saveState())
+
         super().closeEvent(event)

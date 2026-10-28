@@ -79,6 +79,7 @@ class PageMain(BasePage, Ui_MainWindow):
             known_keys = {cmd["key_name"] for cmd in commands}
 
         self._highlighter = CfgHighlighter(self.editPreview.document(), known_keys)
+        self.editPreview.set_completion_words(sorted(known_keys))
 
         # --- Панель поиска ---
         self.search_panel = SearchPanel(self.editPreview, self.gbPreview)

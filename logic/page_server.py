@@ -41,9 +41,8 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
         self.lblRegionValue.hide()
 
         self.editNote.setReadOnly(False)
-        self.editNote.setPlaceholderText(
-            f"Сохраняется автоматически (до {MAX_NOTE_LEN} символов)..."
-        )
+        self.btnBrowseExport.clicked.connect(self._browse_export_path)
+        self.btnClearExportPath.clicked.connect(self._clear_export_path)
 
         # debounce заметки - как в профиле
         self._save_timer = QTimer(self)
@@ -153,6 +152,13 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
             with_hotkey(t("server.btn_back"), svc, "server.quit")
         )
 
+        self.lblExportPathCaption.setText(t("server.lbl_export_path"))
+        self.editExportPath.setPlaceholderText(
+            t("server.export_path_placeholder")
+        )
+        self.btnBrowseExport.setText(t("server.btn_browse"))
+        self.btnClearExportPath.setText(t("server.btn_clear"))
+
         # переприменить текущее состояние
         self.presenter.on_server_selected(
             self.listServers.currentItem(), None
@@ -205,6 +211,8 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
         self.editNote.setPlainText(server["note"] or "")
         self.editNote.blockSignals(False)
 
+        self.editExportPath.setText(server["export_path"] or "")
+
         first_letter = (server["name"] or "?")[0].upper()
         self.lblServerIcon.setText(first_letter)
         self.lblServerIcon.setStyleSheet(
@@ -219,6 +227,7 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
         self.editNote.blockSignals(True)
         self.editNote.clear()
         self.editNote.blockSignals(False)
+        self.editExportPath.clear()
         self.lblServerIcon.clear()
 
     def set_controls_enabled(self, enabled: bool):
@@ -257,6 +266,23 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
              self.presenter.delete),
         ])
         menu.exec(self.listServers.mapToGlobal(pos))
+
+    def _browse_export_path(self):
+        """Открывает выбор папки для экспорта по умолчанию."""
+        from PyQt6.QtWidgets import QFileDialog
+        current = self.editExportPath.text().strip()
+        path = QFileDialog.getExistingDirectory(
+            self,
+            t("server.dialog.export_path.title"),
+            current or "",
+        )
+        if not path:
+            return
+        self.presenter.update_export_path(path)
+
+    def _clear_export_path(self):
+        """Очищает путь экспорта по умолчанию."""
+        self.presenter.update_export_path("")
 
     def build_menus(self) -> dict:
         win = self.window()
