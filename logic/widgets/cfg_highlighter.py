@@ -17,7 +17,8 @@ from logic.widgets.theme import (
     SYNTAX_COMMENT, SYNTAX_KEY, SYNTAX_VALUE,
     SYNTAX_SECTION, SYNTAX_EQUALS,
     SYNTAX_DUP_KEY, SYNTAX_DUP_VALUE, SYNTAX_DUP_BG,
-    SYNTAX_UNKNOWN_KEY, SYNTAX_UNKNOWN_VALUE, SYNTAX_ERROR_KEY, SYNTAX_ERROR_VALUE
+    SYNTAX_UNKNOWN_KEY, SYNTAX_UNKNOWN_VALUE, SYNTAX_ERROR_KEY, SYNTAX_ERROR_VALUE, SYNTAX_OVERRIDDEN_KEY,
+    SYNTAX_OVERRIDDEN_VALUE
 )
 
 
@@ -32,7 +33,7 @@ def _fmt(color_hex: str, bold: bool = False) -> QTextCharFormat:
 class CfgHighlighter(QSyntaxHighlighter):
     """Подсветка cfg-файла + подсветка дублей ключей."""
 
-    def __init__(self, document, known_keys: set[str] | None = None):
+    def __init__(self, document, known_keys=None, overridden_keys=None):
         super().__init__(document)
 
         self._known_keys = known_keys or set()
@@ -70,6 +71,10 @@ class CfgHighlighter(QSyntaxHighlighter):
         self._fmt_error_bg.setBackground(QColor(80, 30, 30, 60))  # лёгкий красный фон
 
         self._duplicate_keys: set[str] = set()
+
+        self._overridden_keys = overridden_keys or {}
+        self._fmt_overridden_key = _fmt(SYNTAX_OVERRIDDEN_KEY)
+        self._fmt_overridden_value = _fmt(SYNTAX_OVERRIDDEN_VALUE)
 
         # Защита от рекурсии (чтобы rehighlight не вызывал сам себя)
         self._is_updating = False
@@ -113,6 +118,10 @@ class CfgHighlighter(QSyntaxHighlighter):
 
         self._duplicate_keys = {k for k, n in seen.items() if n > 1}
 
+    def set_overridden_keys(self, keys: dict[str, str]):
+        self._overridden_keys = keys
+        self.rehighlight()
+
     def highlightBlock(self, text: str):
         # 1. комментарий
         it = self._re_comment.globalMatch(text)
@@ -148,6 +157,12 @@ class CfgHighlighter(QSyntaxHighlighter):
         # Координаты ключа
         key_start = m.capturedStart(1)
         key_len = m.capturedLength(1)
+
+        if key in self._overridden_keys:
+            self.setFormat(key_start, key_len, self._fmt_overridden_key)
+            if val_len > 0:
+                self.setFormat(val_start, val_len, self._fmt_overridden_value)
+            return
 
         # Координаты равно (находим вручную, чтобы покрасить)
         eq_pos = text.find('=', key_start + key_len)

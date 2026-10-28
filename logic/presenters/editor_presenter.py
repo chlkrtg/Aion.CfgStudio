@@ -41,11 +41,15 @@ class EditorPresenter(BasePresenter):
         self._group_rows: dict[str, list[int]] = {}
         self._group_header_row: dict[str, int] = {}
 
+        # перезаписи
+        self._local_overrides: dict[str, str] = {}
+
     # ============ контекст ============
 
     def set_context(self, config_id, server_id):
         self.config_id = config_id
         self.server_id = server_id
+        self._local_overrides = self.service.load_local_overrides(server_id)
 
     # ============ жизненный цикл ============
 
@@ -710,6 +714,9 @@ class EditorPresenter(BasePresenter):
     def cancel(self):
         win = self.view.window()
         win.go_main(win.current_server_id)
+
+    def get_local_overrides(self) -> dict[str, str]:
+        return self._local_overrides
 
     # ============ логи ============
 

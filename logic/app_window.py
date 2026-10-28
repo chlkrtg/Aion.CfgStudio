@@ -57,7 +57,8 @@ class AppWindow(QMainWindow):
             self.config_repo, self.command_repo
         )
         self.editor_service = EditorService(
-            self.config_repo, self.command_repo, self.config_service
+            self.config_repo, self.command_repo, self.config_service,
+            server_repo=self.server_repo,
         )
         self.reference_service = ReferenceService(
             self.profile_repo, self.server_repo, self.config_repo

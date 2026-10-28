@@ -61,6 +61,10 @@ SYNTAX_UNKNOWN_VALUE = "#6e6968"
 SYNTAX_ERROR_KEY = DANGER       # "#e05a5a"
 SYNTAX_ERROR_VALUE = DANGER
 
+# 5. Перезаписи
+SYNTAX_OVERRIDDEN_KEY = "#e67e22"      # оранжевый
+SYNTAX_OVERRIDDEN_VALUE = "#e67e22"
+
 # ==================== QSS ====================
 
 ADDITIONAL_QSS = f"""

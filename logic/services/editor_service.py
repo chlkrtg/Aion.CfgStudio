@@ -10,7 +10,7 @@ class EditorService:
     """Правила для редактора команд."""
 
     def __init__(self, config_repo, command_repo,
-                 config_service=None):
+                 config_service=None, server_repo=None):
         """config_service нужен для создания нового cfg.
 
         Если не передан - ensure_config упадёт при попытке
@@ -18,6 +18,7 @@ class EditorService:
         """
         self.config_repo = config_repo
         self.command_repo = command_repo
+        self.server_repo = server_repo
         self.config_service = config_service
 
     # =========== данные ===========
@@ -36,6 +37,16 @@ class EditorService:
             row["command_id"]: (row["use_custom"], row["custom_value"])
             for row in self.config_repo.values(config_id)
         }
+
+    def load_local_overrides(self, server_id: int | None) -> dict[str, str]:
+        """Возвращает переопределения сервера (SystemCfgLocal.cfg)."""
+        if server_id is None or self.server_repo is None:
+            return {}
+        server = self.server_repo.get(server_id)
+        if not server:
+            return {}
+        root = server["export_path"] or ""
+        return self.config_service.find_local_overrides(root)
 
     # =========== сохранение значений ===========
 

@@ -282,6 +282,10 @@ class PageMain(BasePage, Ui_MainWindow):
     def set_context(self, profile_id: int, server_id: int):
         """Делегирует презентеру - какой профиль / сервер открыт."""
         self.presenter.set_context(profile_id, server_id)
+        overrides = self.presenter.service.get_server_overrides(
+            self.window().server_repo, server_id
+        )
+        self._highlighter.set_overridden_keys(overrides)
 
     # ============== жизненный цикл ==============
 

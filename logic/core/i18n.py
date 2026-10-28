@@ -150,6 +150,7 @@ STRINGS = {
         "legend.color.green": "Зелёный — известные команды",
         "legend.color.gray": "Серый — неизвестные команды",
         "legend.color.yellow": "Жёлтый — дубликаты (будут удалены)",
+        "legend.color.orange": "Оранжевый — сервер задаёт значение (SystemCfgLocal.cfg)",
         "legend.color.red": "Красный — синтаксические ошибки",
 
         "legend.search.header": "Поиск:",
@@ -253,6 +254,10 @@ STRINGS = {
         "editor.reset_dialog.nothing":    "Нет видимых команд со стандартным "
                                           "значением.",
         "editor.reset_dialog.done":       "Готово. Сброшено команд: {n}.",
+        "editor.tooltip.overridden": (
+            "Сервер задаёт это значение: {value}\n"
+            "Ваши правки будут проигнорированы."
+        ),
 
         # ============ РЕДАКТОР ХОТКЕЕВ ============
         "shortcuts.window_title":    "Горячие клавиши",
@@ -477,6 +482,7 @@ STRINGS = {
         "legend.color.green": "Green — known commands",
         "legend.color.gray": "Gray — unknown commands",
         "legend.color.yellow": "Yellow — duplicates (will be removed)",
+        "legend.color.orange": "Orange — server overrides value (SystemCfgLocal.cfg)",
         "legend.color.red": "Red — syntax errors",
 
         "legend.search.header": "Search:",
@@ -575,6 +581,10 @@ STRINGS = {
         "editor.reset_dialog.btn_all":    "Values and selection",
         "editor.reset_dialog.nothing":    "No visible commands with a default value.",
         "editor.reset_dialog.done":       "Done. Commands reset: {n}.",
+        "editor.tooltip.overridden": (
+            "Server overrides this value: {value}\n"
+            "Your changes will be ignored."
+        ),
 
         # ============ SHORTCUTS EDITOR ============
         "shortcuts.window_title":    "Hotkeys",

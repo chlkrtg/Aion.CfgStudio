@@ -138,6 +138,60 @@ class ConfigService:
 
     # =========== вспомогательное ===========
 
+    def load_local_overrides(self, path: str) -> dict[str, str]:
+        """Читает один SystemCfgLocal.cfg и возвращает {key: value}."""
+        if not path or not os.path.isfile(path):
+            return {}
+
+        for encoding in ("utf-8", "cp1251", "latin1"):
+            try:
+                with open(path, "r", encoding=encoding) as f:
+                    text = f.read()
+            except UnicodeDecodeError:
+                continue
+            except OSError:
+                return {}
+
+            parsed = self._parse_content(text)
+            if parsed:  # если что-то распарсилось — значит, кодировка правильная
+                return parsed
+
+        return {}
+
+    def find_local_overrides(self, server_root: str) -> dict[str, str]:
+        """Ищет SystemCfgLocal.cfg в L10N\\* и сливает в один dict.
+
+        Если файлов несколько (разные локали) — union: при конфликте
+        побеждает значение из более позднего файла (алфавитный порядок).
+        """
+        if not server_root or not os.path.isdir(server_root):
+            return {}
+
+        l10n_dir = os.path.join(server_root, "L10N")
+        if not os.path.isdir(l10n_dir):
+            return {}
+
+        result: dict[str, str] = {}
+        for locale_name in sorted(os.listdir(l10n_dir)):
+            locale_dir = os.path.join(l10n_dir, locale_name)
+            if not os.path.isdir(locale_dir):
+                continue
+            local_cfg = os.path.join(locale_dir, "SystemCfgLocal.cfg")
+            if not os.path.isfile(local_cfg):
+                continue
+            parsed = self.load_local_overrides(local_cfg)
+            result.update(parsed)
+
+        return result
+
+    def get_server_overrides(self, server_repo, server_id) -> dict[str, str]:
+        if server_id is None or server_repo is None:
+            return {}
+        server = server_repo.get(server_id)
+        if not server:
+            return {}
+        return self.find_local_overrides(server["export_path"] or "")
+
     def save_content(self, config_id: int, text: str) -> tuple[int, int]:
         """Сохраняет текст cfg + пишет историю изменений.
 

@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout
 )
 
-from logic.widgets.theme import BG_PANEL, TEXT, ACCENT, DANGER, SUCCESS
+from logic.widgets.theme import BG_PANEL, TEXT, ACCENT, DANGER, SUCCESS, SYNTAX_OVERRIDDEN_KEY
 from logic.widgets.hover_helpers import set_button_variant
 from logic.core.i18n import t
 
@@ -15,7 +15,7 @@ class LegendDialog(QDialog):
     def __init__(self, parent=None, shortcut_service=None):
         super().__init__(parent)
         self.setWindowTitle(t("legend.title"))
-        self.setFixedWidth(450)
+        self.setFixedWidth(550)
         self.setModal(True)
 
         layout = QVBoxLayout(self)
@@ -35,6 +35,7 @@ class LegendDialog(QDialog):
             f"<span style='color:{SUCCESS};'>{t('legend.color.green')}</span><br>"
             f"<span style='color:#6e6968;'>{t('legend.color.gray')}</span><br>"
             f"<span style='color:{ACCENT};'>{t('legend.color.yellow')}</span><br>"
+            f"<span style='color:{SYNTAX_OVERRIDDEN_KEY};'>{t('legend.color.orange')}</span><br>"
             f"<span style='color:{DANGER};'>{t('legend.color.red')}</span>"
         )
         lbl_legend = QLabel(legend_html)

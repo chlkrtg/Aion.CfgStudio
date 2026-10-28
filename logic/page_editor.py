@@ -18,7 +18,7 @@ from logic.presenters import EditorPresenter
 from logic.core.i18n import t, plural_ru
 from ui.command_editor import Ui_CommandEditorDialog
 from logic.widgets.checkbox_delegate import CheckboxDelegate
-from logic.widgets.theme import ACCENT, BG_PANEL
+from logic.widgets.theme import ACCENT, BG_PANEL, SYNTAX_OVERRIDDEN_KEY
 
 
 class PageEditor(BasePage, Ui_CommandEditorDialog):
@@ -49,6 +49,8 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
             "font-size: 11pt; font-weight: 700; color: #b0b0c0; "
             "background: transparent;"
         )
+
+        self._local_overrides: dict[str, str] = {}
 
     # ============== настройка таблицы ==============
 
@@ -204,6 +206,8 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
 
     def on_enter(self):
         self.presenter.on_enter()
+        overrides = self.presenter.get_local_overrides()
+        self.set_local_overrides(overrides)
 
     def on_leave(self) -> bool:
         # сначала спрашиваем презентер (диалог сохранения)
@@ -263,7 +267,7 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
 
     def fill_command_row(self, row: int, cmd):
         """Рисует строку команды."""
-        t = self.tableCommands
+        table = self.tableCommands
 
         # 0. чекбокс Исп.
         chk_item = QTableWidgetItem()
@@ -273,12 +277,21 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         )
         chk_item.setCheckState(Qt.CheckState.Unchecked)
         chk_item.setData(Qt.ItemDataRole.UserRole, f"CMD:{cmd['id']}")
-        t.setItem(row, 0, chk_item)
+        table.setItem(row, 0, chk_item)
 
         # 1. имя команды
-        item_key = QTableWidgetItem(cmd["key_name"])
+        key = cmd["key_name"]
+        overridden = key in self._local_overrides
+
+        item_key = QTableWidgetItem(key)
         item_key.setFlags(Qt.ItemFlag.ItemIsEnabled)
-        t.setItem(row, 1, item_key)
+        if overridden:
+            server_value = self._local_overrides[key]
+            item_key.setForeground(QColor(SYNTAX_OVERRIDDEN_KEY))
+            item_key.setToolTip(
+                t("editor.tooltip.overridden").format(value=server_value)
+            )
+        table.setItem(row, 1, item_key)
 
         # 2. значение — данные для делегата
         value_item = QTableWidgetItem(str(cmd["default_value"] or ""))
@@ -299,18 +312,18 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         )
         value_item.setData(ValueDelegate.CMD_MIN_ROLE, cmd["min_value"])
         value_item.setData(ValueDelegate.CMD_MAX_ROLE, cmd["max_value"])
-        t.setItem(row, 2, value_item)
+        table.setItem(row, 2, value_item)
 
         # 3. дефолт
         item_def = QTableWidgetItem(str(cmd["default_value"] or "—"))
         item_def.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         item_def.setFlags(Qt.ItemFlag.ItemIsEnabled)
-        t.setItem(row, 3, item_def)
+        table.setItem(row, 3, item_def)
 
         # 4. описание
         item_desc = QTableWidgetItem(cmd["description"] or "")
         item_desc.setFlags(Qt.ItemFlag.ItemIsEnabled)
-        t.setItem(row, 4, item_desc)
+        table.setItem(row, 4, item_desc)
 
     def set_value_enabled(self, row: int, enabled: bool):
         """Включает/выключает ячейку значения в строке row."""
@@ -323,6 +336,11 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         else:
             flags &= ~Qt.ItemFlag.ItemIsEditable
         item.setFlags(flags)
+
+    def set_local_overrides(self, overrides: dict[str, str]):
+        self._local_overrides = overrides
+        if self.presenter._commands is not None:
+            self.presenter.apply_filters(sync=False)
 
     # ============== меню ==============
 
