@@ -156,6 +156,16 @@ STRINGS = {
         "legend.search.header": "Поиск:",
         "legend.search.open": "— открыть строку поиска",
         "legend.search.hint": "Для перехода к следующему совпадению жмите Enter или ↓",
+        "legend.save.header": "Сохранение и отмена:",
+        "legend.save.text": (
+            "• <b>Сохранить</b> — применяет изменения к cfg. "
+            "Дубликаты и неизвестные команды удаляются, "
+            "невалидные строки не сохраняются.<br>"
+            "• <b>Отменить</b> — возвращает текст cfg из базы, "
+            "несохранённые правки теряются.<br>"
+            "• При уходе со страницы с несохранёнными правками "
+            "появится диалог: <i>Сохранить / Не сохранять / Отмена</i>."
+        ),
 
         "config.error.empty_name":      "Имя файла не может быть пустым.",
         "config.error.too_long_name":   "Имя слишком длинное (макс. {n}).",
@@ -488,6 +498,16 @@ STRINGS = {
         "legend.search.header": "Search:",
         "legend.search.open": "— open search bar",
         "legend.search.hint": "Press Enter or ↓ to find next",
+        "legend.save.header": "Save and revert:",
+        "legend.save.text": (
+            "• <b>Save</b> — applies changes to cfg. "
+            "Duplicates and unknown commands are removed, "
+            "invalid lines are not saved.<br>"
+            "• <b>Revert</b> — restores cfg text from the database, "
+            "unsaved changes are lost.<br>"
+            "• When leaving the page with unsaved changes, "
+            "a dialog appears: <i>Save / Don't save / Cancel</i>."
+        ),
 
         "config.error.empty_name":      "File name cannot be empty.",
         "config.error.too_long_name":   "Name is too long (max {n}).",

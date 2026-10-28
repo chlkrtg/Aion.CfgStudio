@@ -67,6 +67,26 @@ class LegendDialog(QDialog):
         lbl_search.setStyleSheet(f"font-size: 12pt; color: {TEXT}; background: transparent;")
         layout.addWidget(lbl_search)
 
+        # --- Разделитель ---
+        line2 = QLabel()
+        line2.setFixedHeight(1)
+        line2.setStyleSheet("background-color: #444444; margin: 10px 0;")
+        layout.addWidget(line2)
+
+        # --- Сохранение / Отмена ---
+        save_html = (
+            f"<b>{t('legend.save.header')}</b><br>"
+            f"{t('legend.save.text')}"
+        )
+
+        lbl_save = QLabel(save_html)
+        lbl_save.setTextFormat(Qt.TextFormat.RichText)
+        lbl_save.setWordWrap(True)
+        lbl_save.setStyleSheet(
+            f"font-size: 12pt; color: {TEXT}; background: transparent;"
+        )
+        layout.addWidget(lbl_save)
+
         # --- Кнопка закрытия ---
         buttons_layout = QHBoxLayout()
         buttons_layout.addStretch()

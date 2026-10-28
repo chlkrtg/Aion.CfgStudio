@@ -193,3 +193,37 @@ class CfgHighlighter(QSyntaxHighlighter):
                 self._fmt_unknown_value if is_unknown else
                 self._fmt_dup_value if is_dup else self._fmt_value
             )
+
+    def get_stats(self) -> dict[str, int]:
+        """Возвращает текущую статистику: {errors, duplicates, unknowns, overrides}."""
+        text = self.document().toPlainText()
+        errors = 0
+        duplicates = 0
+        unknowns = 0
+        overrides = 0
+
+        for line in text.splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith(("--", "//", "#")):
+                continue
+
+            m = self._re_strict_kv.match(stripped)
+            if not m.hasMatch():
+                errors += 1
+                continue
+
+            key = m.captured(1)
+
+            if key in self._overridden_keys:
+                overrides += 1
+            elif key in self._duplicate_keys:
+                duplicates += 1
+            elif self._known_keys and key not in self._known_keys:
+                unknowns += 1
+
+        return {
+            "errors": errors,
+            "duplicates": duplicates,
+            "unknowns": unknowns,
+            "overrides": overrides,
+        }

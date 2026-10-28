@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'ui/main_window.ui'
+# Form implementation generated from reading ui file '.\ui\main_window.ui'
 #
 # Created by: PyQt6 UI code generator 6.11.0
 #
@@ -67,10 +67,21 @@ class Ui_MainWindow(object):
         self.lblPreviewTitle.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.lblPreviewTitle.setObjectName("lblPreviewTitle")
         self.previewLayout.addWidget(self.lblPreviewTitle)
+        self.previewHeaderLayout = QtWidgets.QHBoxLayout()
+        self.previewHeaderLayout.setObjectName("previewHeaderLayout")
         self.lblPreviewName = QtWidgets.QLabel(parent=self.gbPreview)
-        self.lblPreviewName.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.lblPreviewName.setText("")
+        self.lblPreviewName.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.lblPreviewName.setObjectName("lblPreviewName")
-        self.previewLayout.addWidget(self.lblPreviewName)
+        self.previewHeaderLayout.addWidget(self.lblPreviewName)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.previewHeaderLayout.addItem(spacerItem)
+        self.lblPreviewStats = QtWidgets.QLabel(parent=self.gbPreview)
+        self.lblPreviewStats.setText("")
+        self.lblPreviewStats.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.lblPreviewStats.setObjectName("lblPreviewStats")
+        self.previewHeaderLayout.addWidget(self.lblPreviewStats)
+        self.previewLayout.addLayout(self.previewHeaderLayout)
         self.editPreview = QtWidgets.QPlainTextEdit(parent=self.gbPreview)
         self.editPreview.setReadOnly(False)
         self.editPreview.setObjectName("editPreview")
@@ -124,7 +135,6 @@ class Ui_MainWindow(object):
         self.btnDeleteConfig.setText(_translate("MainWindow", "Удалить"))
         self.lblPreviewTitle.setStyleSheet(_translate("MainWindow", "font-weight: bold;"))
         self.lblPreviewTitle.setText(_translate("MainWindow", "Предпросмотр"))
-        self.lblPreviewName.setText(_translate("MainWindow", "— файл не выбран —"))
         self.btnSavePreview.setText(_translate("MainWindow", "Сохранить"))
         self.btnRevertPreview.setText(_translate("MainWindow", "Отменить"))
         self.btnOpenEditor.setText(_translate("MainWindow", "Открыть редактор"))

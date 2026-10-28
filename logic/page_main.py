@@ -11,7 +11,7 @@ from logic.widgets.shortcuts import bind_actions
 from logic.core.constants import MAX_CONFIG_NAME_LEN
 from logic.widgets.shortcut_labels import with_hotkey
 from logic.presenters import MainPresenter
-from logic.widgets.theme import ACCENT
+from logic.widgets.theme import ACCENT, DANGER, SYNTAX_UNKNOWN_KEY, SYNTAX_OVERRIDDEN_KEY
 from ui.main_window import Ui_MainWindow
 from logic.core.i18n import t, t as _t
 from logic.widgets.cfg_highlighter import CfgHighlighter
@@ -80,6 +80,10 @@ class PageMain(BasePage, Ui_MainWindow):
 
         self._highlighter = CfgHighlighter(self.editPreview.document(), known_keys)
         self.editPreview.set_completion_words(sorted(known_keys))
+
+        self.editPreview.document().contentsChange.connect(
+            lambda _pos, _rem, _add: self._update_preview_stats()
+        )
 
         # --- Панель поиска ---
         self.search_panel = SearchPanel(self.editPreview, self.gbPreview)
@@ -248,6 +252,7 @@ class PageMain(BasePage, Ui_MainWindow):
         self.actionChangeServer.setText(t("main.action_change_server"))
         self.actionVideoHelp.setText(t("main.action_video_help"))
         self.actionAbout.setText(t("main.action_about"))
+        self._update_preview_stats()
 
         # переприменить текущее состояние
         item = self.treeConfigs.currentItem()
@@ -286,6 +291,7 @@ class PageMain(BasePage, Ui_MainWindow):
             self.window().server_repo, server_id
         )
         self._highlighter.set_overridden_keys(overrides)
+        self._update_preview_stats()
 
     # ============== жизненный цикл ==============
 
@@ -336,6 +342,9 @@ class PageMain(BasePage, Ui_MainWindow):
 
         if hasattr(self, 'search_panel') and self.search_panel.isVisible():
             self.search_panel.hide_panel()
+
+        if hasattr(self, 'lblPreviewStats'):
+            self.lblPreviewStats.setText("")
 
     def set_controls_enabled(self, enabled: bool):
         """Включает/выключает контролы, требующие выбранного cfg."""
@@ -392,6 +401,68 @@ class PageMain(BasePage, Ui_MainWindow):
         from logic.widgets.legend_dialog import LegendDialog
         dialog = LegendDialog(self, self.window().shortcut_service)
         dialog.exec()
+
+    def _update_preview_stats(self):
+        """Обновляет счётчики в заголовке превью."""
+        if not hasattr(self, 'lblPreviewStats'):
+            return
+
+        stats = self._highlighter.get_stats()
+        parts = []
+
+        # Ошибки (красный)
+        if stats["errors"]:
+            n = stats["errors"]
+            from logic.core.i18n import get_language, plural_ru
+            if get_language() == "ru":
+                word = plural_ru(n, "ошибка", "ошибки", "ошибок")
+            else:
+                word = "error" if n == 1 else "errors"
+            parts.append(
+                f"<span style='color:{DANGER};'>{n} {word}</span>"
+            )
+
+        # Дубли (жёлтый)
+        if stats["duplicates"]:
+            n = stats["duplicates"]
+            from logic.core.i18n import get_language, plural_ru
+            if get_language() == "ru":
+                word = plural_ru(n, "дубль", "дубля", "дублей")
+            else:
+                word = "duplicate" if n == 1 else "duplicates"
+            parts.append(
+                f"<span style='color:{ACCENT};'>{n} {word}</span>"
+            )
+
+        # Неизвестные (серый)
+        if stats["unknowns"]:
+            n = stats["unknowns"]
+            from logic.core.i18n import get_language, plural_ru
+            if get_language() == "ru":
+                word = plural_ru(n, "неизвестная", "неизвестные", "неизвестных")
+            else:
+                word = "unknown" if n == 1 else "unknowns"
+            parts.append(
+                f"<span style='color:{SYNTAX_UNKNOWN_KEY};'>{n} {word}</span>"
+            )
+
+        # Переопределения (оранжевый)
+        if stats["overrides"]:
+            n = stats["overrides"]
+            from logic.core.i18n import get_language, plural_ru
+            if get_language() == "ru":
+                word = plural_ru(n, "переопределение", "переопределения", "переопределений")
+            else:
+                word = "override" if n == 1 else "overrides"
+            parts.append(
+                f"<span style='color:{SYNTAX_OVERRIDDEN_KEY};'>{n} {word}</span>"
+            )
+
+        # Собираем строку через разделитель
+        if parts:
+            self.lblPreviewStats.setText(" · ".join(parts))
+        else:
+            self.lblPreviewStats.setText("")
 
     # ============== контекстное меню ==============
 
