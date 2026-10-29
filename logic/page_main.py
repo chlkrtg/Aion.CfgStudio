@@ -174,6 +174,9 @@ class PageMain(BasePage, Ui_MainWindow):
         self.actionNewConfig.triggered.connect(
             lambda: self.window().go_editor(None)
         )
+        self.treeConfigs.itemDoubleClicked.connect(
+            lambda _item, _col: self.presenter.open_selected()
+        )
 
     def _bindings(self) -> dict:
         return {

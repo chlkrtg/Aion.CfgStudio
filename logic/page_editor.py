@@ -122,6 +122,7 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         return {
             "global.video": lambda: self.window().go_video(),
             "editor.cancel": self.presenter.cancel,
+            "editor.apply": self.presenter.on_apply,
         }
 
     def rebind_shortcuts(self):
@@ -162,7 +163,9 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         self.btnCancel.setText(
             with_hotkey(t("editor.btn_cancel"), svc, "editor.cancel")
         )
-        self.btnApply.setText(t("editor.btn_apply"))
+        self.btnApply.setText(
+            with_hotkey(t("editor.btn_apply"), svc, "editor.apply")
+        )
 
         if self.presenter._commands is not None:
             # 1. синхронизировать _state с текущей таблицей

@@ -327,6 +327,7 @@ STRINGS = {
         "action.main.quit":            "Назад к серверам",
         "action.main.cancelandquit":   "Отменить и выйти",
         "action.main.find":            "Поиск в превью",
+        "action.editor.apply": "Применить изменения",
         "shortcut.conflict": "Клавиша «{key}» уже занята действием «{title}».",
 
         # ================= ДИАЛОГИ ==============
@@ -665,6 +666,7 @@ STRINGS = {
         "action.main.cancelandquit":   "Cancel and quit",
         "action.main.find":            "Search in preview",
         "action.editor.cancel":        "Cancel and exit",
+        "action.editor.apply": "Apply changes",
         "shortcut.conflict": "Key «{key}» is already used by «{title}».",
 
         # ============ DIALOGS ================

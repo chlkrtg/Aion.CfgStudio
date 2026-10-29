@@ -239,6 +239,9 @@ class PageServer(BasePage, Ui_ServerSelectDialog):
             self.btnDeleteServer,
             self.btnEnter,
             self.editNote,
+            self.editExportPath,
+            self.btnBrowseExport,
+            self.btnClearExportPath,
         )
 
     # ============== контекстное меню ==============

@@ -273,6 +273,13 @@ _register(
         default_key="Ctrl+Q",
         context="window",
     ),
+    Action(
+        id="editor.apply",
+        title="action.editor.apply",
+        scope=Scope.EDITOR,
+        default_key="Ctrl+S",
+        context="window",
+        ),
 )
 
 

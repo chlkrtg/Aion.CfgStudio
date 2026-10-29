@@ -85,6 +85,12 @@ class ConfigService:
     # =========== экспорт ===========
 
     def export_to_file(self, config_id: int, path: str, encrypted: bool):
+        """Экспортирует cfg в файл.
+
+        Если файл существует — делает .bak (backup), снимает read-only
+        перед записью и возвращает его после (system.cfg в Aion должен быть
+        read-only, чтобы клиент его не перезаписывал).
+        """
         cfg = self.repo.get(config_id)
         if not cfg:
             raise ValueError(t("config.error.not_found"))
@@ -98,6 +104,17 @@ class ConfigService:
                 was_readonly = not (os.stat(path).st_mode & stat.S_IWRITE)
             except OSError:
                 was_readonly = False
+
+        # Backup: копируем старый файл в .bak (если он есть)
+        if existed:
+            import shutil
+            bak_path = path + ".bak"
+            try:
+                if os.path.exists(bak_path):
+                    os.chmod(bak_path, stat.S_IWRITE | stat.S_IREAD)
+                shutil.copy2(path, bak_path)
+            except OSError:
+                pass  # не критично, если backup не удался
 
         if was_readonly:
             try:
