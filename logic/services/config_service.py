@@ -256,7 +256,7 @@ class ConfigService:
             if self.command_repo is not None
             else []
         )
-        key_to_id = {c["key_name"]: c["id"] for c in all_commands}
+        key_to_id = {c["key_name"].lower(): c["id"] for c in all_commands}
         id_to_key = {c["id"]: c["key_name"] for c in all_commands}
         known = set(key_to_id.keys())
 
@@ -282,7 +282,8 @@ class ConfigService:
 
         # 6. Логи — value changes
         self._write_content_logs(
-            config_id, old_values, cleaned, key_to_id, id_to_key
+            config_id, old_values, cleaned, key_to_id, id_to_key,
+            duplicates_list,
         )
 
         # 7. Логи — удалённые дубли и неизвестные
@@ -347,7 +348,7 @@ class ConfigService:
 
         rows = []
         for key, value in parsed.items():
-            cmd_id = key_to_id.get(key)
+            cmd_id = key_to_id.get(key.lower())
             if cmd_id is not None:
                 rows.append((cmd_id, 1, value))
 
@@ -369,6 +370,7 @@ class ConfigService:
     def _write_content_logs(
             self, config_id: int, old_values: dict,
             cleaned_text: str, key_to_id: dict, id_to_key: dict,
+            duplicates_list,
     ):
         """Пишет историю изменений — bulk.
 
@@ -381,16 +383,25 @@ class ConfigService:
         parsed = self._parse_content(cleaned_text)
         new_values = {}
         for key, value in parsed.items():
-            cmd_id = key_to_id.get(key)
+            cmd_id = key_to_id.get(key.lower())
             if cmd_id is not None:
                 new_values[cmd_id] = value
 
         all_ids = set(old_values) | set(new_values)
         changes = []
 
+        dup_ids = set()
+        for key, _val in duplicates_list:
+            cmd_id = key_to_id.get(key.lower())
+            if cmd_id is not None:
+                dup_ids.add(cmd_id)
+
         for cmd_id in all_ids:
             old_val = old_values.get(cmd_id)
             new_val = new_values.get(cmd_id)
+
+            if old_val is not None and new_val is None and cmd_id in dup_ids:
+                continue
 
             old_norm = None if old_val is None else str(old_val).strip()
             new_norm = None if new_val is None else str(new_val).strip()
@@ -415,31 +426,36 @@ class ConfigService:
         except Exception as exc:
             print(f"[ConfigService] write_logs failed: {exc}")
 
-    def _filter_known_commands(self, text, known):
+    def _filter_known_commands(
+            self, text: str, known: set
+    ) -> tuple[str, list, list]:
+        """Убирает из текста неизвестные команды и дубликаты.
+
+        known: готовое множество key_name — не зовём command_repo.all().
+
+        Возвращает:
+            cleaned_text: очищенный текст
+            unknown_list: [(key, value), ...] — неизвестные
+            duplicates_list: [(key, value), ...] — дубли
+        """
         if not known:
             return text, [], []
 
-        # Проход 1: последнее вхождение и все предыдущие
-        last_value: dict[str, str] = {}
-        prev_values: dict[str, list[str]] = {}
+        # known — в нижнем регистре для сравнения без учёта регистра
+        known_lower = {k.lower() for k in known}
 
+        # Проход 1: последнее вхождение для каждой команды
+        last_value: dict[str, str] = {}
         for line in text.splitlines():
             stripped = line.strip()
             if not stripped or stripped.startswith(("--", "//", "#")):
                 continue
             m = _CFG_KV_RE.match(stripped)
-            if m and m.group(1) in known:
-                key = m.group(1)
-                if key in last_value:
-                    # предыдущее вхождение — в duplicates
-                    prev_m = _CFG_KV_RE.match(last_value[key].strip())
-                    if prev_m:
-                        prev_values.setdefault(key, []).append(
-                            (key, prev_m.group(2))
-                        )
-                last_value[key] = line
+            if m and m.group(1).lower() in known_lower:
+                key_lower = m.group(1).lower()
+                last_value[key_lower] = line
 
-        # Проход 2: собрать результат
+        # Проход 2
         result = []
         seen = set()
         unknown_list = []
@@ -451,13 +467,13 @@ class ConfigService:
                 result.append(line)
                 continue
             m = _CFG_KV_RE.match(stripped)
-            if m and m.group(1) in known:
-                key = m.group(1)
-                if key in seen:
-                    continue  # уже обработали
-                seen.add(key)
-                result.append(last_value[key])
-                duplicates_list.extend(prev_values.get(key, []))
+            if m and m.group(1).lower() in known_lower:
+                key_lower = m.group(1).lower()
+                if key_lower in seen:
+                    duplicates_list.append((m.group(1), m.group(2)))
+                    continue
+                seen.add(key_lower)
+                result.append(last_value[key_lower])
             else:
                 if m:
                     unknown_list.append((m.group(1), m.group(2)))

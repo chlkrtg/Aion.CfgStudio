@@ -45,7 +45,9 @@ class CfgHighlighter(QSyntaxHighlighter):
     def __init__(self, document, known_keys=None, overridden_keys=None):
         super().__init__(document)
 
-        self._known_keys = known_keys or set()
+        self._known_keys = (
+            {k.lower() for k in known_keys} if known_keys else set()
+        )
 
         # --- статические форматы ---
         self._re_comment = QRegularExpression(r"(?:--|//|#).*$")
@@ -81,7 +83,10 @@ class CfgHighlighter(QSyntaxHighlighter):
 
         self._duplicate_keys: set[str] = set()
 
-        self._overridden_keys = overridden_keys or {}
+        self._overridden_keys = (
+            {k.lower(): v for k, v in overridden_keys.items()}
+            if overridden_keys else {}
+        )
         self._fmt_overridden_key = _fmt(SYNTAX_OVERRIDDEN_KEY)
         self._fmt_overridden_value = _fmt(SYNTAX_OVERRIDDEN_VALUE)
 
@@ -122,13 +127,15 @@ class CfgHighlighter(QSyntaxHighlighter):
                 continue
             m = key_re.match(line)
             if m:
-                key = m.group(1)
+                key = m.group(1).lower()
                 seen[key] = seen.get(key, 0) + 1
 
         self._duplicate_keys = {k for k, n in seen.items() if n > 1}
 
     def set_overridden_keys(self, keys: dict[str, str]):
-        self._overridden_keys = keys
+        self._overridden_keys = (
+            {k.lower(): v for k, v in keys.items()} if keys else {}
+        )
         self.rehighlight()
 
     def highlightBlock(self, text: str):
@@ -158,6 +165,7 @@ class CfgHighlighter(QSyntaxHighlighter):
 
         # Если сюда дошли, значит, строка валидная: key = "value" или key = value
         key = m.captured(1)
+        key_lower = key.lower()
 
         # Начало и длина значения (вместе с кавычками)
         val_start = m.capturedStart(2)
@@ -167,7 +175,7 @@ class CfgHighlighter(QSyntaxHighlighter):
         key_start = m.capturedStart(1)
         key_len = m.capturedLength(1)
 
-        if key in self._overridden_keys:
+        if key_lower in self._overridden_keys:
             self.setFormat(key_start, key_len, self._fmt_overridden_key)
             if val_len > 0:
                 self.setFormat(val_start, val_len, self._fmt_overridden_value)
@@ -176,8 +184,8 @@ class CfgHighlighter(QSyntaxHighlighter):
         # Координаты равно (находим вручную, чтобы покрасить)
         eq_pos = text.find('=', key_start + key_len)
 
-        is_dup = key in self._duplicate_keys
-        is_unknown = self._known_keys and key not in self._known_keys
+        is_dup = key_lower in self._duplicate_keys
+        is_unknown = self._known_keys and key_lower not in self._known_keys
 
         # Фон: дубль важнее всего
         if is_dup:
@@ -221,13 +229,13 @@ class CfgHighlighter(QSyntaxHighlighter):
                 errors += 1
                 continue
 
-            key = m.captured(1)
+            key_lower = m.captured(1).lower()  # ← добавить .lower()
 
-            if key in self._overridden_keys:
+            if key_lower in self._overridden_keys:
                 overrides += 1
-            elif key in self._duplicate_keys:
+            elif key_lower in self._duplicate_keys:
                 duplicates += 1
-            elif self._known_keys and key not in self._known_keys:
+            elif self._known_keys and key_lower not in self._known_keys:
                 unknowns += 1
 
         return {
