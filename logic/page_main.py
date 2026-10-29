@@ -36,6 +36,8 @@ class PageMain(BasePage, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
 
+        self.setAcceptDrops(True)
+
         # Заменяем стандартный QPlainTextEdit на наш CodeEditor
         old_editor = self.editPreview
         new_editor = CodeEditor(self.gbPreview)
@@ -133,6 +135,50 @@ class PageMain(BasePage, Ui_MainWindow):
         )
 
         self.treeConfigs.setWordWrap(True)
+
+    def dragEnterEvent(self, event):
+        """Принимаем только .cfg файлы."""
+        if event.mimeData().hasUrls():
+            self.treeConfigs.setStyleSheet(
+                "QTreeWidget { border: 2px dashed #d4a95a; }"
+            )
+            urls = event.mimeData().urls()
+            if any(url.toLocalFile().lower().endswith(".cfg") for url in urls):
+                event.acceptProposedAction()
+                return
+        event.ignore()
+
+    def dragMoveEvent(self, event):
+        """Подсветка при перетаскивании."""
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+            return
+        event.ignore()
+
+    def dragLeaveEvent(self, event):
+        """Сбросить подсветку."""
+        self.treeConfigs.setStyleSheet("")
+        event.accept()
+
+    def dropEvent(self, event):
+        """Импорт всех перетащенных .cfg."""
+        if not event.mimeData().hasUrls():
+            event.ignore()
+            return
+
+        paths = [
+            url.toLocalFile()
+            for url in event.mimeData().urls()
+            if url.toLocalFile().lower().endswith(".cfg")
+        ]
+
+        if not paths:
+            event.ignore()
+            return
+
+        event.acceptProposedAction()
+        self.treeConfigs.setStyleSheet("")
+        self.presenter.import_dropped_files(paths)
 
     # ============== сигналы ==============
 

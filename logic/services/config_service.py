@@ -7,7 +7,7 @@ import os
 import re
 import stat
 
-from logic.core.constants import MAX_CONFIG_NAME_LEN
+from logic.core.constants import MAX_CONFIG_NAME_LEN, MAX_CFG_SIZE
 from logic.core.i18n import t
 from parsers.cfg_crypto import (
     decrypt,
@@ -34,27 +34,65 @@ class ConfigService:
         self.command_repo = command_repo
 
     # =========== импорт ===========
+    MAX_CFG_SIZE = 10 * 1024 * 1024  # 10 МБ
 
-    def import_from_file(self, path: str, server_id: int,
-                         name: str) -> int:
-        """Читает файл, расшифровывает при необходимости, создаёт cfg.
+    def import_from_file(self, path: str, server_id: int, name: str) -> int:
+        # 1. Проверка размера (до чтения)
+        try:
+            size = os.path.getsize(path)
+        except OSError as exc:
+            raise OSError(t("config.error.cannot_read").format(exc=exc)) from exc
 
-        Raises:
-            OSError: файл не читается.
-            ValueError: имя невалидно.
-        """
-        with open(path, "rb") as f:
-            raw = f.read()
+        if size > MAX_CFG_SIZE:
+            raise ValueError(
+                t("config.error.too_large").format(
+                    size=size / 1024 / 1024,
+                    max=MAX_CFG_SIZE / 1024 / 1024,
+                )
+            )
 
+        if size == 0:
+            raise ValueError(t("config.error.empty_file"))
+
+        # 2. Проверка первых 1 КБ на бинарность
+        try:
+            with open(path, "rb") as f:
+                head = f.read(1024)
+        except OSError as exc:
+            raise OSError(t("config.error.cannot_read").format(exc=exc)) from exc
+
+        if b"\x00" in head:
+            raise ValueError(t("config.error.binary_file"))
+
+        # 3. Чтение всего файла
+        try:
+            with open(path, "rb") as f:
+                raw = f.read()
+        except OSError as exc:
+            raise OSError(t("config.error.cannot_read").format(exc=exc)) from exc
+
+        # 4. Расшифровка или декодирование
         if looks_like_encrypted(raw):
-            content = decrypt(raw)
+            try:
+                content = decrypt(raw)
+            except Exception as exc:
+                raise ValueError(
+                    t("config.error.decrypt_failed").format(exc=exc)
+                ) from exc
         else:
             content = raw.decode("latin1", errors="replace")
 
+        # 5. Проверка, что это cfg
+        has_kv = bool(self._parse_content(content))
+        has_aion_header = content.lstrip().startswith("-- [System-Configuration")
+
+        if not has_kv and not has_aion_header:
+            raise ValueError(t("config.error.not_cfg"))
+
+        # 6. Создание cfg
         name = self._validate_name(name)
         config_id = self.repo.create(server_id, name, content)
 
-        # сразу наполняем ConfigValues, если есть command_repo
         if self.command_repo is not None:
             self.populate_values_from_content(config_id, content)
 

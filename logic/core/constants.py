@@ -7,6 +7,7 @@ MAX_SERVER_NAME_LEN = 32
 MAX_CONFIG_NAME_LEN = 32
 MAX_DESCRIPTION_LEN = 256
 MAX_NOTE_LEN = 256
+MAX_CFG_SIZE = 10 * 1024 * 1024  # 10 МБ (с запасом)
 
 # =================== Приложение ===================
 APP_NAME = "Aion.CfgStudio"

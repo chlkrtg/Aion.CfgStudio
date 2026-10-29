@@ -271,6 +271,45 @@ class MainPresenter(BasePresenter):
 
         self.refresh(select_id=config_id)
 
+    def import_dropped_files(self, paths: list[str]):
+        """Импортирует несколько .cfg файлов (drag & drop)."""
+        view = self.view
+        if self.server_id is None:
+            warn(
+                view, t("dialog.error_title"),
+                t("main.error.no_server"),
+            )
+            return
+
+        imported = 0
+        errors = []
+        last_id = None
+
+        for path in paths:
+            default_name = os.path.basename(path)
+            try:
+                last_id = self.service.import_from_file(
+                    path, self.server_id, default_name
+                )
+                imported += 1
+            except (OSError, ValueError) as exc:
+                errors.append(f"{default_name}: {exc}")
+
+        if imported:
+            self.refresh(select_id=last_id)
+            info(
+                view,
+                t("main.info.done"),
+                t("main.info.imported_many").format(n=imported),
+            )
+
+        if errors:
+            warn(
+                view,
+                t("main.error.import"),
+                "\n".join(errors[:5]),
+            )
+
     def export_config(self):
         """Экспорт выбранного cfg в зашифрованный файл (для игры)."""
         view = self.view

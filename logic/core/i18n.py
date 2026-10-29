@@ -144,6 +144,9 @@ STRINGS = {
         "main.search": "Поиск:",
         "main.search.placeholder": "Введите текст...",
                 "legend.title": "Справка по предпросмотру",
+        "main.info.imported_many": "Импортировано файлов: {n}",
+        "main.error.import": "Ошибка импорта",
+        "main.error.no_server": "Сервер не выбран. Откройте сервер, чтобы импортировать cfg.",
         "legend.header": "Цвета в предпросмотре",
         "legend.btn_close": "Понятно",
 
@@ -175,6 +178,12 @@ STRINGS = {
             "Закройте игру (если она запущена) или запустите приложение "
             "от имени администратора."
         ),
+        "config.error.too_large": "Файл слишком большой ({size:.1f} МБ, максимум {max:.0f} МБ).",
+        "config.error.empty_file": "Файл пустой.",
+        "config.error.cannot_read": "Не удалось прочитать файл: {exc}",
+        "config.error.binary_file": "Файл не является текстовым (бинарный).",
+        "config.error.decrypt_failed":  "Не удалось расшифровать файл: {exc}",
+        "config.error.not_cfg":         "Файл не является конфигурационным (нет команд вида key = \"value\").",
 
         # ================= ЛОГИ ===================
         "logs.type.unknown":     "(неизвестная)",
@@ -346,7 +355,7 @@ STRINGS = {
         # ============== ХЕЛПЕРЫ ================
         "empty.profiles":   "Нет профилей.\nНажмите «Новый», чтобы создать.",
         "empty.servers":    "Нет серверов.\nНажмите «Новый», чтобы создать.",
-        "empty.configs":    "Нет конфигураций.\nНажмите «Новый CFG», чтобы создать.",
+        "empty.configs":    "Нет конфигураций.\nНажмите «Новый CFG», чтобы создать, или импортируйте (drag & drop поддерживается).",
         "empty.preview":    "Выберите конфигурацию для предпросмотра.",
     },
 
@@ -486,6 +495,9 @@ STRINGS = {
 
         "main.search": "Search:",
         "main.search.placeholder": "Input text...",
+        "main.info.imported_many": "Files imported: {n}",
+        "main.error.import": "Import error",
+        "main.error.no_server": "No server selected. Open a server to import cfg.",
                 "legend.title": "Preview Help",
         "legend.header": "Preview Colors",
         "legend.btn_close": "Got it",
@@ -517,6 +529,12 @@ STRINGS = {
             "Failed to remove read-only attribute from:\n{path}\n\n"
             "Close the game (if running) or run the app as administrator."
         ),
+        "config.error.too_large": "File is too large ({size:.1f} MB, max {max:.0f} MB).",
+        "config.error.empty_file": "File is empty.",
+        "config.error.cannot_read": "Failed to read file: {exc}",
+        "config.error.binary_file": "File is binary, not text.",
+        "config.error.not_cfg":         "File is not a configuration file (no key = \"value\" lines).",
+        "config.error.decrypt_failed":  "Failed to decrypt file: {exc}",
 
         # ============ LOGS ============
         "logs.type.unknown":     "(unknown)",
@@ -685,7 +703,7 @@ STRINGS = {
         # ============== HELPERS ================
         "empty.profiles":   "No profiles.\nClick «New» to create one.",
         "empty.servers":    "No servers.\nClick «New» to create one.",
-        "empty.configs":    "No configs.\nClick «New CFG» to create one.",
+        "empty.configs":    "No configs.\nClick «New CFG» to create one or import it (drag & drop enabled).",
         "empty.preview":    "Select a configuration to preview.",
     },
 }
