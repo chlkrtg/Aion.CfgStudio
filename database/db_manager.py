@@ -381,6 +381,14 @@ class DBManager:
                 (config_id,),
             ).fetchall()
 
+    def delete_logs(self, config_id: int):
+        """Удаляет всю историю изменений для cfg."""
+        with self._conn() as conn:
+            conn.execute(
+                "DELETE FROM Logs WHERE config_id = ?",
+                (config_id,),
+            )
+
     # ==================== ХОТКЕИ ====================
 
     def list_shortcuts(self):

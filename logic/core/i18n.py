@@ -198,6 +198,9 @@ STRINGS = {
         "logs.col_old":            "Было",
         "logs.col_new":            "Стало",
         "logs.btn_close":          "Закрыть",
+        "logs.btn_clear": "Очистить",
+        "logs.confirm_clear_title": "Очистить историю?",
+        "logs.confirm_clear_text": "Вся история изменений для этого cfg будет удалена. Продолжить?",
 
         # ============ РЕДАКТОР КОМАНД ============
         "editor.window_title":   "Aion.CfgStudio — Редактор конфигурации",
@@ -549,6 +552,9 @@ STRINGS = {
         "logs.col_old":            "Old",
         "logs.col_new":            "New",
         "logs.btn_close":          "Close",
+        "logs.btn_clear": "Clear",
+        "logs.confirm_clear_title": "Clear history?",
+        "logs.confirm_clear_text": "All change history for this cfg will be deleted. Continue?",
 
         # ============ EDITOR ============
         "editor.window_title":   "Aion.CfgStudio — Config editor",

@@ -19,8 +19,11 @@ from logic.widgets.hover_helpers import set_button_variant
 class LogsDialog(QDialog):
     """Показывает историю изменений в таблице с прокруткой и поиском."""
 
-    def __init__(self, parent, logs: list, filename: str = ""):
+    def __init__(self, parent, logs: list, filename: str = "",
+                 config_id: int | None = None, repo=None):
         super().__init__(parent)
+        self._config_id = config_id
+        self._repo = repo
 
         if filename:
             title = t("logs.window_title").format(name=filename)
@@ -73,6 +76,17 @@ class LogsDialog(QDialog):
         # ======= кнопки =======
         buttons = QHBoxLayout()
         buttons.addStretch()
+
+        buttons = QHBoxLayout()
+        buttons.addStretch()
+
+        # Кнопка «Очистить» (только если есть config_id и repo)
+        if config_id is not None and repo is not None:
+            btn_clear = QPushButton(t("logs.btn_clear"))
+            btn_clear.clicked.connect(self._on_clear)
+            buttons.addWidget(btn_clear)
+            set_button_variant(btn_clear, "danger")
+
         btn_close = QPushButton(t("logs.btn_close"))
         btn_close.clicked.connect(self.accept)
         buttons.addWidget(btn_close)
@@ -95,3 +109,26 @@ class LogsDialog(QDialog):
 
             match = text in row_text
             self.table.setRowHidden(i, bool(text) and not match)
+
+    def _on_clear(self):
+        """Очищает историю изменений с подтверждением."""
+        from logic.widgets.dialogs import ask_yes_no
+        from logic.core.i18n import t
+
+        ans = ask_yes_no(
+            self,
+            t("logs.confirm_clear_title"),
+            t("logs.confirm_clear_text"),
+        )
+        if not ans:
+            return
+
+        try:
+            self._repo.delete_logs(self._config_id)
+        except Exception as exc:
+            from logic.widgets.dialogs import warn
+            warn(self, t("dialog.error_title"), str(exc))
+            return
+
+        # Закрываем диалог (или очищаем таблицу)
+        self.accept()

@@ -449,15 +449,11 @@ class MainPresenter(BasePresenter):
         view.window().go_editor(config_id)
 
     def show_logs(self):
-        """Открытие диалога истории изменений."""
         from logic.widgets.logs_dialog import LogsDialog
         view = self.view
         item = view.treeConfigs.currentItem()
         if item is None:
-            warn(
-                view, t("dialog.error_title"),
-                t("main.error.no_selection"),
-            )
+            warn(view, t("dialog.error_title"), t("main.error.no_selection"))
             return
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
         cfg = self.service.repo.get(config_id)
@@ -471,7 +467,11 @@ class MainPresenter(BasePresenter):
                 t("main.info.no_logs").format(name=cfg["filename"]),
             )
             return
-        dialog = LogsDialog(view, logs, filename=cfg["filename"])
+        dialog = LogsDialog(
+            view, logs, filename=cfg["filename"],
+            config_id=config_id,
+            repo=self.service.repo,  # ← передать repo
+        )
         dialog.exec()
 
     def change_server(self):

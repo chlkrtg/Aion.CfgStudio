@@ -67,3 +67,7 @@ class ConfigRepository:
     def clear_values(self, config_id: int):
         """Удаляет все ConfigValues для cfg."""
         self.db.clear_config_values(config_id)
+
+    def delete_logs(self, config_id: int):
+        """Удаляет всю историю изменений cfg."""
+        self.db.delete_logs(config_id)
