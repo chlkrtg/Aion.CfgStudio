@@ -360,6 +360,28 @@ STRINGS = {
         "empty.servers":    "Нет серверов.\nНажмите «Новый», чтобы создать.",
         "empty.configs":    "Нет конфигураций.\nНажмите «Новый CFG», чтобы создать, или импортируйте (drag & drop поддерживается).",
         "empty.preview":    "Выберите конфигурацию для предпросмотра.",
+
+        # ============ ЛИЦЕНЗИЯ ============
+        "license.empty": "Введите код активации.",
+        "license.invalid_format": "Неверный формат кода.",
+        "license.invalid_signature": "Код повреждён или подделан.",
+        "license.wrong_machine": "Код выдан для другого компьютера.",
+        "license.expired": "Срок действия кода истёк. Запросите новый.",
+        "license.title": "Активация раннего доступа",
+        "license.hwid_title": "Ваш HWID:",
+        "license.copy_hwid": "Копировать HWID",
+        "license.copied": "HWID скопирован в буфер обмена.",
+        "license.hint": (
+            "Отправьте HWID разработчику. Он пришлёт код активации. "
+            "Код работает только на этом компьютере и имеет срок действия."
+        ),
+        "license.placeholder": "Вставьте код активации",
+        "license.activate": "Активировать",
+        "license.cancel": "Выход",
+        "license.clock_rollback": (
+            "Обнаружен перевод системных часов назад. "
+            "Восстановите правильное время и запустите приложение снова."
+        ),
     },
 
     "en": {
@@ -711,6 +733,28 @@ STRINGS = {
         "empty.servers":    "No servers.\nClick «New» to create one.",
         "empty.configs":    "No configs.\nClick «New CFG» to create one or import it (drag & drop enabled).",
         "empty.preview":    "Select a configuration to preview.",
+
+        # ============= LICENSE =================
+        "license.empty": "Enter activation code.",
+        "license.invalid_format": "Invalid code format.",
+        "license.invalid_signature": "Code is corrupted or fake.",
+        "license.wrong_machine": "Code was issued for another computer.",
+        "license.expired": "Code has expired. Request a new one.",
+        "license.title": "Early Access Activation",
+        "license.hwid_title": "Your HWID:",
+        "license.copy_hwid": "Copy HWID",
+        "license.copied": "HWID copied to clipboard.",
+        "license.hint": (
+            "Send your HWID to the developer. They will send you an activation code. "
+            "The code works only on this computer and has an expiration date."
+        ),
+        "license.placeholder": "Paste activation code",
+        "license.activate": "Activate",
+        "license.cancel": "Exit",
+        "license.clock_rollback": (
+            "System clock rollback detected. "
+            "Restore the correct time and restart the application."
+        ),
     },
 }
 

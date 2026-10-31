@@ -1,7 +1,10 @@
 import ctypes
 import os
+import re
 import sys
 
+from logic.core.license import validate_code, check_clock_rollback, load_hwm
+from logic.widgets.activation_dialog import ActivationDialog
 from PyQt6.QtCore import QEvent, QObject, Qt, QTimer
 from PyQt6.QtGui import QColor, QIcon, QPixmap
 from PyQt6.QtWidgets import (
@@ -18,7 +21,40 @@ from PyQt6.QtWidgets import (
 from database.db_manager import DBManager
 from logic.app_window import AppWindow
 from logic.core.i18n import t
+from logic.widgets.dialogs import warn
 from logic.widgets.theme import ACCENT, BG_APP, BG_INPUT, TEXT_DIM, setup_theme
+
+def ensure_license(window) -> bool:
+    """Проверяет лицензию. Показывает диалог, если нужно."""
+    from database.db_manager import get_app_dir
+
+    repo = window.settings_repo
+    app_dir = get_app_dir()
+
+    # 1. Проверка «часы назад»
+    if not check_clock_rollback(repo, app_dir):
+        warn(
+            window,
+            t("license.title"),
+            t("license.clock_rollback"),
+        )
+        return False
+
+    # 2. Проверка кода
+    saved = repo.get("license.code", "") or ""
+    if saved:
+        hwm = load_hwm(repo, app_dir)
+        ok, _ = validate_code(saved, hwm=hwm)
+        if ok:
+            return True
+
+    # 3. Диалог активации
+    dlg = ActivationDialog(window)
+    if dlg.exec() != QDialog.DialogCode.Accepted:
+        return False
+
+    repo.set("license.code", dlg.code)
+    return True
 
 WM_NCACTIVATE = 0x0086
 
@@ -69,58 +105,138 @@ class _DarkDialogsFilter(QObject):
                 QTimer.singleShot(0, lambda o=obj: _style_window(o))
         return super().eventFilter(obj, event)
 
+def _short_version(v: str) -> str:
+    """Убирает dev-суффикс и хэш. '1.3.0.dev44+g...' → '1.3.0'."""
+    if not v:
+        return "?"
+    m = re.match(r"^(\d+(?:\.\d+)*)", str(v))
+    return m.group(1) if m else str(v)
 
 def _make_splash() -> QSplashScreen:
-    W, H = 460, 240
+    from logic.core.constants import APP_VERSION
+    from logic.widgets.splash_matrix import SplashMatrix
+    from PyQt6.QtGui import QLinearGradient, QPainter
+    from PyQt6.QtWidgets import QFrame
 
+    W, H = 520, 320
+
+    # --- Фон с градиентом ---
     pix = QPixmap(W, H)
-    pix.fill(QColor(BG_APP))
+    painter = QPainter(pix)
+    gradient = QLinearGradient(0, 0, 0, H)
+    gradient.setColorAt(0.0, QColor(BG_APP))
+    gradient.setColorAt(1.0, QColor("#14161c"))
+    painter.fillRect(pix.rect(), gradient)
+    painter.end()
 
     splash = QSplashScreen(pix)
 
+    # --- Слой с командами ---
+    matrix = SplashMatrix(splash)
+    matrix.setGeometry(0, 0, W, H)
+    matrix.lower()
+    matrix.show()
+    splash._matrix = matrix
+
+    # --- Логотип ---
+    logo = QLabel("{A}", splash)
+    logo.setGeometry(W // 2 - 40, 30, 80, 80)
+    logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    logo.setStyleSheet(f"""
+        QLabel {{
+            background-color: {ACCENT};
+            color: {BG_APP};
+            border-radius: 40px;
+            font-size: 28pt;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+        }}
+    """)
+
+    # --- Заголовок ---
     title = QLabel("Aion.CfgStudio", splash)
-    title.setGeometry(0, 50, W, 40)
+    title.setGeometry(0, 115, W, 40)
     title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    title.setStyleSheet(
-        f"color: {ACCENT};"
-        "font-size: 22pt;"
-        "font-weight: bold;"
-        "background: transparent;"
-    )
+    title.setStyleSheet(f"""
+        color: {ACCENT};
+        font-size: 24pt;
+        font-weight: bold;
+        background: transparent;
+    """)
 
+    # --- Линия-разделитель ---
+    line = QFrame(splash)
+    line.setGeometry(80, 165, W - 160, 1)
+    line.setStyleSheet(f"""
+        QFrame {{
+            background: qlineargradient(
+                x1:0, y1:0, x2:1, y2:0,
+                stop:0 transparent,
+                stop:0.5 {ACCENT},
+                stop:1 transparent
+            );
+            border: none;
+        }}
+    """)
+
+    # --- Подзаголовок ---
     subtitle = QLabel("Configuration Editor", splash)
-    subtitle.setGeometry(0, 90, W, 22)
+    subtitle.setGeometry(0, 175, W, 22)
     subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    subtitle.setStyleSheet(
-        f"color: {TEXT_DIM};"
-        "font-size: 11pt;"
-        "background: transparent;"
-    )
+    subtitle.setStyleSheet(f"""
+        color: {TEXT_DIM};
+        font-size: 11pt;
+        font-style: italic;
+        background: transparent;
+    """)
 
+    # --- Прогресс-бар ---
     progress = QProgressBar(splash)
-    progress.setGeometry(60, 160, W - 120, 4)
+    progress.setGeometry(80, 240, W - 160, 6)
     progress.setRange(0, 0)
     progress.setTextVisible(False)
     progress.setStyleSheet(f"""
         QProgressBar {{
             background: {BG_INPUT};
             border: none;
-            border-radius: 2px;
+            border-radius: 3px;
         }}
         QProgressBar::chunk {{
             background: {ACCENT};
-            border-radius: 2px;
+            border-radius: 3px;
         }}
     """)
 
+    # --- Статус с анимацией точек ---
     status = QLabel(t("splash.loading"), splash)
-    status.setGeometry(0, 175, W, 22)
+    status.setGeometry(0, 260, W, 22)
     status.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    status.setStyleSheet(
-        f"color: {TEXT_DIM};"
-        "font-size: 10pt;"
-        "background: transparent;"
-    )
+    status.setStyleSheet(f"""
+        color: {TEXT_DIM};
+        font-size: 10pt;
+        background: transparent;
+    """)
+
+    dots_timer = QTimer(splash)
+    dots_state = {"n": 0}
+
+    def _update_dots():
+        dots_state["n"] = (dots_state["n"] + 1) % 4
+        status.setText(t("splash.loading") + "." * dots_state["n"])
+
+    dots_timer.timeout.connect(_update_dots)
+    dots_timer.start(400)
+    splash._dots_timer = dots_timer
+
+    # --- Версия (в правом нижнем углу) ---
+    version = QLabel(f"v{_short_version(APP_VERSION)}", splash)
+    version.setGeometry(W - 80, H - 25, 70, 20)
+    version.setAlignment(Qt.AlignmentFlag.AlignRight)
+    version.setStyleSheet(f"""
+        color: {TEXT_DIM};
+        font-size: 9pt;
+        background: transparent;
+    """)
 
     return splash
 
@@ -141,14 +257,21 @@ def main() -> int:
     app.processEvents()
 
     db = DBManager()
-    if not db.list_profiles():
-        db.create_profile("Demo", "Демонстрационный профиль")
-
     window = AppWindow(db)
+
+    if not ensure_license(window):
+        if hasattr(splash, "_matrix"):
+            splash._matrix.stop()
+        splash.deleteLater()
+        return 0
 
     window.show()
     _style_window(window)
+
+    if hasattr(splash, "_matrix"):
+        splash._matrix.stop()
     splash.finish(window)
+    splash.deleteLater()
 
     return app.exec()
 
