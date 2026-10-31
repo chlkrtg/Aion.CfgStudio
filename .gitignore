@@ -15,6 +15,7 @@ env/
 # Сборка
 build/
 dist/
+dist_nuitka
 
 # БД
 *.db
