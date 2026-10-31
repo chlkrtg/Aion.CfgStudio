@@ -36,3 +36,9 @@ Thumbs.db
 
 # Установщик (только в Release)
 installer/Output/
+
+# секрет!
+logic/core/license_secret.py
+
+# хрень для сверки времени
+.aion_hwm

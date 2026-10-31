@@ -8,7 +8,10 @@ import os
 
 from logic.core.i18n import t
 
-SECRET = b'\xcd\x87o~^\x81\x7f\xf5\xbav\xe5\xb7\x8d\xf8\x0f\xc2\xc2Uf\xc3Ic\xf8\x89l\x06O>~T=\x0b'
+try:
+    from logic.core.license_secret import SECRET
+except ImportError:
+    SECRET = b""
 
 # ==================== HWM (High-Water Mark) ====================
 
