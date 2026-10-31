@@ -5,9 +5,9 @@ from PyQt6.QtCore import QEasingCurve, QPropertyAnimation, QTimer, Qt
 from PyQt6.QtGui import QColor, QFont
 from PyQt6.QtWidgets import QGraphicsOpacityEffect, QLabel, QWidget
 
-from logic.widgets.theme import TEXT_DIM, ACCENT
+from logic.widgets.theme import ACCENT
 
-# Фиксированный набор команд (БД может ещё не быть при показе сплэша)
+
 SPLASH_COMMANDS = [
     "e_beach", "e_decals", "e_flocks",
     "e_maxdistance_ratio_entities", "e_maxdistance_terrain",
@@ -27,15 +27,15 @@ SPLASH_COMMANDS = [
 
 
 class _FloatingCommand(QLabel):
-    """Одна команда, которая плавно появляется, пульсирует и исчезает."""
+    """Одна команда: плавно появляется, пульсирует, исчезает."""
 
     def __init__(self, text: str, parent: QWidget):
         super().__init__(text, parent)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        # Золотой цвет (ACCENT) — как акцент приложения
-        self.setStyleSheet(f"color: {ACCENT}; font-style: italic; background: transparent;")
-        font = QFont("Consolas", 9)
-        self.setFont(font)
+        self.setStyleSheet(
+            f"color: {ACCENT}; font-style: italic; background: transparent;"
+        )
+        self.setFont(QFont("Consolas", 9))
         self.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         # Эффект прозрачности
@@ -43,50 +43,72 @@ class _FloatingCommand(QLabel):
         self._effect.setOpacity(0.0)
         self.setGraphicsEffect(self._effect)
 
-        # Анимация появления/исчезновения
+        # Fade in/out
         self._fade_anim = QPropertyAnimation(self._effect, b"opacity", self)
         self._fade_anim.setDuration(600)
         self._fade_anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
 
-        # Пульсация (перелив) — отдельная анимация
+        # Пульсация
         self._pulse_anim = QPropertyAnimation(self._effect, b"opacity", self)
         self._pulse_anim.setDuration(1500)
         self._pulse_anim.setEasingCurve(QEasingCurve.Type.InOutSine)
+        self._pulse_anim.setLoopCount(-1)
+        self._pulse_anim.setDirection(
+            QPropertyAnimation.Direction.Alternate
+        )
+
+        # Таймер жизни — ПРИВЯЗАН к lbl (умрёт вместе с ним)
+        self._life_timer = QTimer(self)
+        self._life_timer.setSingleShot(True)
+        self._life_timer.timeout.connect(self._on_life_end)
+
+    def start_life(self, life_ms: int):
+        """Запускает таймер жизни (через N мс — fade out)."""
+        self._life_timer.start(life_ms)
 
     def fade_in(self, target_opacity: float, on_finished=None):
-        self._fade_anim.stop()
-        self._fade_anim.setStartValue(self._effect.opacity())
-        self._fade_anim.setEndValue(target_opacity)
-        if on_finished:
-            self._fade_anim.finished.connect(on_finished)
-        self._fade_anim.start()
+        try:
+            self._fade_anim.stop()
+            self._fade_anim.setStartValue(self._effect.opacity())
+            self._fade_anim.setEndValue(target_opacity)
+            if on_finished:
+                self._fade_anim.finished.connect(on_finished)
+            self._fade_anim.start()
 
-        # После появления — запускаем пульсацию
-        def _start_pulse():
-            self._pulse_anim.stop()
-            self._pulse_anim.setStartValue(target_opacity)
-            self._pulse_anim.setEndValue(target_opacity * 0.5)
-            self._pulse_anim.setLoopCount(-1)  # бесконечно
-            # Туда-сюда
-            self._pulse_anim.setDirection(
-                QPropertyAnimation.Direction.Forward
-            )
-            self._pulse_anim.start()
+            # После появления — пульсация
+            def _start_pulse():
+                try:
+                    self._pulse_anim.stop()
+                    self._pulse_anim.setStartValue(target_opacity)
+                    self._pulse_anim.setEndValue(target_opacity * 0.5)
+                    self._pulse_anim.start()
+                except RuntimeError:
+                    pass
 
-        self._fade_anim.finished.connect(_start_pulse)
+            self._fade_anim.finished.connect(_start_pulse)
+        except RuntimeError:
+            pass
 
     def fade_out(self, on_finished=None):
-        self._pulse_anim.stop()
-        self._fade_anim.stop()
-        self._fade_anim.setStartValue(self._effect.opacity())
-        self._fade_anim.setEndValue(0.0)
-        if on_finished:
-            self._fade_anim.finished.connect(on_finished)
-        self._fade_anim.start()
+        try:
+            self._pulse_anim.stop()
+            self._fade_anim.stop()
+            self._fade_anim.setStartValue(self._effect.opacity())
+            self._fade_anim.setEndValue(0.0)
+            if on_finished:
+                self._fade_anim.finished.connect(on_finished)
+            self._fade_anim.start()
+        except RuntimeError:
+            if on_finished:
+                on_finished()
+
+    def _on_life_end(self):
+        """Вызывается таймером жизни — fade out и удаление."""
+        self.fade_out(on_finished=self.deleteLater)
 
 
 class SplashMatrix(QWidget):
-    """Слой с плавающими командами на фоне сплэша."""
+    """Слой с плавающими командами."""
 
     def __init__(self, parent: QWidget):
         super().__init__(parent)
@@ -115,34 +137,24 @@ class SplashMatrix(QWidget):
 
         self._active.append(lbl)
 
-        # Плавное появление до 0.15 (полупрозрачность)
         target_opacity = random.uniform(0.12, 0.17)
         lbl.fade_in(target_opacity)
 
-        # Через 2–4 секунды — плавное исчезновение и удаление
-        life_ms = random.randint(2000, 4000)
-        QTimer.singleShot(
-            life_ms,
-            lambda l=lbl: self._fade_and_remove(l),
-        )
-
-    def _fade_and_remove(self, lbl: _FloatingCommand):
-        def _remove():
-            if lbl in self._active:
-                self._active.remove(lbl)
-            lbl.deleteLater()
-
-        lbl.fade_out(on_finished=_remove)
+        # Таймер жизни — ПРИВЯЗАН к lbl
+        lbl.start_life(random.randint(2000, 4000))
 
     def stop(self):
-        """Останавливает таймер и удаляет все команды."""
         self._spawn_timer.stop()
         for lbl in self._active:
+            try:
+                lbl._life_timer.stop()
+                lbl._fade_anim.stop()
+                lbl._pulse_anim.stop()
+            except RuntimeError:
+                pass
             lbl.deleteLater()
         self._active.clear()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        for lbl in self._active:
-            lbl.deleteLater()
-        self._active.clear()
+        self.stop()

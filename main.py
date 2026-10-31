@@ -25,22 +25,15 @@ from logic.widgets.dialogs import warn
 from logic.widgets.theme import ACCENT, BG_APP, BG_INPUT, TEXT_DIM, setup_theme
 
 def ensure_license(window) -> bool:
-    """Проверяет лицензию. Показывает диалог, если нужно."""
     from database.db_manager import get_app_dir
 
     repo = window.settings_repo
     app_dir = get_app_dir()
 
-    # 1. Проверка «часы назад»
     if not check_clock_rollback(repo, app_dir):
-        warn(
-            window,
-            t("license.title"),
-            t("license.clock_rollback"),
-        )
+        warn(window, t("license.title"), t("license.clock_rollback"))
         return False
 
-    # 2. Проверка кода
     saved = repo.get("license.code", "") or ""
     if saved:
         hwm = load_hwm(repo, app_dir)
@@ -48,12 +41,17 @@ def ensure_license(window) -> bool:
         if ok:
             return True
 
-    # 3. Диалог активации
-    dlg = ActivationDialog(window)
-    if dlg.exec() != QDialog.DialogCode.Accepted:
+    # ← dlg жив до чтения code
+    window._activation_dlg = ActivationDialog(window)
+    result = window._activation_dlg.exec()
+
+    if result != QDialog.DialogCode.Accepted:
+        window._activation_dlg = None
         return False
 
-    repo.set("license.code", dlg.code)
+    code = window._activation_dlg.code
+    window._activation_dlg = None
+    repo.set("license.code", code)
     return True
 
 WM_NCACTIVATE = 0x0086
