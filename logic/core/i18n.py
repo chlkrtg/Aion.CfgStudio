@@ -347,7 +347,7 @@ STRINGS = {
         "dialog.error_title":  "Ошибка",
 
         # ============= SPLASH =================
-        "splash.loading": "Загрузка компонентов...",
+        "splash.loading": "Components loading",
 
         # ============== ДИАЛОГИ ================
         "dialog.yes":     "Да",
@@ -720,7 +720,7 @@ STRINGS = {
         "dialog.error_title":  "Error",
 
         # ============= SPLASH =================
-        "splash.loading": "Components loading...",
+        "splash.loading": "Components loading",
 
         # ============== ДИАЛОГИ ================
         "dialog.yes":     "Yes",
