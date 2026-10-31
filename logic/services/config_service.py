@@ -117,7 +117,7 @@ class ConfigService:
         if self.command_repo is None:
             return
         all_commands = self.command_repo.all("debug")
-        key_to_id = {c["key_name"]: c["id"] for c in all_commands}
+        key_to_id = {c["key_name"].lower(): c["id"] for c in all_commands}
         self._populate_values_from_content(config_id, content, key_to_id)
 
     # =========== экспорт ===========
