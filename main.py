@@ -4,6 +4,8 @@ import re
 import sys
 import logging
 
+from logic.core.constants import APP_VERSION
+
 # ============================= LOGS ==================================
 # Определяем путь: рядом с .exe или в папке проекта
 if getattr(sys, 'frozen', False) or "__compiled__" in globals():
@@ -19,6 +21,24 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     encoding="utf-8",
 )
+
+from logging.handlers import RotatingFileHandler
+
+app_log_path = os.path.join(log_dir, "app.log")
+file_handler = RotatingFileHandler(
+    app_log_path,
+    maxBytes=2 * 1024 * 1024,  # 2 МБ на файл
+    backupCount=3,              # хранить 3 старых файла
+    encoding="utf-8",
+)
+file_handler.setLevel(logging.INFO)  # не пишем DEBUG в файл (чтобы не засорять)
+file_handler.setFormatter(logging.Formatter(
+    "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+))
+
+# Добавляем к корневому логгеру (туда же, куда пишет crash.log)
+logging.getLogger().addHandler(file_handler)
+logger = logging.getLogger(__name__)
 
 def handle_exception(exc_type, exc_value, exc_traceback):
     logging.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
@@ -53,7 +73,7 @@ from logic.core.i18n import t
 from logic.core.license import (
     check_clock_rollback,
     load_hwm,
-    validate_code,
+    validate_code, get_expires,
 )
 from logic.widgets.activation_dialog import ActivationDialog
 from logic.widgets.dialogs import warn
@@ -73,20 +93,26 @@ def ensure_license(window) -> bool:
         return False
 
     saved = repo.get("license.code", "") or ""
+    logger.info("license: check, saved=%s", bool(saved))
     if saved:
         hwm = load_hwm(repo, app_dir)
         ok, _ = validate_code(saved, hwm=hwm)
         if ok:
+            logger.info("license: valid, expires=%s", get_expires(saved))
             return True
+        logger.warning("license: invalid")
 
     window._activation_dlg = ActivationDialog(window)
     result = window._activation_dlg.exec()
 
     if result != QDialog.DialogCode.Accepted:
+        logger.warning("license: activation cancelled")
         window._activation_dlg = None
         return False
 
     code = window._activation_dlg.code
+    logger.info("license: activated, code_len=%d", len(code))
+
     window._activation_dlg = None
     repo.set("license.code", code)
     return True
@@ -291,14 +317,19 @@ def main() -> int:
     app.setApplicationDisplayName("Aion.CfgStudio")
 
     setup_theme(app)
+    logger.info("app: start, version=%s", APP_VERSION)
+    logger.info("app: log_dir=%s", log_dir)
 
     def _startup():
         splash = _make_splash()
         splash.show()
 
         def _load():
+            logger.info("app: loading DB")
             db = DBManager()
+            logger.info("app: DB ready")
             window = AppWindow(db)
+            logger.info("app: window created")
 
             if not ensure_license(window):
                 if hasattr(splash, "_matrix"):

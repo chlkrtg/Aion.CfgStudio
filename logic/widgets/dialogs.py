@@ -1,6 +1,9 @@
 """Хелперы для локализованных диалогов."""
 import os
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QMessageBox
@@ -9,18 +12,24 @@ from logic.core.i18n import t
 
 
 def info(parent, title: str, text: str):
+    logger.info("%s: %s", title, text[:200])
+
     msg = _build(parent, title, text, "info")
     msg.setStandardButtons(QMessageBox.StandardButton.Ok)
     msg.exec()
 
 
 def warn(parent, title: str, text: str):
+    logger.info("%s: %s", title, text[:200])
+
     msg = _build(parent, title, text, "warning")
     msg.setStandardButtons(QMessageBox.StandardButton.Ok)
     msg.exec()
 
 
 def error(parent, title: str, text: str):
+    logger.info("%s: %s", title, text[:200])
+
     msg = _build(parent, title, text, "error")
     msg.setStandardButtons(QMessageBox.StandardButton.Ok)
     msg.exec()
@@ -102,6 +111,8 @@ def _icon(name: str) -> QIcon:
     )
     path = os.path.join(base, "resources", "icons", f"{name}.svg")
     if not os.path.exists(path):
+        logger.debug("icon not found: %s", name)
+
         return QIcon()
     return QIcon(path)
 

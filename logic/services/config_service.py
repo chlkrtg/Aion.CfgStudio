@@ -6,6 +6,9 @@
 import os
 import re
 import stat
+import logging
+
+logger = logging.getLogger(__name__)
 
 from logic.core.constants import MAX_CONFIG_NAME_LEN, MAX_CFG_SIZE
 from logic.core.i18n import t
@@ -38,6 +41,7 @@ class ConfigService:
 
     def import_from_file(self, path: str, server_id: int, name: str) -> int:
         # 1. Проверка размера (до чтения)
+        logger.info("import_from_file: path=%s, name=%s, server_id=%s", path, name, server_id)
         try:
             size = os.path.getsize(path)
         except OSError as exc:
@@ -68,6 +72,7 @@ class ConfigService:
         try:
             with open(path, "rb") as f:
                 raw = f.read()
+                logger.info("import_from_file: size=%d, encrypted=%s", size, looks_like_encrypted(raw))
         except OSError as exc:
             raise OSError(t("config.error.cannot_read").format(exc=exc)) from exc
 
@@ -95,6 +100,8 @@ class ConfigService:
 
         if self.command_repo is not None:
             self.populate_values_from_content(config_id, content)
+
+        logger.info("import_from_file: created config_id=%s", config_id)
 
         return config_id
 
@@ -129,6 +136,8 @@ class ConfigService:
         перед записью и возвращает его после (system.cfg в Aion должен быть
         read-only, чтобы клиент его не перезаписывал).
         """
+        logger.info("export_to_file: config_id=%s, path=%s, encrypted=%s", config_id, path, encrypted)
+
         cfg = self.repo.get(config_id)
         if not cfg:
             raise ValueError(t("config.error.not_found"))
@@ -170,6 +179,7 @@ class ConfigService:
                 with open(path, "w", encoding="latin1",
                           errors="replace") as f:
                     f.write(content)
+            logger.info("export_to_file: done, size=%d", os.path.getsize(path))
         finally:
             try:
                 os.chmod(path, stat.S_IREAD)
@@ -250,6 +260,8 @@ class ConfigService:
 
         Возвращает (отсечено_неизвестных, удалено_дубликатов).
         """
+        logger.info("save_content: config_id=%s, text_len=%d", config_id, len(text))
+
         # 1. Загружаем команды ОДИН раз
         all_commands = (
             self.command_repo.all("debug")
@@ -263,6 +275,11 @@ class ConfigService:
         # 2. Фильтрация (возвращает списки)
         cleaned, unknown_list, duplicates_list = (
             self._filter_known_commands(text, known)
+        )
+
+        logger.info(
+            "save_content: config_id=%s, unknown=%d, duplicates=%d, cleaned_len=%d",
+            config_id, len(unknown_list), len(duplicates_list), len(cleaned),
         )
 
         # 3. Старое состояние ДО сохранения
@@ -279,6 +296,8 @@ class ConfigService:
         self._populate_values_from_content(
             config_id, cleaned, key_to_id
         )
+
+        logger.info("save_content: values saved, config_id=%s", config_id)
 
         # 6. Логи — value changes
         self._write_content_logs(
@@ -321,6 +340,7 @@ class ConfigService:
         try:
             self.repo.log_change_bulk(config_id, changes)
         except Exception as exc:
+            logger.warning("write_filter_logs: %s", exc)
             print(f"[ConfigService] write_filter_logs failed: {exc}")
 
     def _populate_values_from_content(

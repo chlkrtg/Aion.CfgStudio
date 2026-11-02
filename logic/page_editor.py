@@ -17,6 +17,8 @@ from logic.widgets.shortcuts import bind_actions
 from logic.widgets.theme import ACCENT, BG_PANEL, SYNTAX_OVERRIDDEN_KEY
 from logic.widgets.value_delegate import ValueDelegate
 from ui.command_editor import Ui_CommandEditorDialog
+import logging
+logger = logging.getLogger(__name__)
 
 
 class PageEditor(BasePage, Ui_CommandEditorDialog):
@@ -189,6 +191,8 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         """Счётчик: видимые + выбранные (золотым)."""
         from logic.core.i18n import t, get_language, plural_ru
 
+        logger.debug("count: visible=%d, selected=%d", visible, selected)
+
         if get_language() == "ru":
             visible_text = plural_ru(
                 visible, "команда", "команды", "команд"
@@ -244,6 +248,8 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
 
     def make_group_header(self, row, code, name,
                           visible_count=0, total_count=0):
+        logger.debug("group: %s — %s", code, name)
+
         t = self.tableCommands
 
         font = QFont()

@@ -3,6 +3,8 @@
 Дерево конфигов, превью, импорт / экспорт, логи, контекстное меню.
 """
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
@@ -236,6 +238,8 @@ class MainPresenter(BasePresenter):
 
     def import_config(self):
         """Импорт cfg через диалог."""
+        logger.info("import_config: start")
+
         view = self.view
         path, _ = QFileDialog.getOpenFileName(
             view, t("main.dialog.import.title"), "",
@@ -271,8 +275,12 @@ class MainPresenter(BasePresenter):
 
         self.refresh(select_id=config_id)
 
+        logger.info("import_config: imported config_id=%s", config_id)
+
     def import_dropped_files(self, paths: list[str]):
         """Импортирует несколько .cfg файлов (drag & drop)."""
+        logger.info("import_dropped_files: %s", paths)
+
         view = self.view
         if self.server_id is None:
             warn(
@@ -352,6 +360,8 @@ class MainPresenter(BasePresenter):
             t("main.info.done"),
             t("main.info.exported").format(path=path),
         )
+
+        logger.info("export_config: config_id=%s, path=%s", config_id, path)
 
     def rename_config(self):
         """Переименование cfg."""
@@ -481,63 +491,51 @@ class MainPresenter(BasePresenter):
         self.view.window().go_server(self.profile_id)
 
     def save_preview(self):
-        """Сохраняет текст из окна предпросмотра в cfg.
-
-        Команды, которых нет в БД, отсекаются.
-        Дубликаты схлопываются в одно вхождение.
-        """
         view = self.view
         item = view.treeConfigs.currentItem()
         if item is None:
-            warn(
-                view, t("dialog.error_title"),
-                t("main.error.no_selection"),
-            )
+            warn(view, t("dialog.error_title"), t("main.error.no_selection"))
             return
+
         config_id = item.data(0, Qt.ItemDataRole.UserRole)
+        logger.info("save_preview: config_id=%s", config_id)  # ← здесь, до диалогов
+
         text = view.editPreview.toPlainText()
 
         if not text.strip():
             ans = ask_yes_no(
                 view,
-                t("main.dialog.clear.title"),  # ключ надо добавить
-                t("main.confirm.clear")
+                t("main.dialog.clear.title"),
+                t("main.confirm.clear"),
             )
             if not ans:
+                logger.info("save_preview: cancelled by user")
                 return
 
         try:
             unknown, duplicates = self.service.save_content(config_id, text)
         except ValueError as exc:
-            warn(
-                view, t("dialog.error_title"), str(exc)
-            )
+            logger.warning("save_preview: ValueError=%s", exc)
+            warn(view, t("dialog.error_title"), str(exc))
             return
+
+        logger.info(
+            "save_preview: saved config_id=%s, unknown=%d, duplicates=%d",
+            config_id, unknown, duplicates,
+        )
 
         msgs = []
         if unknown:
-            msgs.append(
-                t("main.info.unknown_commands").format(n=unknown)
-            )
+            msgs.append(t("main.info.unknown_commands").format(n=unknown))
         if duplicates:
-            msgs.append(
-                t("main.info.duplicates").format(n=duplicates)
-            )
+            msgs.append(t("main.info.duplicates").format(n=duplicates))
 
         if msgs:
-            info(
-                view,
-                t("main.info.saved"),
-                t("main.info.saved_with_details").format(
-                    details="\n".join(msgs)
-                ),
-            )
+            info(view, t("main.info.saved"),
+                 t("main.info.saved_with_details").format(details="\n".join(msgs)))
         else:
-            info(
-                view,
-                t("main.info.done"),
-                t("main.info.saved"),
-            )
+            info(view, t("main.info.done"), t("main.info.saved"))
+
         self.refresh(select_id=config_id)
 
     def revert_preview(self):

@@ -17,6 +17,9 @@ from logic.widgets.dialogs import (
     info,
     warn,
 )
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def _state_val(item) -> int:
@@ -465,6 +468,7 @@ class EditorPresenter(BasePresenter):
 
     def apply_silent(self) -> bool:
         values = self._collect_values()
+        logger.info("apply_silent: config_id=%s, values=%d", self.config_id, len(values))
         if not values:
             return False
 
@@ -500,10 +504,12 @@ class EditorPresenter(BasePresenter):
 
             return True
         except Exception as exc:
+            logger.error("apply_silent: failed: %s", exc, exc_info=True)
             print(f"[EditorPresenter] apply_silent failed: {exc}")
             return False
 
     def on_apply(self):
+        logger.info("on_apply: config_id=%s", self.config_id)
         values = self._collect_values()
         if not values:
             info(
@@ -605,6 +611,8 @@ class EditorPresenter(BasePresenter):
             if not val_str:
                 continue
             updates.append((cmd["id"], val_str))
+
+        logger.info("make_defaults: %d updates", len(updates))
 
         if not updates:
             warn(

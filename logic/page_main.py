@@ -25,6 +25,8 @@ from logic.widgets.theme import (
     SYNTAX_UNKNOWN_KEY,
 )
 from ui.main_window import Ui_MainWindow
+import logging
+logger = logging.getLogger(__name__)
 
 
 class PageMain(BasePage, Ui_MainWindow):
@@ -171,6 +173,8 @@ class PageMain(BasePage, Ui_MainWindow):
             for url in event.mimeData().urls()
             if url.toLocalFile().lower().endswith(".cfg")
         ]
+
+        logger.info("dropEvent: paths=%s", paths)
 
         if not paths:
             event.ignore()
@@ -389,6 +393,7 @@ class PageMain(BasePage, Ui_MainWindow):
     def apply_filter(self, text: str):
         """Слот textChanged - делегирует презентеру."""
         self.presenter.apply_filter(text)
+        logger.debug("apply_filter: text=%s", text)
 
     def clear_preview(self):
         """Сбрасывает панель предпросмотра."""

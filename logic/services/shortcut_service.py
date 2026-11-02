@@ -5,6 +5,9 @@
 """
 from logic.core.actions import ACTIONS, Scope
 from logic.core.i18n import t
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ShortcutService:
@@ -58,6 +61,8 @@ class ShortcutService:
             ValueError: клавиша конфликтует с другим действием
                         в том же scope (включая GLOBAL и дефолты).
         """
+        logger.info("set_key: %s → %s", action_id, key)
+
         action = ACTIONS[action_id]
 
         # 0. Валидация: пусто или только модификаторы — не хоткей
@@ -97,11 +102,13 @@ class ShortcutService:
         """Сбрасывает одно действие к дефолту."""
         self.repo.delete(action_id)
         self._overrides.pop(action_id, None)
+        logger.info("reset_key: %s", action_id)
 
     def reset_all(self):
         """Сбрасывает все override'ы."""
         self.repo.delete_all()
         self._overrides.clear()
+        logger.info("reset_all")
 
     # ============ конфликты ============
 

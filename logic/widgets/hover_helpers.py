@@ -32,6 +32,10 @@ from logic.widgets.theme import (
     TEXT_DISABLED,
 )
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # Цвета для анимации (алиасы для обратной совместимости)
 BG_NORMAL = QColor(BG_INPUT)
 BG_HOVER = QColor(BG_INPUT_HOVER)
@@ -136,6 +140,7 @@ class _HoverAnimator(QObject):
                 self._animate_to(0.0)
             return False
         except (AttributeError, RuntimeError):
+            logger.warning("hover: %s, %s", AttributeError, RuntimeError)
             return False
 
     def _animate_to(self, target: float):

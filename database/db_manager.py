@@ -1,8 +1,11 @@
+import logging
 import os
 import sqlcipher3
 from logic.core.license_secret import DB_KEY
 import sys
 from contextlib import contextmanager
+
+logger = logging.getLogger(__name__)
 
 
 def get_base_dir() -> str:
@@ -39,12 +42,14 @@ class DBManager:
                 "SELECT COUNT(*) AS c FROM Commands"
             ).fetchone()
             count = row["c"]
+        logger.info("db: seed check, count=%d", count)
 
         if count > 0:
             print(f"[DB] Команды уже загружены: {count}")
             return
 
         print("[DB] Первый запуск — загрузка команд")
+        logger.warning("db: first run, seeding...")
 
         seed_files = [
             "seed_commands.sql",
@@ -63,16 +68,19 @@ class DBManager:
                 sql = f.read()
             with self._conn() as conn:
                 conn.executescript(sql)
+            logger.info("db: seed loaded %s", name)
             print(f"[DB] Загружен: {name}")
 
         with self._conn() as conn:
             total = conn.execute(
                 "SELECT COUNT(*) AS c FROM Commands"
             ).fetchone()["c"]
+            logger.info("db: seed done, commands=%d", total)
             print(f"[DB] Загружено команд: {total}")
 
     @contextmanager
     def _conn(self):
+        logger.debug("db: connect, path=%s", self.db_path)
         conn = sqlcipher3.connect(self.db_path)
         conn.row_factory = sqlcipher3.Row
 
@@ -90,6 +98,7 @@ class DBManager:
             conn.close()
 
     def _init_schema(self):
+        logger.info("db: init schema, path=%s", SCHEMA_PATH)
         with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
             sql = f.read()
         with self._conn() as conn:
