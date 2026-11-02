@@ -281,6 +281,7 @@ class EditorPresenter(BasePresenter):
         search = view.editSearch.text().lower().strip()
 
         visible = []
+        selected_count = 0
         for cmd in self._commands:
             pid = cmd["prefix_id"]
             if pid is None or pid not in self._prefixes:
@@ -293,11 +294,25 @@ class EditorPresenter(BasePresenter):
                 continue
 
             visible.append((cmd, pcode))
+            if self._state.get(cmd["id"], (0, None))[0]:
+                selected_count += 1
 
-        # обновить счётчик ПОСЛЕ фильтрации
-        self.view.set_command_count(len(visible))
-
+        # обновить счётчик
+        self.view.set_command_count(len(visible), selected_count)
         self._rebuild_table(visible)
+
+    def _update_count(self):
+        """Пересчитывает видимые/выбранные команды из таблицы."""
+        table = self.view.tableCommands
+        visible = len(self._cmd_by_row)
+        selected = 0
+        for row in self._cmd_by_row:
+            chk_item = table.item(row, 0)
+            if chk_item is None:
+                continue
+            if _state_val(chk_item) == 2:
+                selected += 1
+        self.view.set_command_count(visible, selected)
 
     def _rebuild_table(self, visible_commands):
         view = self.view
@@ -537,7 +552,6 @@ class EditorPresenter(BasePresenter):
             state_val = state.value if hasattr(state, "value") else int(state)
 
             rows = self._group_rows.get(code, [])
-
             table.blockSignals(True)
             try:
                 for r in rows:
@@ -551,7 +565,6 @@ class EditorPresenter(BasePresenter):
             finally:
                 table.blockSignals(False)
 
-            # активировать / деактивировать value
             for r in rows:
                 chk_item = table.item(r, 0)
                 if chk_item is None:
@@ -560,6 +573,7 @@ class EditorPresenter(BasePresenter):
                 self.view.set_value_enabled(r, state_val == 2)
 
             self._update_group_checks()
+            self._update_count()  # ← добавить
             return
 
         # 2. чекбокс команды
@@ -570,6 +584,7 @@ class EditorPresenter(BasePresenter):
             checked = (state_val == 2)
             self.view.set_value_enabled(row, checked)
             self._update_group_checks()
+            self._update_count()  # ← добавить
             return
 
     def on_make_defaults(self):

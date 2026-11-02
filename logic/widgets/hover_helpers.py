@@ -122,24 +122,21 @@ class _HoverAnimator(QObject):
         self._apply(float(self._anim.currentValue() or 0.0))
 
     def eventFilter(self, obj, event):
-        if obj is not self._button:
+        try:
+            if obj is not self._button:
+                return False
+            if event.type() == QEvent.Type.EnabledChange:
+                self._apply(float(self._anim.currentValue() or 0.0))
+                return False
+            if not self._button.isEnabled():
+                return False
+            if event.type() == QEvent.Type.Enter:
+                self._animate_to(1.0)
+            elif event.type() == QEvent.Type.Leave:
+                self._animate_to(0.0)
             return False
-
-        if event.type() == QEvent.Type.EnabledChange:
-            self._apply(
-                float(self._anim.currentValue() or 0.0)
-            )
+        except (AttributeError, RuntimeError):
             return False
-
-        if not self._button.isEnabled():
-            return False
-
-        if event.type() == QEvent.Type.Enter:
-            self._animate_to(1.0)
-        elif event.type() == QEvent.Type.Leave:
-            self._animate_to(0.0)
-
-        return False
 
     def _animate_to(self, target: float):
         """Запускает анимацию до target (0.0 или 1.0)."""
@@ -200,6 +197,8 @@ def install_hover_animation(button: QPushButton, variant: str = DEFAULT_VARIANT)
     if getattr(button, "_hover_animator", None) is not None:
         return
     button._hover_animator = _HoverAnimator(button, variant)
+    # удалить аниматор при удалении кнопки
+    button.destroyed.connect(button._hover_animator.deleteLater)
 
 
 def install_hover_for_all(widget: QWidget):

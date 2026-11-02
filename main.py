@@ -2,8 +2,39 @@ import ctypes
 import os
 import re
 import sys
+import logging
 
-from PyQt6.QtCore import QEvent, QObject, QTimer, Qt
+# ============================= LOGS ==================================
+# Определяем путь: рядом с .exe или в папке проекта
+if getattr(sys, 'frozen', False) or "__compiled__" in globals():
+    log_dir = os.path.dirname(sys.argv[0])
+else:
+    log_dir = os.path.dirname(os.path.abspath(__file__))
+
+log_path = os.path.join(log_dir, "crash.log")
+
+logging.basicConfig(
+    filename=log_path,
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    encoding="utf-8",
+)
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    logging.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+    sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
+sys.excepthook = handle_exception
+
+import faulthandler
+
+# Открываем файл и держим его открытым (важно!)
+fault_file = open(os.path.join(log_dir, "fault.log"), "w", encoding="utf-8")
+faulthandler.enable(file=fault_file, all_threads=True)
+
+# ============================= PYQT ==================================
+
+from PyQt6.QtCore import QEvent, QObject, QTimer, Qt, qInstallMessageHandler
 from PyQt6.QtGui import QColor, QIcon, QPixmap
 from PyQt6.QtWidgets import (
     QApplication,
@@ -243,11 +274,15 @@ def _make_splash() -> QSplashScreen:
 
     return splash
 
+def qt_message_handler(mode, context, message):
+    logging.debug(f"Qt: {message}")
 
 # ==================== MAIN ====================
 
 def main() -> int:
     app = QApplication(sys.argv)
+
+    qInstallMessageHandler(qt_message_handler)
 
     app.setWindowIcon(QIcon(resource_path("resources/icons/aion.cfgstudio.ico")))
     _filter = _DarkDialogsFilter()

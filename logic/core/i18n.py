@@ -280,6 +280,7 @@ STRINGS = {
             "Сервер задаёт это значение: {value}\n"
             "Ваши правки будут проигнорированы."
         ),
+        "editor.count.selected": "выбрано: {n}",
 
         # ============ РЕДАКТОР ХОТКЕЕВ ============
         "shortcuts.window_title":    "Горячие клавиши",
@@ -652,6 +653,7 @@ STRINGS = {
             "Server overrides this value: {value}\n"
             "Your changes will be ignored."
         ),
+        "editor.count.selected": "selected: {n}",
 
         # ============ SHORTCUTS EDITOR ============
         "shortcuts.window_title":    "Hotkeys",

@@ -185,16 +185,35 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         set_button_variant(self.btnCancel, "ghost")
         set_button_variant(self.btnResetAll, "ghost")
 
-    def set_command_count(self, n: int):
-        """Обновляет счётчик видимых команд."""
-        from logic.core import i18n
+    def set_command_count(self, visible: int, selected: int = 0):
+        """Счётчик: видимые + выбранные (золотым)."""
+        from logic.core.i18n import t, get_language, plural_ru
 
-        if i18n.get_language() == "ru":
-            text = plural_ru(n, "команда", "команды", "команд")
+        if get_language() == "ru":
+            visible_text = plural_ru(
+                visible, "команда", "команды", "команд"
+            )
+            selected_text = plural_ru(
+                selected, "выбрана", "выбраны", "выбрано"
+            )
         else:
-            text = "command" if n == 1 else "commands"
+            visible_text = "command" if visible == 1 else "commands"
+            selected_text = "selected"
 
-        self.lblCommandCount.setText(f"{n} {text}")
+        base = f"{visible} {visible_text}"
+
+        if selected:
+            # «460 команд · 128 выбрано» — выбранные золотым
+            self.lblCommandCount.setText(
+                f"{base}  ·  "
+                f"<span style='color:{ACCENT}; font-weight: 700;'>"
+                f"{selected} {selected_text}"
+                f"</span>"
+            )
+            self.lblCommandCount.setTextFormat(Qt.TextFormat.RichText)
+        else:
+            self.lblCommandCount.setText(base)
+            self.lblCommandCount.setTextFormat(Qt.TextFormat.PlainText)
 
     # ============== контекст ==============
 
@@ -248,7 +267,7 @@ class PageEditor(BasePage, Ui_CommandEditorDialog):
         # 1. заголовок — accent текст
         label = f"{code} — {name}"
         if visible_count and visible_count < total_count:
-            label += f"   ({visible_count} из {total_count})"
+            label += f"   ({visible_count} / {total_count})"
 
         header = QTableWidgetItem(label)
         header.setData(Qt.ItemDataRole.FontRole, font)
