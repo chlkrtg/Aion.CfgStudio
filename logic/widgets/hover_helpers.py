@@ -140,7 +140,6 @@ class _HoverAnimator(QObject):
                 self._animate_to(0.0)
             return False
         except (AttributeError, RuntimeError):
-            logger.warning("hover: %s, %s", AttributeError, RuntimeError)
             return False
 
     def _animate_to(self, target: float):
