@@ -1,5 +1,6 @@
 import os
-import sqlite3
+import sqlcipher3
+from logic.core.license_secret import DB_KEY
 import sys
 from contextlib import contextmanager
 
@@ -72,8 +73,12 @@ class DBManager:
 
     @contextmanager
     def _conn(self):
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
+        conn = sqlcipher3.connect(self.db_path)
+        conn.row_factory = sqlcipher3.Row
+
+        hex_key = DB_KEY
+        conn.execute(f"PRAGMA key = \"x'{hex_key}'\";")
+
         conn.execute("PRAGMA foreign_keys = ON")
         try:
             yield conn
