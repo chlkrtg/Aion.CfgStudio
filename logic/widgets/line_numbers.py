@@ -1,9 +1,9 @@
 """Виджет для отображения номеров строк в QPlainTextEdit."""
-from PyQt6.QtCore import QRect, QSize, Qt
+from PyQt6.QtCore import QRect, QSize, Qt, QTimer
 from PyQt6.QtGui import QColor, QPainter, QTextFormat
 from PyQt6.QtWidgets import QPlainTextEdit, QWidget
-
 from logic.widgets.theme import BG_PANEL, TEXT_DIM
+from logic.widgets.overview_bar import OverviewBar, _WIDTH as _OVERVIEW_W
 
 
 class LineNumberArea(QWidget):
@@ -28,12 +28,28 @@ class CodeEditor(QPlainTextEdit):
         self._search_term = ""
         self._search_highlights = []
 
+        # --- мини-карта проблем (справа, отдельная колонка) ---
+        self.overviewBar = OverviewBar(self)
+        self.overviewBar.lineClicked.connect(self._on_overview_click)
+        self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
+
+        self._overview_timer = QTimer(self)
+        self._overview_timer.setSingleShot(True)
+        self._overview_timer.setInterval(150)
+        self._overview_timer.timeout.connect(self._recalc_overview)
+
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
         self.cursorPositionChanged.connect(self.highlight_current_line)
 
+        self.blockCountChanged.connect(lambda _: self._overview_timer.start())
+        self.textChanged.connect(lambda: self._overview_timer.start())
+
         self.update_line_number_area_width(0)
         self.highlight_current_line()
+
+        # первый кадр — спозиционировать мини-карту после того, как Qt посчитает размеры
+        QTimer.singleShot(0, self._place_overview)
 
     def line_number_area_width(self):
         digits = 1
@@ -45,7 +61,9 @@ class CodeEditor(QPlainTextEdit):
         return space
 
     def update_line_number_area_width(self, _):
-        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
+        self.setViewportMargins(
+            self.line_number_area_width(), 0, _OVERVIEW_W, 0
+        )
 
     def update_line_number_area(self, rect, dy):
         if dy:
@@ -58,7 +76,19 @@ class CodeEditor(QPlainTextEdit):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         cr = self.contentsRect()
-        self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(), cr.height()))
+        self.lineNumberArea.setGeometry(
+            QRect(cr.left(), cr.top(), self.line_number_area_width(), cr.height())
+        )
+        self._place_overview()
+
+    def _place_overview(self):
+        """Ставит OverviewBar в правый margin (справа от скроллбара)."""
+        vp = self.viewport()
+        if vp is None or not hasattr(self, "overviewBar"):
+            return
+        x = self.width() - _OVERVIEW_W
+        self.overviewBar.setGeometry(x, vp.y(), _OVERVIEW_W, vp.height())
+        self.overviewBar.raise_()
 
     def line_number_area_paint_event(self, event):
         painter = QPainter(self.lineNumberArea)
@@ -196,3 +226,24 @@ class CodeEditor(QPlainTextEdit):
         cursor.select(cursor.SelectionType.WordUnderCursor)
         cursor.insertText(completion)
         self.setTextCursor(cursor)
+
+    def _recalc_overview(self):
+        """Пересчитать метки проблем (debounce 150 мс)."""
+        highlighter = getattr(self, "_highlighter", None)
+        if highlighter is None:
+            return
+        marks = highlighter.get_problem_lines()
+        self.overviewBar.set_marks(marks, max(1, self.blockCount()))
+
+    def _on_overview_click(self, line: int):
+        block = self.document().findBlockByNumber(line)
+        if not block.isValid():
+            return
+        cursor = self.textCursor()
+        cursor.setPosition(block.position())
+        self.setTextCursor(cursor)
+        self.centerCursor()  # или ensureCursorVisible / scrollTo top
+
+    def refresh_overview(self):
+        self._overview_timer.stop()
+        self._recalc_overview()

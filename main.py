@@ -331,12 +331,12 @@ def main() -> int:
             window = AppWindow(db)
             logger.info("app: window created")
 
-            if not ensure_license(window):
-                if hasattr(splash, "_matrix"):
-                    splash._matrix.stop()
-                splash.deleteLater()
-                app.quit()
-                return
+            #if not ensure_license(window):
+            #    if hasattr(splash, "_matrix"):
+            #        splash._matrix.stop()
+            #    splash.deleteLater()
+            #    app.quit()
+            #    return
 
             window.show()
             _style_window(window)

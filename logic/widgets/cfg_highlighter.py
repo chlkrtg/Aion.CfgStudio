@@ -212,35 +212,61 @@ class CfgHighlighter(QSyntaxHighlighter):
             )
 
     def get_stats(self) -> dict[str, int]:
-        """Возвращает текущую статистику: {errors, duplicates, unknowns, overrides}."""
-        text = self.document().toPlainText()
-        errors = 0
-        duplicates = 0
-        unknowns = 0
-        overrides = 0
-
-        for line in text.splitlines():
-            stripped = line.strip()
-            if not stripped or stripped.startswith(("--", "//", "#")):
-                continue
-
-            m = self._re_strict_kv.match(stripped)
-            if not m.hasMatch():
-                errors += 1
-                continue
-
-            key_lower = m.captured(1).lower()  # ← добавить .lower()
-
-            if key_lower in self._overridden_keys:
-                overrides += 1
-            elif key_lower in self._duplicate_keys:
-                duplicates += 1
-            elif self._known_keys and key_lower not in self._known_keys:
-                unknowns += 1
-
-        return {
-            "errors": errors,
-            "duplicates": duplicates,
-            "unknowns": unknowns,
-            "overrides": overrides,
+        counts = {"errors": 0, "duplicates": 0, "unknowns": 0, "overrides": 0}
+        mapping = {
+            "error": "errors",
+            "duplicate": "duplicates",
+            "unknown": "unknowns",
+            "override": "overrides",
         }
+        for line in self.document().toPlainText().splitlines():
+            t = self._classify_line(line.strip())
+            if t is not None:
+                counts[mapping[t]] += 1
+        return counts
+
+    def _classify_line(self, stripped: str) -> str | None:
+        """Возвращает тип проблемы для одной строки или None.
+
+        "error" | "duplicate" | "unknown" | "override" | None
+        Приоритет: error > override > duplicate > unknown
+        (как в get_stats — overrides проверяются раньше duplicates).
+        """
+        if not stripped or stripped.startswith(("--", "//", "#")):
+            return None
+
+        m = self._re_strict_kv.match(stripped)
+        if not m.hasMatch():
+            return "error"
+
+        key_lower = m.captured(1).lower()
+
+        if key_lower in self._overridden_keys:
+            return "override"
+        if key_lower in self._duplicate_keys:
+            return "duplicate"
+        if self._known_keys and key_lower not in self._known_keys:
+            return "unknown"
+        return None
+
+    def get_line_type(self, line_number: int) -> str | None:
+        """Тип проблемы для строки с номером line_number (0-based)."""
+        block = self.document().findBlockByNumber(line_number)
+        if not block.isValid():
+            return None
+        return self._classify_line(block.text().strip())
+
+    def get_problem_lines(self) -> dict[int, str]:
+        """{line_number (0-based): type} — только проблемные строки.
+
+        Используется OverviewBar. Считается за один проход по документу.
+        """
+        doc = self.document()
+        result: dict[int, str] = {}
+        block = doc.firstBlock()
+        while block.isValid():
+            t = self._classify_line(block.text().strip())
+            if t is not None:
+                result[block.blockNumber()] = t
+            block = block.next()
+        return result

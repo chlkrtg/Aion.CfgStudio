@@ -91,6 +91,8 @@ class PageMain(BasePage, Ui_MainWindow):
 
         self._highlighter = CfgHighlighter(self.editPreview.document(), known_keys)
         self.editPreview.set_completion_words(sorted(known_keys))
+        self.editPreview._highlighter = self._highlighter
+        self.editPreview._overview_timer.start()
 
         self.editPreview.document().contentsChange.connect(
             lambda _pos, _rem, _add: self._update_preview_stats()
@@ -406,6 +408,9 @@ class PageMain(BasePage, Ui_MainWindow):
 
         if hasattr(self, 'lblPreviewStats'):
             self.lblPreviewStats.setText("")
+
+        if hasattr(self.editPreview, "refresh_overview"):
+            self.editPreview.refresh_overview()
 
     def set_controls_enabled(self, enabled: bool):
         """Включает/выключает контролы, требующие выбранного cfg."""

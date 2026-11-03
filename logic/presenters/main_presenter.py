@@ -197,6 +197,8 @@ class MainPresenter(BasePresenter):
         view.lblPreviewName.setText(cfg["filename"])
         view.editPreview.setPlainText(cfg["content"] or "")
         view.set_controls_enabled(True)
+        if hasattr(view.editPreview, "refresh_overview"):
+            view.editPreview.refresh_overview()
 
     # ============= фильтр =============
 
